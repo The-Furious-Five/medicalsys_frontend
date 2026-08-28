@@ -1,0 +1,66 @@
+<main class="home">
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Sprint 2 · Frontend del flujo MVP</p>
+    <h1 id="hero-title">Una experiencia clínica conectada de principio a fin.</h1>
+    <p class="hero__description">
+      Esta es la base compartida del frontend de MedicalSys. Todas las operaciones de negocio deben
+      atravesar el API Gateway y conservar el contexto de usuario, rol y organización.
+    </p>
+    <div class="hero__actions">
+      <a class="button button--primary" href="#mvp-flow">Ver recorrido MVP</a>
+      <a class="button button--secondary" href="http://localhost:8080/actuator/health">
+        Comprobar gateway
+      </a>
+    </div>
+  </section>
+
+  <section class="principles" aria-label="Principios técnicos">
+    <article>
+      <span>01</span>
+      <div>
+        <h2>Un punto de entrada</h2>
+        <p>
+          El navegador usa rutas <code>/api/v1</code>; nunca llama directamente a un microservicio.
+        </p>
+      </div>
+    </article>
+    <article>
+      <span>02</span>
+      <div>
+        <h2>Contratos antes que pantallas</h2>
+        <p>Ruta, roles y JSON se acuerdan antes de implementar cada funcionalidad.</p>
+      </div>
+    </article>
+    <article>
+      <span>03</span>
+      <div>
+        <h2>Evidencia para cerrar</h2>
+        <p>
+          Una historia requiere pruebas, estados de interfaz y recorrido integrado reproducible.
+        </p>
+      </div>
+    </article>
+  </section>
+
+  <section class="flow" id="mvp-flow" aria-labelledby="flow-title">
+    <div class="section-heading">
+      <p class="eyebrow">Recorrido vertical</p>
+      <h2 id="flow-title">Funcionalidades que construiremos</h2>
+    </div>
+
+    <div class="flow__grid">
+      @for (step of mvpSteps; track step.number) {
+        <article class="flow-card">
+          <div class="flow-card__topline">
+            <span class="flow-card__number">{{ step.number }}</span>
+            <span class="status" [class.status--ready]="step.status === 'Base disponible'">
+              {{ step.status }}
+            </span>
+          </div>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+</main>
