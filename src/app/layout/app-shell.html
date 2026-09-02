@@ -8,9 +8,18 @@
   <aside class="sidebar" aria-label="Navegación principal">
     <div class="sidebar-brand">
       <a routerLink="/" class="brand-link" aria-label="MSYS, ir al inicio">
-        <img src="/brand/msys-mark-green.svg" alt="" width="26" height="26" class="brand-mark" />
-        @if (!collapsed()) {
-          <span class="brand-word">MSYS</span>
+        <!-- Expandida se usa el logotipo completo; contraída no cabe una marca
+             horizontal de 285×72, así que queda el isotipo. -->
+        @if (collapsed()) {
+          <img
+            src="/brand/msys-mark-green.svg"
+            alt="MSYS"
+            width="26"
+            height="26"
+            class="brand-mark"
+          />
+        } @else {
+          <img src="/brand/msys-horizontal.svg" alt="MSYS" class="brand-lockup" />
         }
       </a>
 

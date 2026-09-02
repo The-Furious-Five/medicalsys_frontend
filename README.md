@@ -425,19 +425,49 @@ nadie a hacer su trabajo.
 El isotipo de MSYS es una mano que sostiene dos hojas dentro de un círculo
 abierto. De ahí salen los dos únicos colores del producto:
 
-- **Verde `#1B825F`** — la mano y la hoja madura: el cuidado sostenido, lo que
+- **Verde `#1C7F60`** — la mano y la hoja madura: el cuidado sostenido, lo que
   ya está resuelto y firmado. Es el color primario.
-- **Naranja `#EA732E`** — la hoja joven: lo que todavía crece y necesita
+- **Naranja `#E57833`** — la hoja joven: lo que todavía crece y necesita
   atención. Es el color de un borrador, un pendiente, un aviso.
 
 El resto es neutro. El color señala estado, nunca decora.
 
-Contraste verificado: el naranja de marca alcanza 3.0:1 sobre blanco, de modo
-que sirve para bordes e iconos pero **no** para texto; todo texto naranja usa
-`--accent-700` (7.0:1). El verde alcanza 4.8:1 y sí es texto válido. El rojo de
-error se aleja deliberadamente del naranja en tono para que aviso y error nunca
-se confundan, y ningún estado se comunica solo con color: todo chip lleva su
-texto.
+**Los colores van en sólido, no en tinte.** Los sitios donde la marca lleva el
+peso son pocos y están elegidos: el elemento activo de la navegación, el avatar
+de la cuenta, los accesos rápidos del inicio, los botones de acción primaria y
+los números de paso. Ahí el verde va a plena fuerza con texto blanco (4.9:1).
+Todo lo demás sigue siendo neutro: una pantalla en reposo no compite con el
+trabajo que hay encima. Los tintes claros existen solo como fondo de chip, y un
+escalón más abajo de donde estaban —fondo `-100`, texto `-800`— porque con `-50`
+y `-700` el estado se leía como un susurro y el conjunto tiraba a menta.
+
+**El naranja tiene una regla propia.** Con 2.97:1 sobre blanco no puede ser
+texto ni una marca pequeña sobre una superficie clara: como punto de 6 px o
+barra fina desaparece. Los puntos de estado y las barras de consumo usan un
+escalón más oscuro del mismo naranja, que sí se distingue. El `#E57833` exacto
+se reserva para el sitio donde rinde a plena fuerza sin llevar texto encima: la
+franja de la leyenda «sin validez fiscal», que es el aviso que nunca debe pasar
+desapercibido.
+
+El rojo de error se aleja deliberadamente del naranja en tono para que aviso y
+error nunca se confundan, y ningún estado se comunica solo con color: todo chip
+lleva su texto.
+
+Contrastes verificados por cálculo, en claro y en oscuro: texto blanco sobre el
+verde de marca 4.9:1, chips 7.2–9.1:1, enlaces 8.9:1, puntos de estado 3.3–6.6:1.
+
+### Los archivos de marca
+
+`public/brand/` contiene tres: el logotipo horizontal (barra lateral, acceso y
+factura), el isotipo (columna del acceso) y el isotipo en pastilla (barra
+contraída y favicon). Son copias de `marca/`, normalizadas a los hexadecimales
+declarados arriba —la diferencia con los del archivo original es imperceptible,
+pero tener dos verdes en el código sí se nota al mantenerlo—. **`marca/` no se
+modifica.**
+
+Sobre el raíl oscuro el verde de marca cae a 3.6:1 y el logotipo se lee turbio,
+así que en modo oscuro se aclara por filtro sin tocar el tono. Cuando exista una
+versión clara del logotipo en `marca/`, esto se sustituye por ese archivo.
 
 ### El modo claro es el predeterminado, siempre
 
