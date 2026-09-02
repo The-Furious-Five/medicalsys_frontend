@@ -328,33 +328,23 @@
       <div class="grid-2">
         <div class="field">
           <label class="field-label" for="allergy-type">Tipo</label>
-          <span class="select-wrap">
-            <select
-              id="allergy-type"
-              class="select"
-              [value]="allergyType()"
-              (change)="allergyType.set($any($event.target).value)"
-            >
-              @for (option of allergyTypeOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'allergy-type'"
+            [options]="allergyTypeOptions"
+            [value]="allergyType()"
+            (valueChange)="allergyType.set($event)"
+            [allowEmpty]="false"
+          />
         </div>
         <div class="field">
           <label class="field-label" for="allergy-severity">Gravedad</label>
-          <span class="select-wrap">
-            <select
-              id="allergy-severity"
-              class="select"
-              [value]="severity()"
-              (change)="severity.set($any($event.target).value)"
-            >
-              @for (option of severityOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'allergy-severity'"
+            [options]="severityOptions"
+            [value]="severity()"
+            (valueChange)="severity.set($event)"
+            [allowEmpty]="false"
+          />
         </div>
       </div>
       <div class="field">
@@ -417,29 +407,22 @@
       <div class="grid-2">
         <div class="field">
           <label class="field-label" for="background-type">Tipo</label>
-          <span class="select-wrap">
-            <select
-              id="background-type"
-              class="select"
-              [value]="backgroundType()"
-              (change)="backgroundType.set($any($event.target).value)"
-            >
-              @for (option of backgroundTypeOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'background-type'"
+            [options]="backgroundTypeOptions"
+            [value]="backgroundType()"
+            (valueChange)="backgroundType.set($event)"
+            [allowEmpty]="false"
+          />
         </div>
         <div class="field">
           <label class="field-label" for="background-date">
             Fecha del evento <span class="field-optional">(opcional)</span>
           </label>
-          <input
-            id="background-date"
-            class="input input-num"
-            type="date"
+          <medsys-date-field
+            [controlId]="'background-date'"
             [value]="eventDate()"
-            (input)="eventDate.set($any($event.target).value)"
+            (valueChange)="eventDate.set($event)"
           />
         </div>
       </div>

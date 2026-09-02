@@ -13,6 +13,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { describeFailure } from '../../core/http/api-error';
 import { REQUIRED_RESOURCE_TYPE, SERVICE_OFFERING_TYPE, options } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
+import { Icon } from '../../core/ui/icon';
+import { Select } from '../../shared/select';
 import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
 import { TenancyService } from './tenancy.service';
@@ -27,7 +29,7 @@ const CODE = /^[A-Za-z0-9_-]+$/;
 @Component({
   selector: 'medsys-offering-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Dialog, Notice],
+  imports: [Select, Icon, ReactiveFormsModule, Dialog, Notice],
   templateUrl: './offering-form.html',
 })
 export class OfferingForm {

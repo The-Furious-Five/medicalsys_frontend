@@ -17,6 +17,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { ErrorState } from '../../shared/error-state';
 import { PageHeader } from '../../shared/page-header';
 import { TableSkeleton } from '../../shared/table-skeleton';
+import { Select, SelectOption } from '../../shared/select';
 import { OfferingForm } from './offering-form';
 import { TenancyService } from './tenancy.service';
 import { ServiceOffering } from './tenancy.models';
@@ -33,6 +34,7 @@ type ActiveFilter = 'all' | 'active' | 'inactive';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     PageHeader,
+    Select,
     ErrorState,
     EmptyState,
     TableSkeleton,
@@ -49,6 +51,12 @@ export class OfferingsPage {
   private readonly toasts = inject(ToastService);
 
   protected readonly editable = computed(() => can.manageOrganization(this.session.roles()));
+
+  protected readonly vigencyOptions: readonly SelectOption[] = [
+    { value: 'active', label: 'Solo vigentes' },
+    { value: 'inactive', label: 'Solo no vigentes' },
+    { value: 'all', label: 'Todas' },
+  ];
 
   protected readonly term = signal('');
   protected readonly activeFilter = signal<ActiveFilter>(

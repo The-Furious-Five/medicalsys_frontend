@@ -26,15 +26,10 @@ import { IconNamePipe } from '../core/ui/icon-name.pipe';
             <medsys-icon name="refresh" [size]="14" /> Reintentar
           </button>
         }
-        @if (detail().correlationId; as correlationId) {
-          <button
-            type="button"
-            class="corr"
-            title="Copiar el identificador de esta operación"
-            (click)="copy(correlationId)"
-          >
-            <medsys-icon name="copy" [size]="11" />
-            <span class="t-mono">{{ copied() ? 'Copiado' : correlationId.slice(0, 8) }}</span>
+        @if (detail().correlationId) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="copyDetails()">
+            <medsys-icon name="copy" [size]="13" />
+            {{ copied() ? 'Copiado' : 'Copiar detalles' }}
           </button>
         }
       </div>
@@ -50,10 +45,23 @@ export class ErrorState {
   protected readonly copied = signal(false);
   protected readonly detail = computed(() => describeFailure(this.failure()));
 
-  /** El identificador de la operación es lo único técnico que se muestra:
-   *  es lo que permite a soporte encontrar el caso exacto en los registros. */
-  protected copy(correlationId: string): void {
-    void navigator.clipboard?.writeText(correlationId).then(
+  /**
+   * Copia un resumen del problema para pegarlo en un correo a soporte.
+   *
+   * En pantalla no queda ningún dato técnico —un hexadecimal suelto no le dice
+   * nada a quien atiende—, pero la referencia sigue existiendo: es lo que
+   * permite encontrar el caso exacto en los registros del servidor.
+   */
+  protected copyDetails(): void {
+    const detail = this.detail();
+    const summary = [
+      detail.title,
+      detail.message,
+      `Referencia: ${detail.correlationId}`,
+      `Fecha: ${new Date().toLocaleString('es-BO')}`,
+    ].join('\n');
+
+    void navigator.clipboard?.writeText(summary).then(
       () => {
         this.copied.set(true);
         setTimeout(() => this.copied.set(false), 1600);

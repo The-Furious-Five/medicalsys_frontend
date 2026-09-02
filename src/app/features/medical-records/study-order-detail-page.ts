@@ -19,6 +19,7 @@ import {
 } from '../../core/state/state-machines';
 import { ToastService } from '../../core/toast/toast.service';
 import { Icon } from '../../core/ui/icon';
+import { Select } from '../../shared/select';
 import { Dialog } from '../../shared/dialog';
 import { ErrorState } from '../../shared/error-state';
 import { Notice } from '../../shared/notice';
@@ -37,6 +38,7 @@ import { RecordsService } from './records.service';
   selector: 'medsys-study-order-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    Select,
     PageHeader,
     StatusChip,
     ErrorState,

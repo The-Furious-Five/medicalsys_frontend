@@ -13,19 +13,13 @@
 
 <div class="card">
   <div class="filters">
-    <span class="select-wrap">
-      <select
-        class="select"
-        aria-label="Filtrar por estado"
-        [value]="status() ?? ''"
-        (change)="setStatus($any($event.target).value)"
-      >
-        <option value="">Todos los estados</option>
-        @for (option of statusOptions; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
-    </span>
+    <medsys-select
+      ariaLabel="Filtrar por estado"
+      [options]="statusOptions"
+      [value]="status() ?? ''"
+      (valueChange)="setStatus($event)"
+      placeholder="Todos los estados"
+    />
     @if (status()) {
       <button type="button" class="btn btn-ghost btn-sm" (click)="setStatus('')">
         <medsys-icon name="x" [size]="14" /> Quitar filtro

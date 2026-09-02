@@ -15,6 +15,7 @@ import { ENCOUNTER_TYPE, options } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
 import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
+import { Select, SelectOption } from '../../shared/select';
 import { PatientPicker } from '../patients/patient-picker';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { RecordsService } from './records.service';
@@ -27,7 +28,7 @@ import { RecordsService } from './records.service';
 @Component({
   selector: 'medsys-open-encounter-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Notice, PatientPicker],
+  imports: [Dialog, Notice, PatientPicker, Select],
   template: `
     <medsys-dialog
       [open]="open()"
@@ -59,35 +60,24 @@ import { RecordsService } from './records.service';
 
         <div class="field">
           <label class="field-label" for="encounter-type">Tipo de encuentro</label>
-          <span class="select-wrap">
-            <select
-              id="encounter-type"
-              class="select"
-              [value]="type()"
-              (change)="type.set($any($event.target).value)"
-            >
-              @for (option of types; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'encounter-type'"
+            [options]="types"
+            [allowEmpty]="false"
+            [value]="type()"
+            (valueChange)="type.set($event)"
+          />
         </div>
 
         <div class="field">
           <label class="field-label" for="encounter-branch">Sucursal</label>
-          <span class="select-wrap">
-            <select
-              id="encounter-branch"
-              class="select"
-              [value]="branchId()"
-              (change)="branchId.set($any($event.target).value)"
-            >
-              <option value="">Elige una sucursal</option>
-              @for (branch of activeBranchList(); track branch.id) {
-                <option [value]="branch.id">{{ branch.name }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'encounter-branch'"
+            [options]="branchOptions()"
+            placeholder="Elige una sucursal"
+            [value]="branchId()"
+            (valueChange)="branchId.set($event)"
+          />
         </div>
 
         <p class="field-hint">El encuentro queda registrado a nombre de {{ userName() }}.</p>
@@ -122,6 +112,9 @@ export class OpenEncounterDialog {
   private readonly activeBranches = signal<string | null>('ACTIVE');
   protected readonly branches = this.tenancy.branchesResource(this.activeBranches);
   protected readonly activeBranchList = computed(() => this.branches.value()?.content ?? []);
+  protected readonly branchOptions = computed<readonly SelectOption[]>(() =>
+    this.activeBranchList().map((branch) => ({ value: branch.id, label: branch.name })),
+  );
 
   protected readonly patientId = signal<string | null>(null);
   protected readonly branchId = signal('');

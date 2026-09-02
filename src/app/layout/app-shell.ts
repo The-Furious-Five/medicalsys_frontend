@@ -14,8 +14,8 @@ import { initials } from '../core/format/format';
 import { ROLE, label } from '../core/labels/labels';
 import { Icon } from '../core/ui/icon';
 import { ToastHost } from '../shared/toast-host';
+import { Tooltip } from '../shared/tooltip';
 import { CommandPalette } from './command-palette';
-import { SystemStatus } from './system-status';
 import { visibleNav } from './nav';
 
 /**
@@ -29,15 +29,7 @@ import { visibleNav } from './nav';
 @Component({
   selector: 'medsys-app-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    Icon,
-    SystemStatus,
-    CommandPalette,
-    ToastHost,
-  ],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, CommandPalette, ToastHost, Tooltip],
   templateUrl: './app-shell.html',
 })
 export class AppShell {

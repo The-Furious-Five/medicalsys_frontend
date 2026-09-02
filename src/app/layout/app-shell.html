@@ -6,43 +6,49 @@
   }
 
   <aside class="sidebar" aria-label="Navegación principal">
-    <div class="sidebar-brand">
-      <a routerLink="/" class="brand-link" aria-label="MSYS, ir al inicio">
-        <!-- Expandida se usa el logotipo completo; contraída no cabe una marca
-             horizontal de 285×72, así que queda el isotipo. -->
-        @if (collapsed()) {
-          <img
-            src="/brand/msys-mark-green.svg"
-            alt="MSYS"
-            width="26"
-            height="26"
-            class="brand-mark"
-          />
-        } @else {
-          <img src="/brand/msys-horizontal.svg" alt="MSYS" class="brand-lockup" />
-        }
-      </a>
+    <div class="sidebar-head">
+      <div class="sidebar-brand">
+        <a routerLink="/" class="brand-link" aria-label="MSYS, ir al inicio">
+          <!-- Contraída se usa el isotipo suelto, no la marca en pastilla: la
+               pastilla es un cuadrado verde del mismo tamaño que el elemento
+               activo del menú y el logotipo acababa leyéndose como un botón
+               más. Sin pastilla se distingue de un vistazo qué es marca y qué
+               es navegación. -->
+          @if (collapsed()) {
+            <img
+              src="/brand/msys-isotipo.svg"
+              alt="MSYS"
+              width="28"
+              height="28"
+              class="brand-mark"
+            />
+          } @else {
+            <img src="/brand/msys-horizontal.svg" alt="MSYS" class="brand-lockup" />
+          }
+        </a>
 
-      <!-- Contraer vive junto a la marca: es una preferencia del marco, no una
-           acción del trabajo, y ahí no compite con la navegación. -->
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm btn-icon sidebar-close"
+          aria-label="Cerrar navegación"
+          (click)="mobileOpen.set(false)"
+        >
+          <medsys-icon name="x" [size]="16" />
+        </button>
+      </div>
+
+      <!-- Expandida acompaña a la marca, a su derecha. Contraída no hay sitio a
+           su derecha, así que baja a su propia franja bajo la cabecera: sigue
+           arriba, donde se pulsó para contraer, y no compite con el logotipo. -->
       <button
         type="button"
         class="sidebar-collapse"
         [attr.aria-label]="collapsed() ? 'Expandir la navegación' : 'Contraer la navegación'"
         [attr.aria-expanded]="!collapsed()"
-        [title]="collapsed() ? 'Expandir la navegación' : 'Contraer la navegación'"
+        [medsysTooltip]="collapsed() ? 'Expandir la navegación' : ''"
         (click)="collapsed.set(!collapsed())"
       >
         <medsys-icon [name]="collapsed() ? 'chevrons-right' : 'chevrons-left'" [size]="15" />
-      </button>
-
-      <button
-        type="button"
-        class="btn btn-ghost btn-sm btn-icon sidebar-close"
-        aria-label="Cerrar navegación"
-        (click)="mobileOpen.set(false)"
-      >
-        <medsys-icon name="x" [size]="16" />
       </button>
     </div>
 
@@ -64,7 +70,7 @@
                   [routerLink]="item.link"
                   routerLinkActive="is-active"
                   [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-                  [title]="collapsed() ? item.label : ''"
+                  [medsysTooltip]="collapsed() ? item.label : ''"
                 >
                   <medsys-icon [name]="item.icon" [size]="17" [strokeWidth]="1.6" />
                   @if (!collapsed()) {
@@ -87,7 +93,7 @@
         class="account-button"
         [attr.aria-label]="'Cuenta de ' + user()?.fullName + '. Abrir menú de cuenta'"
         [attr.aria-expanded]="accountMenuOpen()"
-        [title]="collapsed() ? user()?.fullName : ''"
+        [medsysTooltip]="collapsed() ? user()?.fullName : ''"
         (click)="accountMenuOpen.set(!accountMenuOpen())"
       >
         <span class="avatar">{{ avatar() }}</span>
@@ -134,8 +140,6 @@
         <span class="grow">Buscar paciente, factura o prestación</span>
         <kbd class="kbd">⌘K</kbd>
       </button>
-
-      <medsys-system-status />
     </header>
 
     @if (expiringSoon()) {

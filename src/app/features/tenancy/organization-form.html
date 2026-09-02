@@ -83,14 +83,12 @@
         <label class="field-label" for="org-department">
           Departamento <span class="field-optional">(opcional)</span>
         </label>
-        <span class="select-wrap">
-          <select id="org-department" class="select" formControlName="department">
-            <option value="">Sin especificar</option>
-            @for (option of departments; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          formControlName="department"
+          [options]="departments"
+          [controlId]="'org-department'"
+          placeholder="Sin especificar"
+        />
       </div>
     </div>
 

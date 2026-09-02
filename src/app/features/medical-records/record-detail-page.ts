@@ -20,6 +20,8 @@ import { encounterTone, recordTone } from '../../core/state/state-machines';
 import { formatAge, formatDate, formatDocument } from '../../core/format/format';
 import { ToastService } from '../../core/toast/toast.service';
 import { Icon } from '../../core/ui/icon';
+import { DateField } from '../../shared/date-field';
+import { Select } from '../../shared/select';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { Dialog } from '../../shared/dialog';
 import { EmptyState } from '../../shared/empty-state';
@@ -44,6 +46,8 @@ type Tab = 'encuentros' | 'alergias' | 'antecedentes';
   selector: 'medsys-record-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    DateField,
+    Select,
     PageHeader,
     StatusChip,
     ErrorState,

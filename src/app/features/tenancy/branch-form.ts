@@ -13,6 +13,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { describeFailure } from '../../core/http/api-error';
 import { DEPARTMENT, options } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
+import { Icon } from '../../core/ui/icon';
+import { Select } from '../../shared/select';
 import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
 import { TenancyService } from './tenancy.service';
@@ -31,7 +33,7 @@ const CODE = /^[A-Za-z0-9_-]+$/;
 @Component({
   selector: 'medsys-branch-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Dialog, Notice],
+  imports: [Select, Icon, ReactiveFormsModule, Dialog, Notice],
   templateUrl: './branch-form.html',
 })
 export class BranchForm {

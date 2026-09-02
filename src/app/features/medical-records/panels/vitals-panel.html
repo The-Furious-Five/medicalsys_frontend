@@ -58,7 +58,9 @@
           }
           @if (latest()!.bmi; as bmi) {
             <div class="vital">
-              <span class="t-label" title="Índice de masa corporal">IMC</span>
+              <span class="t-label"
+                >IMC<span class="sr-only"> (índice de masa corporal)</span></span
+              >
               <span class="vital-value">{{ bmi | msNumber: 1 }}</span>
               <span class="t-micro">Calculado por el sistema</span>
             </div>

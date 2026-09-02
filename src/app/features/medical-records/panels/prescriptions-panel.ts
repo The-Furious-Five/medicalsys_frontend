@@ -18,6 +18,7 @@ import { Dialog } from '../../../shared/dialog';
 import { Notice } from '../../../shared/notice';
 import { Skeleton } from '../../../shared/skeleton';
 import { StatusChip } from '../../../shared/status-chip';
+import { Select, SelectOption } from '../../../shared/select';
 import { RecordsService } from '../records.service';
 import { Prescription, PrescriptionItem } from '../records.models';
 
@@ -49,7 +50,7 @@ const newItem = (): ItemDraft => ({
 @Component({
   selector: 'medsys-prescriptions-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, Dialog, Notice, Skeleton, StatusChip, ...FORMAT_PIPES],
+  imports: [Icon, Dialog, Notice, Skeleton, StatusChip, Select, ...FORMAT_PIPES],
   templateUrl: './prescriptions-panel.html',
 })
 export class PrescriptionsPanel {
@@ -87,8 +88,12 @@ export class PrescriptionsPanel {
   });
 
   /** Solo se ofrecen los estados a los que el backend permite transitar. */
-  protected transitionsFor(status: PrescriptionStatus): readonly PrescriptionStatus[] {
-    return prescriptionTransitions(status);
+  /** Solo los destinos que el backend permite, ya con su texto en español. */
+  protected transitionsFor(status: PrescriptionStatus): readonly SelectOption[] {
+    return prescriptionTransitions(status).map((target) => ({
+      value: target,
+      label: label(PRESCRIPTION_STATUS, target),
+    }));
   }
 
   protected statusLabel(status: string): string {

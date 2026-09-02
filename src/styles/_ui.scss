@@ -28,6 +28,17 @@
   border-radius: 0 0 var(--r-card) var(--r-card);
 }
 
+/* ============================================================== reacción ==== */
+/* Cuándo un elemento reacciona al puntero.
+   El hover sirve para tres cosas y solo para esas tres:
+     1. confirmar el objetivo antes de pulsar, en listas y tablas densas donde
+        es fácil abrir la fila equivocada;
+     2. anunciar que algo va a ocurrir al pulsar —un botón, un enlace, un
+        control que abre una capa—;
+     3. revelar un control que se mantiene callado a propósito.
+   Cada reacción cambia UNA propiedad: dos a la vez no informan del doble, solo
+   pesan el doble. */
+
 /* ============================================================== botones ===== */
 .btn {
   display: inline-flex;
@@ -98,7 +109,6 @@
 }
 .btn-ghost:hover:not(:disabled) {
   background: var(--bg-hover);
-  color: var(--text-primary);
 }
 
 .btn-danger {
@@ -164,7 +174,7 @@
 }
 
 .input,
-.select,
+,
 .textarea {
   width: 100%;
   min-height: var(--h-control);
@@ -184,20 +194,17 @@
   resize: vertical;
   min-height: 80px;
 }
-.input:hover:not(:disabled),
-.select:hover:not(:disabled),
-.textarea:hover:not(:disabled) {
-  border-color: var(--n-400);
-}
+/* El campo de texto no reacciona al puntero: su borde ya dice que es un campo y
+   al pulsarlo no ocurre nada salvo recibir el foco. Hacerlo reaccionar convierte
+   recorrer un formulario con el ratón en una sucesión de destellos. Lo que sí
+   se ve con fuerza es el foco, que es cuando importa. */
 .input:disabled,
-.select:disabled,
 .textarea:disabled {
   background: var(--bg-sunken);
   color: var(--text-tertiary);
   cursor: not-allowed;
 }
 .input[aria-invalid='true'],
-.select[aria-invalid='true'],
 .textarea[aria-invalid='true'] {
   border-color: var(--err-500);
 }
@@ -205,38 +212,147 @@
   font-variant-numeric: tabular-nums;
 }
 
-.select {
-  appearance: none;
-  padding-right: var(--s-8);
-  cursor: pointer;
-}
-.select-wrap {
+/* ------------------------------------------------------ desplegable propio -- */
+/* Sustituye a `<select>`: el nativo lo dibuja el sistema operativo y su lista no
+   acepta la tipografía, los radios ni los colores de este sistema. Aquí la lista
+   es la misma superficie que el resto de capas del producto. */
+.ms-select {
   position: relative;
   display: block;
+  width: 100%;
 }
-/* La flecha del desplegable se dibuja aquí, no en cada plantilla: es la única
-   señal de que el control abre una lista, y dejarla en manos de quien escribe
-   el HTML garantizaba que faltara —de hecho faltaba en los 23 desplegables. */
-.select-wrap::after {
-  content: '';
+.ms-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  min-height: var(--h-control);
+  padding: 0 var(--s-3);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  font-size: 14px;
+  text-align: left;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background-color var(--dur-micro) var(--ease-standard);
+}
+.ms-select-trigger:hover:not(:disabled) {
+  border-color: var(--n-400);
+}
+.ms-select-trigger:disabled {
+  background: var(--bg-sunken);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+.ms-select-trigger[aria-invalid='true'] {
+  border-color: var(--err-500);
+}
+.is-open .ms-select-trigger {
+  border-color: var(--brand-solid);
+}
+.ms-select-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ms-select-value.is-placeholder {
+  color: var(--text-placeholder);
+}
+.ms-select-caret {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: transform var(--dur-micro) var(--ease-standard);
+}
+.is-open .ms-select-caret {
+  transform: rotate(180deg);
+}
+.ms-select-list {
   position: absolute;
-  right: 13px;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  border-right: 1.5px solid var(--text-tertiary);
-  border-bottom: 1.5px solid var(--text-tertiary);
-  border-radius: 1px;
-  transform: translateY(-70%) rotate(45deg);
-  pointer-events: none;
+  top: calc(100% + var(--s-1));
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+  max-height: 260px;
+  overflow-y: auto;
+  padding: var(--s-1);
+  animation: pop-in var(--dur-pop) var(--ease-in);
+}
+/* Si no cabe debajo, se abre hacia arriba en vez de salirse de la pantalla. */
+.ms-select-list.is-above {
+  top: auto;
+  bottom: calc(100% + var(--s-1));
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-select-list {
+    animation: none;
+  }
+}
+.ms-select-list:focus {
+  outline: none;
+}
+.ms-select-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 32px;
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--r-input);
+  font-size: 13px;
+  color: var(--text-body);
+  cursor: pointer;
+}
+.ms-select-option.is-active {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+}
+.ms-select-option[aria-selected='true'] {
+  font-weight: 500;
 }
 
+/* ---------------------------------------------------------- casilla propia -- */
+/* El cuadro nativo lo dibuja el sistema y `accent-color` solo cambia su relleno:
+   la forma, el grosor y el radio siguen siendo ajenos. La entrada real se
+   conserva para el teclado y los lectores de pantalla, oculta; lo que se ve es
+   una caja de este sistema de diseño. */
 .checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.check-box {
+  display: grid;
+  place-items: center;
   width: 16px;
   height: 16px;
-  accent-color: var(--brand-solid);
-  cursor: pointer;
+  margin-top: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg-surface);
+  color: var(--text-onbrand);
   flex-shrink: 0;
+  transition:
+    background-color var(--dur-micro) var(--ease-standard),
+    border-color var(--dur-micro) var(--ease-standard);
+}
+.check-row:hover .check-box {
+  border-color: var(--n-400);
+}
+.checkbox:checked + .check-box {
+  background: var(--brand-solid);
+  border-color: var(--brand-solid);
+}
+.checkbox:not(:checked) + .check-box > * {
+  visibility: hidden;
+}
+.checkbox:focus-visible + .check-box {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 .check-row {
   display: flex;
@@ -549,7 +665,6 @@
 .menu-item:hover,
 .menu-item.is-active {
   background: var(--bg-hover);
-  color: var(--text-primary);
 }
 .menu-item:disabled {
   color: var(--text-placeholder);
@@ -878,21 +993,6 @@
 .error-inline .state-text {
   max-width: 52ch;
 }
-.corr {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 22px;
-  padding: 0 var(--s-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-chip);
-  background: var(--bg-sunken);
-  color: var(--text-tertiary);
-  transition: color var(--dur-micro) var(--ease-standard);
-}
-.corr:hover {
-  color: var(--text-body);
-}
 
 /* ============================================================== armazón ===== */
 .shell {
@@ -916,16 +1016,25 @@
   width: var(--w-sidebar-collapsed);
 }
 
-.sidebar-brand {
+/* La cabecera del raíl agrupa la marca y el control de contraer. Se mantiene a
+   la altura de la barra superior para que ambas líneas coincidan. */
+.sidebar-head {
   position: relative;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sidebar-brand {
   display: flex;
   align-items: center;
   gap: var(--s-2);
   height: var(--h-topbar);
   padding: 0 var(--s-3);
-  border-bottom: 1px solid var(--border-subtle);
-  flex-shrink: 0;
 }
+.is-collapsed .sidebar-brand {
+  justify-content: center;
+  padding: 0;
+}
+
 .brand-link {
   display: flex;
   align-items: center;
@@ -936,13 +1045,13 @@
   text-decoration: none;
 }
 .brand-mark {
-  border-radius: 5px;
+  border-radius: 6px;
   flex-shrink: 0;
 }
 /* El logotipo completo se dimensiona por alto, no por ancho: así conserva su
    proporción sea cual sea el ancho que le quede en el raíl. */
 .brand-lockup {
-  height: 22px;
+  height: 30px;
   width: auto;
 }
 /* Sobre el raíl oscuro el verde de marca cae a 3.6:1 y el logotipo se lee
@@ -994,7 +1103,6 @@
   transition: color var(--dur-micro) var(--ease-standard);
 }
 .nav-item:hover {
-  color: var(--text-primary);
   text-decoration: none;
 }
 .nav-item:hover:not(.is-active) {
@@ -1009,10 +1117,8 @@
   color: var(--text-onbrand);
   background: var(--brand-solid);
 }
-.nav-item.is-active:hover {
-  color: var(--text-onbrand);
-  background: var(--brand-solid-hover);
-}
+/* El elemento activo no reacciona: es la sección en la que ya estás y pulsarlo
+   no lleva a ninguna parte. Prometer un cambio que no llega desorienta. */
 .nav-item > medsys-icon {
   flex-shrink: 0;
 }
@@ -1093,35 +1199,35 @@
 /* Contraer es una preferencia del marco, no una acción del trabajo: acompaña a
    la marca y se mantiene callado hasta que se pasa por encima. */
 .sidebar-collapse {
+  position: absolute;
+  top: 50%;
+  right: var(--s-3);
+  transform: translateY(-50%);
   display: grid;
   place-items: center;
   width: 26px;
   height: 26px;
-  margin-left: auto;
   border-radius: var(--r-input);
   color: var(--text-placeholder);
-  flex-shrink: 0;
-  transition:
-    color var(--dur-micro) var(--ease-standard),
-    background-color var(--dur-micro) var(--ease-standard);
+  transition: color var(--dur-micro) var(--ease-standard);
 }
+/* Aquí la reacción es el propio propósito: el botón está apagado a conciencia y
+   el puntero es lo que lo saca a la vista. */
 .sidebar-collapse:hover {
   color: var(--text-secondary);
-  background: var(--bg-hover);
 }
-/* Contraída no hay «a la derecha del logo», así que el botón pasa debajo: sigue
-   junto a la marca y sigue visible. Esconderlo hasta el hover dejaría sin salida
-   a quien use una pantalla táctil, que no tiene hover con el que descubrirlo. */
-.is-collapsed .sidebar-brand {
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  padding: var(--s-2) 0;
-}
+
+/* Contraída no hay «a la derecha del logotipo»: el control baja a su propia
+   franja, separada por el borde de la cabecera. Sigue arriba —donde se pulsó
+   para contraer— y deja de competir con la marca. Nunca se oculta: sin él, una
+   pantalla táctil no tendría forma de volver a expandir el menú. */
 .is-collapsed .sidebar-collapse {
-  width: 22px;
-  height: 18px;
-  margin-left: 0;
+  position: static;
+  transform: none;
+  width: 100%;
+  height: 26px;
+  border-radius: 0;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .shell-main {
@@ -1176,7 +1282,6 @@
 }
 .global-search:hover {
   border-color: var(--border-strong);
-  color: var(--text-secondary);
 }
 .global-search > span {
   overflow: hidden;
@@ -1256,6 +1361,11 @@
   }
   .sidebar-close {
     display: inline-flex;
+  }
+  /* En móvil la barra es un cajón que se despliega entero y se cierra con el
+     aspa: contraerlo no significa nada, así que el control no se ofrece. */
+  .sidebar-collapse {
+    display: none;
   }
   .sidebar-foot {
     display: none;
@@ -1519,7 +1629,6 @@ medsys-toast-host {
 }
 .demo-account:hover {
   background: var(--bg-hover);
-  border-color: var(--border-strong);
 }
 
 .login-aside {
@@ -2018,9 +2127,10 @@ medsys-toast-host {
     border-color var(--dur-micro) var(--ease-standard),
     background-color var(--dur-micro) var(--ease-standard);
 }
+/* El borde pasa al verde de marca: en una tarjeta grande basta una señal, y el
+   color de marca dice además a dónde lleva. */
 .quick-action:hover {
   border-color: var(--brand-solid);
-  background: var(--bg-hover);
 }
 .quick-action-icon {
   display: grid;
@@ -2136,4 +2246,196 @@ medsys-toast-host {
   height: 18px;
   flex-shrink: 0;
   color: var(--brand-text);
+}
+
+/* ------------------------------------------- piezas nativas que se retiran -- */
+/* Las flechas del campo numérico y el aspa del de búsqueda las dibuja el
+   navegador con su propio aspecto y no se pueden estilar. Se retiran: el valor
+   se ajusta con el teclado y limpiar la búsqueda tiene su botón en la vista. */
+.input[type='number'] {
+  appearance: textfield;
+}
+.input[type='number']::-webkit-outer-spin-button,
+.input[type='number']::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.input[type='search']::-webkit-search-cancel-button,
+.input[type='search']::-webkit-search-decoration {
+  appearance: none;
+}
+
+/* ---------------------------------------------------- campo de fecha propio -- */
+/* `<input type="date">` delega el calendario al navegador: cambia de aspecto e
+   idioma entre Chrome, Safari y Firefox. Aquí es una capa más del producto. */
+.ms-date {
+  position: relative;
+  display: block;
+}
+.ms-date-control {
+  display: flex;
+  align-items: center;
+  min-height: var(--h-control);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  transition: border-color var(--dur-micro) var(--ease-standard);
+}
+.ms-date-control:focus-within {
+  border-color: var(--brand-solid);
+}
+.ms-date-control.is-invalid {
+  border-color: var(--err-500);
+}
+.ms-date-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--s-3);
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.ms-date-input:focus {
+  outline: none;
+}
+.ms-date-toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  align-self: stretch;
+  color: var(--text-tertiary);
+  border-radius: 0 var(--r-input) var(--r-input) 0;
+}
+.ms-date-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.ms-date-panel {
+  position: absolute;
+  top: calc(100% + var(--s-1));
+  left: 0;
+  z-index: var(--z-overlay);
+  width: 264px;
+  padding: var(--s-2);
+  animation: pop-in var(--dur-pop) var(--ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-date-panel {
+    animation: none;
+  }
+}
+.ms-date-panel:focus {
+  outline: none;
+}
+.ms-date-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-1);
+  margin-bottom: var(--s-2);
+}
+.ms-date-title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--r-input);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.ms-date-title:hover {
+  background: var(--bg-hover);
+}
+
+.ms-date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.ms-date-weekday {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.ms-date-day {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border-radius: var(--r-input);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-body);
+  transition: background-color var(--dur-micro) var(--ease-standard);
+}
+.ms-date-day:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.ms-date-day.is-outside {
+  color: var(--text-placeholder);
+}
+.ms-date-day:disabled {
+  color: var(--text-placeholder);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+/* Hoy se marca con un contorno; el día elegido, con el verde sólido. Dos
+   señales distintas para que no se confundan cuando coinciden. */
+.ms-date-day.is-today {
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.ms-date-day.is-selected {
+  background: var(--brand-solid);
+  color: var(--text-onbrand);
+  font-weight: 500;
+}
+
+.ms-date-years {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-1);
+}
+.ms-date-year {
+  height: 34px;
+  border-radius: var(--r-input);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-body);
+}
+.ms-date-year:hover {
+  background: var(--bg-hover);
+}
+.ms-date-year.is-current {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  font-weight: 500;
+}
+
+/* ------------------------------------------------ descripción emergente ---- */
+/* Sustituye al atributo `title`, que dibuja el navegador con casi un segundo de
+   retraso, sin estilo posible y sin aparecer nunca con el foco del teclado. */
+.ms-tip {
+  position: fixed;
+  z-index: 100;
+  padding: 5px var(--s-2);
+  border-radius: var(--r-input);
+  background: var(--bg-inverse);
+  color: var(--bg-surface);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow-overlay);
+  animation: pop-in var(--dur-micro) var(--ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-tip {
+    animation: none;
+  }
 }

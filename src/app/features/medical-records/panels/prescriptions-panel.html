@@ -40,23 +40,14 @@
             <span class="grow"></span>
             <span class="t-micro t-num">{{ prescription.issuedAt | msDateTime }}</span>
             @if (transitionsFor(prescription.status).length > 0) {
-              <span class="select-wrap">
-                <select
-                  class="select"
-                  style="min-width: 160px"
-                  aria-label="Cambiar el estado de la receta"
-                  [value]="''"
-                  (change)="
-                    changeStatus(prescription, $any($event.target).value);
-                    $any($event.target).value = ''
-                  "
-                >
-                  <option value="">Cambiar estado…</option>
-                  @for (target of transitionsFor(prescription.status); track target) {
-                    <option [value]="target">{{ statusLabel(target) }}</option>
-                  }
-                </select>
-              </span>
+              <medsys-select
+                style="min-width: 180px"
+                ariaLabel="Cambiar el estado de la receta"
+                placeholder="Cambiar estado…"
+                [options]="transitionsFor(prescription.status)"
+                [value]="''"
+                (valueChange)="changeStatus(prescription, $event)"
+              />
             }
           </div>
 
@@ -136,18 +127,12 @@
             </div>
             <div class="field">
               <label class="field-label" [attr.for]="'med-route-' + item.key">Vía</label>
-              <span class="select-wrap">
-                <select
-                  [id]="'med-route-' + item.key"
-                  class="select"
-                  [value]="item.route"
-                  (change)="patchItem(item.key, 'route', $any($event.target).value)"
-                >
-                  @for (option of routeOptions; track option.value) {
-                    <option [value]="option.value">{{ option.label }}</option>
-                  }
-                </select>
-              </span>
+              <medsys-select
+                [options]="routeOptions"
+                [value]="item.route"
+                (valueChange)="patchItem(item.key, 'route', $event)"
+                [allowEmpty]="false"
+              />
             </div>
           </div>
 

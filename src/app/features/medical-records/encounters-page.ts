@@ -13,6 +13,7 @@ import { FORMAT_PIPES } from '../../core/format/format.pipe';
 import { ENCOUNTER_STATUS, ENCOUNTER_TYPE, label, options } from '../../core/labels/labels';
 import { encounterTone } from '../../core/state/state-machines';
 import { Icon } from '../../core/ui/icon';
+import { Select } from '../../shared/select';
 import { EmptyState } from '../../shared/empty-state';
 import { ErrorState } from '../../shared/error-state';
 import { PageHeader } from '../../shared/page-header';
@@ -32,6 +33,7 @@ import { RecordsService } from './records.service';
   selector: 'medsys-encounters-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    Select,
     PageHeader,
     StatusChip,
     ErrorState,

@@ -4,6 +4,7 @@ import { FORMAT_PIPES } from '../../core/format/format.pipe';
 import { STUDY_ORDER_STATUS, STUDY_PRIORITY, label, options } from '../../core/labels/labels';
 import { studyOrderTone } from '../../core/state/state-machines';
 import { Icon } from '../../core/ui/icon';
+import { Select } from '../../shared/select';
 import { EmptyState } from '../../shared/empty-state';
 import { ErrorState } from '../../shared/error-state';
 import { PageHeader } from '../../shared/page-header';
@@ -21,6 +22,7 @@ import { RecordsService } from './records.service';
   selector: 'medsys-study-orders-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    Select,
     PageHeader,
     StatusChip,
     ErrorState,

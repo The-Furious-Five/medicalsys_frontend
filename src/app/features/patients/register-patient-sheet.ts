@@ -15,6 +15,8 @@ import { describeFailure } from '../../core/http/api-error';
 import { formatDocument, todayIso } from '../../core/format/format';
 import { DEPARTMENT, DOCUMENT_TYPE, SEX, options } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
+import { DateField } from '../../shared/date-field';
+import { Select } from '../../shared/select';
 import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
 import { PatientsService } from './patients.service';
@@ -33,7 +35,7 @@ const PHONE = /^\+?[0-9]{6,19}$/;
 @Component({
   selector: 'medsys-register-patient-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Dialog, Notice],
+  imports: [DateField, Select, ReactiveFormsModule, Dialog, Notice],
   templateUrl: './register-patient-sheet.html',
 })
 export class RegisterPatientSheet {

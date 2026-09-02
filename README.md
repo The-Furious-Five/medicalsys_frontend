@@ -501,6 +501,57 @@ La animación existe para explicar de dónde viene y a dónde va un elemento. So
 entrar. `prefers-reduced-motion` se resuelve en el token, no componente por
 componente.
 
+### Ningún componente del navegador
+
+La interfaz no usa piezas que dibuje el sistema operativo. Un `<select>`, un
+`<input type="date">` o una casilla nativa cambian de forma, de tipografía y de
+idioma entre macOS, Windows, Chrome, Safari y Android: el producto dejaría de
+verse igual para dos personas del mismo centro.
+
+| Pieza nativa                                      | Sustituto                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<select>` (23 controles)                         | `medsys-select` — `role="combobox"` con lista asociada, flechas, Inicio y Fin, escritura para saltar a una opción, `Esc` para cerrar, y apertura hacia arriba cuando no cabe hacia abajo. Implementa `ControlValueAccessor`, así que funciona con `formControlName` igual que el nativo |
+| `<input type="date">`                             | `medsys-date-field` — se escribe en `dd/mm/aaaa` y el calendario está para cuando se prefiere señalar. Los años van por décadas, porque la fecha más tecleada aquí es una de nacimiento                                                                                                 |
+| Casilla nativa                                    | Entrada real oculta para el teclado y los lectores de pantalla, con la caja dibujada por el sistema de diseño                                                                                                                                                                           |
+| Flechas del campo numérico y aspa del de búsqueda | Retiradas                                                                                                                                                                                                                                                                               |
+| Atributo `title`                                  | `medsysTooltip` — el nativo tarda casi un segundo, no admite estilo y no aparece nunca con el foco del teclado; en la barra contraída era la única forma de saber a dónde lleva cada icono                                                                                              |
+
+Se conserva el elemento `<dialog>` para las capas modales: no dibuja ninguna
+pieza visible —la superficie, el fondo y la animación son de este sistema— y a
+cambio aporta trampa de foco, cierre con `Esc` y fondo inerte, que reimplementar
+a mano sale peor.
+
+### Nada de desarrollo en la interfaz
+
+No hay panel técnico, ni vista del estado de los microservicios, ni latencias,
+ni identificadores en hexadecimal a la vista. Cuando algo falla, la sección
+afectada lo explica en español y ofrece _Reintentar_ y _Copiar detalles_, que
+pone en el portapapeles un resumen legible con la referencia para soporte. Un
+paciente que no se puede resolver se muestra como «Paciente sin identificar»,
+no como un fragmento de UUID.
+
+### Cuándo un elemento reacciona al puntero
+
+El hover sirve para tres cosas y solo para esas tres:
+
+1. **Confirmar el objetivo** antes de pulsar, en listas y tablas densas donde es
+   fácil abrir la fila equivocada.
+2. **Anunciar que algo va a ocurrir** al pulsar: un botón, un enlace, un control
+   que abre una capa.
+3. **Revelar un control** que se mantiene callado a propósito, como el de
+   contraer la barra lateral.
+
+Lo que no entra en ninguna, no reacciona. Un campo de texto no reacciona: su
+borde ya dice que es un campo, al pulsarlo no ocurre nada salvo recibir el foco,
+y hacerlo reaccionar convierte recorrer un formulario con el ratón en una
+sucesión de destellos. Lo que sí se ve con fuerza ahí es el foco, que es cuando
+importa. La sección activa del menú tampoco reacciona: es donde ya estás, y
+prometer un cambio que no llega desorienta. Las tarjetas, las cabeceras, los
+chips y las celdas de tabla no pulsables se quedan quietas.
+
+Y cada reacción cambia **una** propiedad. Dos a la vez no informan del doble,
+solo pesan el doble.
+
 ### Estados
 
 Cada vista con datos implementa los cinco: carga con esqueleto de la forma real

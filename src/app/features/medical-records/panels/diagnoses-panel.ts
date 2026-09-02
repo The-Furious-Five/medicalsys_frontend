@@ -9,6 +9,7 @@ import {
 } from '../../../core/labels/labels';
 import { ToastService } from '../../../core/toast/toast.service';
 import { Icon } from '../../../core/ui/icon';
+import { Select } from '../../../shared/select';
 import { Dialog } from '../../../shared/dialog';
 import { Notice } from '../../../shared/notice';
 import { Skeleton } from '../../../shared/skeleton';
@@ -23,7 +24,7 @@ import { RecordsService } from '../records.service';
 @Component({
   selector: 'medsys-diagnoses-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, Dialog, Notice, Skeleton, StatusChip],
+  imports: [Select, Icon, Dialog, Notice, Skeleton, StatusChip],
   templateUrl: './diagnoses-panel.html',
 })
 export class DiagnosesPanel {

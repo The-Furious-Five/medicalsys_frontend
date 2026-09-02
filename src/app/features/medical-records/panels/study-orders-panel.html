@@ -92,18 +92,13 @@
     <div class="grid-2">
       <div class="field">
         <label class="field-label" for="order-priority">Prioridad</label>
-        <span class="select-wrap">
-          <select
-            id="order-priority"
-            class="select"
-            [value]="priority()"
-            (change)="priority.set($any($event.target).value)"
-          >
-            @for (option of priorityOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          [controlId]="'order-priority'"
+          [options]="priorityOptions"
+          [value]="priority()"
+          (valueChange)="priority.set($event)"
+          [allowEmpty]="false"
+        />
       </div>
       <div class="field">
         <label class="field-label" for="order-icd">

@@ -42,19 +42,13 @@
           <span class="step-number" aria-hidden="true">2</span> Prestaciones
         </h2>
         @if (available().length > 0) {
-          <span class="select-wrap">
-            <select
-              class="select"
-              aria-label="Añadir una prestación"
-              [value]="''"
-              (change)="addOffering($any($event.target).value); $any($event.target).value = ''"
-            >
-              <option value="">Añadir prestación…</option>
-              @for (offering of available(); track offering.id) {
-                <option [value]="offering.id">{{ offeringLabel(offering) }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            ariaLabel="Añadir una prestación"
+            placeholder="Añadir prestación…"
+            [options]="offeringOptions()"
+            [value]="''"
+            (valueChange)="addOffering($event)"
+          />
         }
       </div>
 
@@ -161,36 +155,25 @@
       <div class="card-body grid-2">
         <div class="field">
           <label class="field-label" for="invoice-payment">Forma de pago</label>
-          <span class="select-wrap">
-            <select
-              id="invoice-payment"
-              class="select"
-              [value]="paymentMethod()"
-              (change)="paymentMethod.set($any($event.target).value)"
-            >
-              @for (method of paymentMethods; track method.value) {
-                <option [value]="method.value">{{ method.label }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'invoice-payment'"
+            [options]="paymentMethods"
+            [allowEmpty]="false"
+            [value]="paymentMethod()"
+            (valueChange)="paymentMethod.set($event)"
+          />
         </div>
         <div class="field">
           <label class="field-label" for="invoice-branch">
             Sucursal <span class="field-optional">(opcional)</span>
           </label>
-          <span class="select-wrap">
-            <select
-              id="invoice-branch"
-              class="select"
-              [value]="branchId()"
-              (change)="branchId.set($any($event.target).value)"
-            >
-              <option value="">Sin especificar</option>
-              @for (branch of branches.value()?.content ?? []; track branch.id) {
-                <option [value]="branch.id">{{ branch.name }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'invoice-branch'"
+            [options]="branchOptions()"
+            placeholder="Sin especificar"
+            [value]="branchId()"
+            (valueChange)="branchId.set($event)"
+          />
           <span class="field-hint">Sede en la que se presta el servicio.</span>
         </div>
       </div>

@@ -35,9 +35,7 @@ import { Patient } from './patients.models';
         }
       </span>
     } @else {
-      <span class="t-sec" [title]="'Identificador del paciente: ' + patientId()">
-        Paciente <span class="t-mono">{{ shortId() }}</span>
-      </span>
+      <span class="t-sec">Paciente sin identificar</span>
     }
   `,
 })
@@ -49,7 +47,6 @@ export class PatientName {
 
   protected readonly patient = signal<Patient | null>(null);
   protected readonly loading = signal(true);
-  protected readonly shortId = computed(() => this.patientId().slice(0, 8));
 
   constructor() {
     effect(() => {

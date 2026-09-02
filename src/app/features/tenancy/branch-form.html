@@ -78,13 +78,12 @@
       </div>
       <div class="field">
         <label class="field-label" for="branch-department">Departamento</label>
-        <span class="select-wrap">
-          <select id="branch-department" class="select" formControlName="department">
-            @for (option of departments; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          formControlName="department"
+          [options]="departments"
+          [controlId]="'branch-department'"
+          [allowEmpty]="false"
+        />
       </div>
     </div>
 
@@ -124,6 +123,9 @@
     @if (!isEdit()) {
       <label class="check-row">
         <input type="checkbox" class="checkbox" formControlName="headquarters" />
+        <span class="check-box" aria-hidden="true"
+          ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+        /></span>
         <span class="pair">
           <span class="t-strong">Es la casa matriz</span>
           <span class="field-hint">Solo puede haber una casa matriz por organización.</span>

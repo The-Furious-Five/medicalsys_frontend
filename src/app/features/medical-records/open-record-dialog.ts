@@ -13,6 +13,7 @@ import { describeFailure } from '../../core/http/api-error';
 import { ToastService } from '../../core/toast/toast.service';
 import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
+import { Select, SelectOption } from '../../shared/select';
 import { PatientPicker } from '../patients/patient-picker';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { RecordsService } from './records.service';
@@ -25,7 +26,7 @@ import { RecordsService } from './records.service';
 @Component({
   selector: 'medsys-open-record-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Notice, PatientPicker],
+  imports: [Dialog, Notice, PatientPicker, Select],
   template: `
     <medsys-dialog
       [open]="open()"
@@ -53,19 +54,13 @@ import { RecordsService } from './records.service';
           <label class="field-label" for="record-branch">
             Sucursal de apertura <span class="field-optional">(opcional)</span>
           </label>
-          <span class="select-wrap">
-            <select
-              id="record-branch"
-              class="select"
-              [value]="branchId()"
-              (change)="branchId.set($any($event.target).value)"
-            >
-              <option value="">Sin especificar</option>
-              @for (branch of branches.value()?.content ?? []; track branch.id) {
-                <option [value]="branch.id">{{ branch.name }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'record-branch'"
+            [options]="branchOptions()"
+            placeholder="Sin especificar"
+            [value]="branchId()"
+            (valueChange)="branchId.set($event)"
+          />
           <span class="field-hint">Sede en la que se atiende por primera vez a la persona.</span>
         </div>
       </div>
@@ -96,6 +91,12 @@ export class OpenRecordDialog {
 
   private readonly activeBranches = signal<string | null>('ACTIVE');
   protected readonly branches = this.tenancy.branchesResource(this.activeBranches);
+  protected readonly branchOptions = computed<readonly SelectOption[]>(() =>
+    (this.branches.value()?.content ?? []).map((branch) => ({
+      value: branch.id,
+      label: branch.name,
+    })),
+  );
 
   protected readonly patientId = signal<string | null>(null);
   protected readonly branchId = signal('');

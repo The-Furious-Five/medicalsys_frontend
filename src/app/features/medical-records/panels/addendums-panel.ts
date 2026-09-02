@@ -4,6 +4,7 @@ import { FORMAT_PIPES } from '../../../core/format/format.pipe';
 import { ADDENDUM_REASON, label, options } from '../../../core/labels/labels';
 import { ToastService } from '../../../core/toast/toast.service';
 import { Icon } from '../../../core/ui/icon';
+import { Select } from '../../../shared/select';
 import { Dialog } from '../../../shared/dialog';
 import { Notice } from '../../../shared/notice';
 import { Skeleton } from '../../../shared/skeleton';
@@ -18,7 +19,7 @@ import { RecordsService } from '../records.service';
 @Component({
   selector: 'medsys-addendums-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, Dialog, Notice, Skeleton, ...FORMAT_PIPES],
+  imports: [Select, Icon, Dialog, Notice, Skeleton, ...FORMAT_PIPES],
   templateUrl: './addendums-panel.html',
 })
 export class AddendumsPanel {

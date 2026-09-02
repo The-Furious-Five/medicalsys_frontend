@@ -12,6 +12,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { describeFailure } from '../../core/http/api-error';
 import { DEPARTMENT, options } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
+import { Select } from '../../shared/select';
 import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
 import { TenancyService } from './tenancy.service';
@@ -22,7 +23,7 @@ const PHONE = /^\+?[0-9]{6,19}$/;
 @Component({
   selector: 'medsys-organization-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Dialog, Notice],
+  imports: [Select, ReactiveFormsModule, Dialog, Notice],
   templateUrl: './organization-form.html',
 })
 export class OrganizationForm {

@@ -63,18 +63,13 @@
 
     <div class="field">
       <label class="field-label" for="addendum-reason">Motivo</label>
-      <span class="select-wrap">
-        <select
-          id="addendum-reason"
-          class="select"
-          [value]="reason()"
-          (change)="reason.set($any($event.target).value)"
-        >
-          @for (option of reasonOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </span>
+      <medsys-select
+        [controlId]="'addendum-reason'"
+        [options]="reasonOptions"
+        [value]="reason()"
+        (valueChange)="reason.set($event)"
+        [allowEmpty]="false"
+      />
     </div>
 
     <div class="field">

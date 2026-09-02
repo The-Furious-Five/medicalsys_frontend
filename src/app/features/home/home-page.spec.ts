@@ -87,11 +87,12 @@ describe('HomePage', () => {
     const root = fixture.nativeElement as HTMLElement;
     const text = root.textContent ?? '';
 
-    // El panel que falló lo dice, y ofrece salida: reintentar y el
-    // identificador de la operación para soporte.
+    // El panel que falló lo dice, y ofrece salida: reintentar y copiar un
+    // resumen para soporte. En pantalla no queda ningún dato técnico.
     expect(text).toContain('El servicio devolvió un error');
     expect(root.querySelector('button.btn-secondary')?.textContent).toContain('Reintentar');
-    expect(root.querySelector('.corr')).not.toBeNull();
+    expect(text).toContain('Copiar detalles');
+    expect(text).not.toContain('2e5c4f6f');
     // Las dos oraciones del mensaje no quedan pegadas: el backend no cierra la
     // suya con punto y la interfaz lo hace antes de concatenar.
     expect(text).toContain('al procesar la solicitud. Si vuelve a ocurrir');

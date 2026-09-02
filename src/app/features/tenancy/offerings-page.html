@@ -25,18 +25,13 @@
       />
     </div>
 
-    <span class="select-wrap">
-      <select
-        class="select"
-        aria-label="Filtrar por vigencia"
-        [value]="activeFilter()"
-        (change)="activeFilter.set($any($event.target).value)"
-      >
-        <option value="active">Solo vigentes</option>
-        <option value="inactive">Solo no vigentes</option>
-        <option value="all">Todas</option>
-      </select>
-    </span>
+    <medsys-select
+      ariaLabel="Filtrar por vigencia"
+      [options]="vigencyOptions"
+      [allowEmpty]="false"
+      [value]="activeFilter()"
+      (valueChange)="activeFilter.set($any($event))"
+    />
 
     @if (filtersActive()) {
       <button type="button" class="btn btn-ghost btn-sm" (click)="clearFilters()">

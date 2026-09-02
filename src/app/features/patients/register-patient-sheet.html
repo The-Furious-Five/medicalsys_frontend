@@ -28,13 +28,12 @@
     <div class="grid-2">
       <div class="field">
         <label class="field-label" for="patient-doc-type">Tipo de documento</label>
-        <span class="select-wrap">
-          <select id="patient-doc-type" class="select" formControlName="documentType">
-            @for (option of documentTypes; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          formControlName="documentType"
+          [options]="documentTypes"
+          [controlId]="'patient-doc-type'"
+          [allowEmpty]="false"
+        />
       </div>
       <div class="field">
         <label class="field-label" for="patient-doc-number">Número</label>
@@ -103,13 +102,11 @@
     <div class="grid-2">
       <div class="field">
         <label class="field-label" for="patient-birth">Fecha de nacimiento</label>
-        <input
-          id="patient-birth"
-          class="input input-num"
-          type="date"
-          [max]="maxBirthDate"
+        <medsys-date-field
+          [controlId]="'patient-birth'"
           formControlName="birthDate"
-          [attr.aria-invalid]="errorFor('birthDate') !== null"
+          [max]="maxBirthDate"
+          [invalid]="errorFor('birthDate') !== null"
         />
         @if (errorFor('birthDate'); as message) {
           <span class="field-error" role="alert">{{ message }}</span>
@@ -117,13 +114,12 @@
       </div>
       <div class="field">
         <label class="field-label" for="patient-sex">Sexo</label>
-        <span class="select-wrap">
-          <select id="patient-sex" class="select" formControlName="sex">
-            @for (option of sexes; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          formControlName="sex"
+          [options]="sexes"
+          [controlId]="'patient-sex'"
+          [allowEmpty]="false"
+        />
       </div>
     </div>
 
@@ -172,14 +168,12 @@
         <label class="field-label" for="patient-department">
           Departamento <span class="field-optional">(opcional)</span>
         </label>
-        <span class="select-wrap">
-          <select id="patient-department" class="select" formControlName="department">
-            <option value="">Sin especificar</option>
-            @for (option of departments; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          formControlName="department"
+          [options]="departments"
+          [controlId]="'patient-department'"
+          placeholder="Sin especificar"
+        />
       </div>
     </div>
 

@@ -6,6 +6,7 @@ import { STUDY_ORDER_STATUS, STUDY_PRIORITY, options } from '../../../core/label
 import { studyOrderTone } from '../../../core/state/state-machines';
 import { ToastService } from '../../../core/toast/toast.service';
 import { Icon } from '../../../core/ui/icon';
+import { Select } from '../../../shared/select';
 import { Dialog } from '../../../shared/dialog';
 import { Notice } from '../../../shared/notice';
 import { Skeleton } from '../../../shared/skeleton';
@@ -16,7 +17,7 @@ import { RecordsService } from '../records.service';
 @Component({
   selector: 'medsys-study-orders-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Icon, Dialog, Notice, Skeleton, StatusChip, ...FORMAT_PIPES],
+  imports: [Select, RouterLink, Icon, Dialog, Notice, Skeleton, StatusChip, ...FORMAT_PIPES],
   templateUrl: './study-orders-panel.html',
 })
 export class StudyOrdersPanel {

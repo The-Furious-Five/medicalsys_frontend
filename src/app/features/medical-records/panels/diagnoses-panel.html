@@ -89,33 +89,23 @@
     <div class="grid-2">
       <div class="field">
         <label class="field-label" for="diagnosis-type">Tipo</label>
-        <span class="select-wrap">
-          <select
-            id="diagnosis-type"
-            class="select"
-            [value]="type()"
-            (change)="type.set($any($event.target).value)"
-          >
-            @for (option of typeOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          [controlId]="'diagnosis-type'"
+          [options]="typeOptions"
+          [value]="type()"
+          (valueChange)="type.set($event)"
+          [allowEmpty]="false"
+        />
       </div>
       <div class="field">
         <label class="field-label" for="diagnosis-laterality">Lateralidad</label>
-        <span class="select-wrap">
-          <select
-            id="diagnosis-laterality"
-            class="select"
-            [value]="laterality()"
-            (change)="laterality.set($any($event.target).value)"
-          >
-            @for (option of lateralityOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          [controlId]="'diagnosis-laterality'"
+          [options]="lateralityOptions"
+          [value]="laterality()"
+          (valueChange)="laterality.set($event)"
+          [allowEmpty]="false"
+        />
       </div>
     </div>
 
@@ -141,6 +131,9 @@
           [checked]="primary()"
           (change)="primary.set($any($event.target).checked)"
         />
+        <span class="check-box" aria-hidden="true"
+          ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+        /></span>
         <span class="pair">
           <span class="t-strong">Es el diagnóstico principal</span>
           <span class="field-hint">El motivo central de la atención.</span>
@@ -153,6 +146,9 @@
           [checked]="chronic()"
           (change)="chronic.set($any($event.target).checked)"
         />
+        <span class="check-box" aria-hidden="true"
+          ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+        /></span>
         <span class="t-strong">Es una condición crónica</span>
       </label>
     </div>

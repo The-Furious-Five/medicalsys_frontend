@@ -13,6 +13,7 @@ import { PatientPicker } from '../patients/patient-picker';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { ServiceOffering } from '../tenancy/tenancy.models';
 import { BillingService } from './billing.service';
+import { Select, SelectOption } from '../../shared/select';
 import { DemoCaption } from './demo-caption';
 
 interface Line {
@@ -32,6 +33,7 @@ interface Line {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     PageHeader,
+    Select,
     PatientPicker,
     DemoCaption,
     Notice,
@@ -63,6 +65,21 @@ export class NewInvoicePage {
   protected readonly failure = signal<unknown>(null);
 
   protected readonly available = computed(() => this.offerings.value()?.content ?? []);
+
+  /** El selector de «añadir prestación» no guarda valor: se usa como acción. */
+  protected readonly offeringOptions = computed<readonly SelectOption[]>(() =>
+    this.available().map((offering) => ({
+      value: offering.id,
+      label: this.offeringLabel(offering),
+    })),
+  );
+
+  protected readonly branchOptions = computed<readonly SelectOption[]>(() =>
+    (this.branches.value()?.content ?? []).map((branch) => ({
+      value: branch.id,
+      label: branch.name,
+    })),
+  );
 
   protected readonly totals = computed(() => {
     const lines = this.lines();

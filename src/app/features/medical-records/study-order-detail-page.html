@@ -232,18 +232,13 @@
         </div>
         <div class="field">
           <label class="field-label" for="result-status">Estado del informe</label>
-          <span class="select-wrap">
-            <select
-              id="result-status"
-              class="select"
-              [value]="resultStatus()"
-              (change)="resultStatus.set($any($event.target).value)"
-            >
-              @for (option of resultStatusOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </span>
+          <medsys-select
+            [controlId]="'result-status'"
+            [options]="resultStatusOptions"
+            [value]="resultStatus()"
+            (valueChange)="resultStatus.set($event)"
+            [allowEmpty]="false"
+          />
         </div>
       </div>
 

@@ -36,13 +36,12 @@
       </div>
       <div class="field">
         <label class="field-label" for="offering-type">Tipo</label>
-        <span class="select-wrap">
-          <select id="offering-type" class="select" formControlName="type">
-            @for (option of types; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          formControlName="type"
+          [options]="types"
+          [controlId]="'offering-type'"
+          [allowEmpty]="false"
+        />
       </div>
     </div>
 
@@ -128,13 +127,12 @@
         <label class="field-label" for="offering-resource">
           Recurso necesario <span class="field-optional">(opcional)</span>
         </label>
-        <span class="select-wrap">
-          <select id="offering-resource" class="select" formControlName="requiredResourceType">
-            @for (option of resources; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </span>
+        <medsys-select
+          formControlName="requiredResourceType"
+          [options]="resources"
+          [controlId]="'offering-resource'"
+          [allowEmpty]="false"
+        />
       </div>
     </div>
 
@@ -156,6 +154,9 @@
 
     <label class="check-row">
       <input type="checkbox" class="checkbox" formControlName="requiresConsent" />
+      <span class="check-box" aria-hidden="true"
+        ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+      /></span>
       <span class="pair">
         <span class="t-strong">Requiere consentimiento informado</span>
         <span class="field-hint"
