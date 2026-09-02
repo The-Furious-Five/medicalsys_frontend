@@ -1,0 +1,86 @@
+<medsys-page-header
+  heading="Expedientes"
+  description="Un expediente reúne toda la historia clínica de una persona en este centro: alergias, antecedentes y cada encuentro atendido."
+>
+  <ng-container headerActions>
+    @if (canOpen()) {
+      <button type="button" class="btn btn-primary" (click)="opening.set(true)">
+        <medsys-icon name="folder-plus" [size]="15" /> Abrir expediente
+      </button>
+    }
+  </ng-container>
+</medsys-page-header>
+
+<div class="card">
+  @if (list.isLoading()) {
+    <medsys-table-skeleton [rows]="6" [columns]="4" />
+  } @else if (list.error()) {
+    <medsys-error-state [failure]="list.error()" [compact]="true" (retry)="list.reload()" />
+  } @else if (list.value()!.content.length === 0) {
+    <medsys-empty-state
+      icon="file-text"
+      heading="Todavía no hay expedientes"
+      description="El expediente se abre una sola vez por paciente y a partir de ahí acompaña toda su atención en el centro. Ábrelo antes del primer encuentro clínico."
+    >
+      @if (canOpen()) {
+        <button type="button" class="btn btn-primary" (click)="opening.set(true)">
+          <medsys-icon name="folder-plus" [size]="15" /> Abrir el primer expediente
+        </button>
+      }
+    </medsys-empty-state>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Paciente</th>
+            <th scope="col">Expediente</th>
+            <th scope="col">Apertura</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Red</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (record of list.value()!.content; track record.id) {
+            <tr
+              data-clickable="true"
+              tabindex="0"
+              (click)="open(record.id)"
+              (keydown)="onRowKey($event, record.id)"
+            >
+              <td><medsys-patient-name [patientId]="record.patientId" [withDocument]="true" /></td>
+              <td class="t-mono">{{ record.recordNumber }}</td>
+              <td class="t-num t-sec">{{ record.openedOn | msDate }}</td>
+              <td>
+                <medsys-status-chip
+                  [value]="record.status"
+                  [dictionary]="recordStatuses"
+                  [tones]="recordTones"
+                />
+              </td>
+              <td>
+                @if (record.sharesWithNetwork) {
+                  <span class="chip chip-brand"><span class="chip-dot"></span>Compartido</span>
+                } @else {
+                  <span class="chip chip-muted"
+                    ><span class="chip-dot"></span>Solo este centro</span
+                  >
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (list.value(); as result) {
+    <medsys-pager
+      [page]="result.page"
+      [totalPages]="result.totalPages"
+      (pageChange)="page.set($event)"
+    />
+  }
+</div>
+
+<medsys-open-record-dialog [open]="opening()" (closed)="opening.set(false)" />

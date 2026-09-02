@@ -3,21 +3,35 @@
 Aplicación web del flujo MVP de MedicalSys. Este repositorio contiene una SPA construida con
 Angular que consume exclusivamente el API Gateway de la plataforma de microservicios.
 
-## Estado inicial
+## Qué implementa
 
-La base incluye:
+Cubre tres microservicios del MVP:
 
-- Angular 22 con componentes standalone y ejecución zoneless.
-- TypeScript estricto, routing y SCSS.
+| Módulo en la interfaz | Microservicio    | Prefijos que consume                                                                                                |
+| --------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Historial clínico     | `ms-historial`   | `/api/v1/expedientes`, `/encuentros`, `/ordenes-estudio`, `/recetas`, `/diagnosticos`, `/alergias`, `/antecedentes` |
+| Organización          | `ms-tenencia`    | `/api/v1/tenancy/**`                                                                                                |
+| Facturación           | `ms-facturacion` | `/api/v1/facturas`                                                                                                  |
+
+Consume además `ms-identidad` para el acceso y `ms-pacientes` en solo lectura,
+porque los tres módulos anteriores referencian al paciente únicamente por UUID
+y sin ese servicio no habría un nombre que mostrar. Si `ms-pacientes` no
+responde, cada vista degrada por su cuenta y muestra el resto de la información.
+
+**No se modificó ningún servicio del backend.**
+
+La base técnica:
+
+- Angular 22 con componentes standalone, ejecución zoneless y señales.
+- `httpResource` para las lecturas: expone `value`, `isLoading`, `error` y
+  `reload`, que son exactamente los cinco estados que cada vista dibuja.
+- `HttpClient` para las escrituras, con interceptores de Bearer,
+  `X-Correlation-Id` y cierre de sesión ante un 401.
+- Capas modales sobre el elemento `<dialog>` nativo: trampa de foco, cierre con
+  `Esc` y fondo inerte sin dependencias de terceros.
+- Formularios reactivos con las mismas restricciones que el backend.
+- Carga diferida por ruta.
 - Vitest para pruebas unitarias.
-- Proxy local hacia `ms-gateway`.
-- `HttpClient` configurado con Bearer token y `X-Correlation-Id`.
-- Sesión temporal en `sessionStorage` para el MVP.
-- Modelo común del error HTTP acordado.
-- Página inicial responsive y estructura orientada a funcionalidades.
-
-Todavía no implementa login ni los casos de negocio. Cada funcionalidad debe agregarse mediante su
-historia de usuario y contrato aprobado.
 
 ## Requisitos
 
@@ -360,3 +374,171 @@ documentos ficticios. No registrar JWT, contraseñas, contenido clínico ni dato
 - [Compatibilidad de versiones](https://angular.dev/reference/versions)
 - [Angular Style Guide](https://angular.dev/style-guide)
 - [Routing](https://angular.dev/guide/routing/define-routes)
+
+## Cuentas de demostración
+
+| Cuenta                      | Rol             | Qué ve                                                                                     |
+| --------------------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| `admin@medicalsys.demo`     | `ADMINISTRATOR` | Organización, sucursales, prestaciones, plan y consumo, facturación, lectura del historial |
+| `doctor@medicalsys.demo`    | `PHYSICIAN`     | Historial clínico completo: escribir, firmar, recetar, pedir estudios                      |
+| `recepcion@medicalsys.demo` | `RECEPTIONIST`  | Pacientes, expedientes en lectura, órdenes de estudio, facturación                         |
+
+Contraseña: `Demo1234!`
+
+El menú lateral muestra solo lo que el rol activo puede usar. Nada aparece
+deshabilitado «para que se vea completo»: enseñar puertas cerradas no ayuda a
+nadie a hacer su trabajo.
+
+## Guion de demostración
+
+1. **Acceso** — entra como `doctor@medicalsys.demo`. El panel de inicio muestra
+   los encuentros sin firmar y los resultados de estudio disponibles.
+2. **Paciente** — `Pacientes`, busca por nombre o documento, abre su ficha. Si
+   intentas registrar a alguien con un documento ya existente, el conflicto
+   aparece sobre el campo del documento con un acceso a la ficha que ya existe.
+3. **Expediente** — desde la ficha, _Abrir expediente_. Es idempotente: si la
+   persona ya tiene uno, se abre el que existe.
+4. **Alergias y antecedentes** — en las pestañas del expediente. Las alergias
+   activas pasan a verse destacadas durante cada encuentro.
+5. **Encuentro clínico** — _Abrir encuentro_. La columna izquierda mantiene el
+   contexto del paciente; la derecha es donde se escribe. La nota se guarda sola
+   dos segundos después de dejar de escribir, con un indicador textual discreto.
+6. **Signos vitales, diagnósticos, recetas y órdenes** — cada panel del
+   encuentro. Los códigos se validan contra el catálogo: en modo local,
+   `J00`, `M54.5`, `R51`, `S52.50` y `X_RAY`, `LAB_HEMOGRAM`.
+7. **Firma** — la confirmación explica en texto claro que el contenido queda
+   inmutable. Tras firmar, la pantalla pasa a solo lectura y aparece
+   _Agregar addendum_.
+8. **Resultado de estudio** — en la orden, _Registrar resultado_. Con referencia
+   mínima y máxima, el sistema marca solo si el valor queda fuera de rango.
+9. **Factura** — entra como `admin` o `recepcion`, _Emitir factura_, elige al
+   paciente y añade prestaciones. El total se ve siempre a la derecha. La
+   leyenda **«Documento de demostración — sin validez fiscal»** aparece en el
+   formulario, en el listado y en la factura, y no se puede descartar.
+10. **Organización** — `admin` edita el centro, da de alta sucursales, mantiene
+    el catálogo con sus precios en BOB y consulta el consumo del plan.
+
+## Decisiones de diseño
+
+### La paleta sale de la marca
+
+El isotipo de MSYS es una mano que sostiene dos hojas dentro de un círculo
+abierto. De ahí salen los dos únicos colores del producto:
+
+- **Verde `#1B825F`** — la mano y la hoja madura: el cuidado sostenido, lo que
+  ya está resuelto y firmado. Es el color primario.
+- **Naranja `#EA732E`** — la hoja joven: lo que todavía crece y necesita
+  atención. Es el color de un borrador, un pendiente, un aviso.
+
+El resto es neutro. El color señala estado, nunca decora.
+
+Contraste verificado: el naranja de marca alcanza 3.0:1 sobre blanco, de modo
+que sirve para bordes e iconos pero **no** para texto; todo texto naranja usa
+`--accent-700` (7.0:1). El verde alcanza 4.8:1 y sí es texto válido. El rojo de
+error se aleja deliberadamente del naranja en tono para que aviso y error nunca
+se confundan, y ningún estado se comunica solo con color: todo chip lleva su
+texto.
+
+### El modo claro es el predeterminado, siempre
+
+La aplicación arranca en claro y **no** consulta `prefers-color-scheme`: en un
+centro médico la pantalla se comparte entre turnos y el aspecto debe ser el
+mismo para todos hasta que alguien elija otra cosa en _Configuración_. El
+atributo `data-theme="light"` viaja escrito en `index.html`, así que ni siquiera
+hay un destello oscuro antes de que Angular monte en un equipo configurado en
+oscuro. La elección se guarda por navegador; desde otro equipo se vuelve a abrir
+en claro.
+
+### Dónde vive cada cosa en el armazón
+
+La cabecera queda para el trabajo —buscar y saber si el sistema responde—.
+Contraer la barra lateral acompaña a la marca, arriba a la izquierda, porque es
+una preferencia del marco y no una acción del trabajo. Todo lo que es «tu
+cuenta» cierra la barra lateral: quién ha iniciado sesión, su rol, el acceso a
+_Configuración_ y el cierre de sesión. En un puesto compartido, poder comprobar
+de un vistazo con qué cuenta se está trabajando importa más que tener un avatar
+en la esquina.
+
+### Forma y movimiento
+
+Cuadrada sin ser dura: radios de 3 px en chips, 4 px en controles, 6 px en
+tarjetas y 8 px en diálogos. Elevación por borde antes que por sombra, y ninguna
+sombra con tinte. Espaciado en escala de 4 px, fila de tabla de 44 px, control
+estándar de 34 px que crece a 44 px en pantallas táctiles.
+
+La animación existe para explicar de dónde viene y a dónde va un elemento. Solo
+`transform` y `opacity`; nada supera 320 ms; salir es un 25 % más rápido que
+entrar. `prefers-reduced-motion` se resuelve en el token, no componente por
+componente.
+
+### Estados
+
+Cada vista con datos implementa los cinco: carga con esqueleto de la forma real
+del contenido, vacío por primera vez, vacío por filtro, error y degradación
+parcial por sección. Los mensajes distinguen _no tienes permiso_ (403), _no
+existe_ (404), _conflicto_ (409/422), _datos inválidos_ (400) y _el servicio no
+responde_ (0 o 5xx), y muestran el `X-Correlation-Id`, copiable, para que
+soporte encuentre el caso exacto. Nunca se imprime un JSON crudo ni un rastro de
+pila.
+
+### Máquinas de estado
+
+`src/app/core/state/state-machines.ts` replica las de `ms-historial` leídas del
+código (`EncounterStatus`, `StudyOrderStatus`, `PrescriptionStatus`), no de la
+documentación, que difería en el ciclo de la orden de estudio. La interfaz solo
+ofrece transiciones válidas: un destino imposible no se muestra deshabilitado ni
+se muestra y falla — no se muestra. Así nadie provoca un 422 pulsando lo que la
+pantalla le ofrecía.
+
+## Estructura
+
+```
+src/
+  styles/                 tokens, base y primitivos del sistema de diseño
+  app/
+    core/                 sesión, permisos, HTTP, formato, textos, máquinas de estado, tema, avisos, iconos
+    layout/               armazón, navegación por rol, buscador global, estado del sistema
+    shared/               diálogo, cabecera, chip de estado, vacíos, errores, esqueletos, paginación
+    features/
+      auth/               acceso
+      home/               panel de inicio por rol
+      settings/           configuración personal: apariencia y datos de la cuenta
+      patients/           apoyo: búsqueda, ficha y alta de pacientes
+      medical-records/    ms-historial: expedientes, encuentros, órdenes de estudio
+      billing/            ms-facturacion: listado, emisión y detalle de facturas
+      tenancy/            ms-tenencia: organización, sucursales, prestaciones, plan y consumo
+```
+
+Los nombres de archivo y de símbolo van en inglés; todo el texto visible está en
+español y centralizado en `core/labels/labels.ts` para poder revisarlo de una
+sola pasada.
+
+## Atajos
+
+| Atajo           | Qué hace                                                              |
+| --------------- | --------------------------------------------------------------------- |
+| `⌘K` / `Ctrl+K` | Buscador global de pacientes, prestaciones y secciones                |
+| `/`             | Enfoca la búsqueda de la vista actual                                 |
+| `↑` `↓` `↵`     | Recorre y abre resultados en el buscador y en el selector de paciente |
+| `Esc`           | Cierra la capa superior                                               |
+
+## Limitaciones conocidas del entorno
+
+Ninguna depende de esta interfaz; se listan porque se ven al usarla.
+
+1. **`ms-pacientes` no compila** en `develop` del backend:
+   `api/PatientController.java` llama a `PatientService.getByDocument(...)`, que
+   no existe, y además duplica el `@RequestMapping("/api/v1/patients")` de
+   `web/controller/PatientController.java`. `docker compose up --build` falla por
+   completo por este servicio. Mientras no se corrija, levanta solo los que esta
+   interfaz necesita; los nombres de paciente se muestran como identificador
+   abreviado y el resto de cada vista sigue funcionando.
+2. **El listado de órdenes de estudio devuelve 500** cuando la base contiene
+   resultados escritos por una ejecución anterior del contenedor.
+   `LocalNarrativeCipher` usa una clave efímera: al reiniciar `ms-historial` la
+   clave cambia y las filas antiguas ya no se descifran; como `StudyOrderMapper`
+   descifra cada resultado al listar, una sola fila vieja tumba la página
+   entera. El detalle de cada orden sí funciona. Se resuelve recreando el volumen
+   (`docker compose down -v`) o fijando una clave estable.
+3. En modo `CATALOGS_VALIDATION_MODE=LOCAL`, los códigos CIE-10 aceptados son
+   `J00`, `M54.5`, `R51` y `S52.50`, y los de estudio `X_RAY` y `LAB_HEMOGRAM`.

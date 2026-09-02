@@ -1,0 +1,154 @@
+<div class="shell" [class.is-collapsed]="collapsed()" [class.is-mobile-open]="mobileOpen()">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  @if (mobileOpen()) {
+    <div class="shell-scrim" (click)="mobileOpen.set(false)" aria-hidden="true"></div>
+  }
+
+  <aside class="sidebar" aria-label="Navegación principal">
+    <div class="sidebar-brand">
+      <a routerLink="/" class="brand-link" aria-label="MSYS, ir al inicio">
+        <img src="/brand/msys-mark-green.svg" alt="" width="26" height="26" class="brand-mark" />
+        @if (!collapsed()) {
+          <span class="brand-word">MSYS</span>
+        }
+      </a>
+
+      <!-- Contraer vive junto a la marca: es una preferencia del marco, no una
+           acción del trabajo, y ahí no compite con la navegación. -->
+      <button
+        type="button"
+        class="sidebar-collapse"
+        [attr.aria-label]="collapsed() ? 'Expandir la navegación' : 'Contraer la navegación'"
+        [attr.aria-expanded]="!collapsed()"
+        [title]="collapsed() ? 'Expandir la navegación' : 'Contraer la navegación'"
+        (click)="collapsed.set(!collapsed())"
+      >
+        <medsys-icon [name]="collapsed() ? 'chevrons-right' : 'chevrons-left'" [size]="15" />
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm btn-icon sidebar-close"
+        aria-label="Cerrar navegación"
+        (click)="mobileOpen.set(false)"
+      >
+        <medsys-icon name="x" [size]="16" />
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (group of groups(); track group.id) {
+        <div class="nav-group">
+          @if (group.label) {
+            @if (collapsed()) {
+              <div class="nav-group-rule" aria-hidden="true"></div>
+            } @else {
+              <p class="nav-group-label">{{ group.label }}</p>
+            }
+          }
+          <ul>
+            @for (item of group.items; track item.link) {
+              <li>
+                <a
+                  class="nav-item"
+                  [routerLink]="item.link"
+                  routerLinkActive="is-active"
+                  [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                  [title]="collapsed() ? item.label : ''"
+                >
+                  <medsys-icon [name]="item.icon" [size]="17" [strokeWidth]="1.6" />
+                  @if (!collapsed()) {
+                    <span class="grow truncate">{{ item.label }}</span>
+                  }
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </nav>
+
+    <!-- La cuenta cierra la barra lateral: dice con quién se está trabajando,
+         que es lo que hay que poder comprobar de un vistazo en un puesto
+         compartido entre turnos. -->
+    <div class="sidebar-foot account">
+      <button
+        type="button"
+        class="account-button"
+        [attr.aria-label]="'Cuenta de ' + user()?.fullName + '. Abrir menú de cuenta'"
+        [attr.aria-expanded]="accountMenuOpen()"
+        [title]="collapsed() ? user()?.fullName : ''"
+        (click)="accountMenuOpen.set(!accountMenuOpen())"
+      >
+        <span class="avatar">{{ avatar() }}</span>
+        @if (!collapsed()) {
+          <span class="account-identity">
+            <span class="account-name truncate">{{ user()?.fullName }}</span>
+            <span class="account-role truncate">{{ roleSummary() }}</span>
+          </span>
+          <medsys-icon name="chevrons-right" [size]="14" class="account-caret" />
+        }
+      </button>
+
+      @if (accountMenuOpen()) {
+        <div class="popover account-menu">
+          <div class="account-detail">
+            <span class="t-strong truncate">{{ user()?.fullName }}</span>
+            <span class="t-sec truncate">{{ user()?.email }}</span>
+          </div>
+          <div class="menu-sep"></div>
+          <a class="menu-item" routerLink="/configuracion">
+            <medsys-icon name="settings" [size]="14" /> Configuración
+          </a>
+          <button type="button" class="menu-item menu-item-danger" (click)="logout()">
+            <medsys-icon name="log-out" [size]="14" /> Cerrar sesión
+          </button>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <div class="shell-main">
+    <header class="topbar">
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm btn-icon topbar-menu"
+        aria-label="Abrir navegación"
+        (click)="mobileOpen.set(true)"
+      >
+        <medsys-icon name="menu" [size]="18" />
+      </button>
+
+      <button type="button" class="global-search" (click)="paletteOpen.set(true)">
+        <medsys-icon name="search" [size]="15" />
+        <span class="grow">Buscar paciente, factura o prestación</span>
+        <kbd class="kbd">⌘K</kbd>
+      </button>
+
+      <medsys-system-status />
+    </header>
+
+    @if (expiringSoon()) {
+      <div class="session-banner" role="status">
+        <medsys-icon name="clock" [size]="15" />
+        <span class="grow">
+          Tu sesión está por vencer. Guarda lo que estés escribiendo antes de continuar.
+        </span>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="dismissExpiry()">
+          Entendido
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="logout()">
+          Cerrar sesión
+        </button>
+      </div>
+    }
+
+    <main id="contenido" class="content" tabindex="-1">
+      <router-outlet />
+    </main>
+  </div>
+
+  <medsys-command-palette [open]="paletteOpen()" (closed)="paletteOpen.set(false)" />
+  <medsys-toast-host />
+</div>

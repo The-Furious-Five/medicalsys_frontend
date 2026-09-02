@@ -1,0 +1,102 @@
+<medsys-page-header
+  heading="Órdenes de estudio"
+  description="Estudios solicitados desde los encuentros clínicos, desde que se piden hasta que el resultado queda disponible."
+/>
+
+<div class="card">
+  <div class="filters">
+    <span class="select-wrap">
+      <select
+        class="select"
+        aria-label="Filtrar por estado"
+        [value]="status() ?? ''"
+        (change)="setStatus($any($event.target).value)"
+      >
+        <option value="">Todos los estados</option>
+        @for (option of statusOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </span>
+    @if (status()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="setStatus('')">
+        <medsys-icon name="x" [size]="14" /> Quitar filtro
+      </button>
+    }
+    <span class="grow"></span>
+    @if (list.value(); as result) {
+      <span class="t-sec t-num">{{ result.totalElements }} órdenes</span>
+    }
+  </div>
+
+  @if (list.isLoading()) {
+    <medsys-table-skeleton [rows]="6" [columns]="5" />
+  } @else if (list.error()) {
+    <medsys-error-state [failure]="list.error()" [compact]="true" (retry)="list.reload()" />
+  } @else if (list.value()!.content.length === 0 && status()) {
+    <medsys-empty-state
+      icon="flask"
+      [heading]="'Ninguna orden en estado «' + statusLabel() + '»'"
+      description="Cambia el filtro para ver las órdenes en otro punto del ciclo."
+    >
+      <button type="button" class="btn btn-secondary" (click)="setStatus('')">
+        <medsys-icon name="x" [size]="14" /> Quitar filtro
+      </button>
+    </medsys-empty-state>
+  } @else if (list.value()!.content.length === 0) {
+    <medsys-empty-state
+      icon="flask"
+      heading="No hay órdenes de estudio"
+      description="Las órdenes se solicitan desde un encuentro clínico. Abre el encuentro de la persona y pide el estudio desde allí."
+    />
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Paciente</th>
+            <th scope="col">Estudio</th>
+            <th scope="col">Prioridad</th>
+            <th scope="col">Solicitada</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="th-num">Resultados</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of list.value()!.content; track order.id) {
+            <tr
+              data-clickable="true"
+              tabindex="0"
+              (click)="open(order.id)"
+              (keydown)="onRowKey($event, order.id)"
+            >
+              <td><medsys-patient-name [patientId]="order.patientId" [withDocument]="true" /></td>
+              <td>
+                <span class="clin-code">{{ order.studyTypeCode }}</span>
+              </td>
+              <td><medsys-status-chip [value]="order.priority" [dictionary]="priorities" /></td>
+              <td class="t-num t-sec">{{ order.requestedAt | msDateTime }}</td>
+              <td>
+                <medsys-status-chip
+                  [value]="order.status"
+                  [dictionary]="orderStatuses"
+                  [tones]="orderTones"
+                  [strike]="order.status === 'VOIDED'"
+                />
+              </td>
+              <td class="td-num">{{ order.results.length || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (list.value(); as result) {
+    <medsys-pager
+      [page]="result.page"
+      [totalPages]="result.totalPages"
+      (pageChange)="page.set($event)"
+    />
+  }
+</div>

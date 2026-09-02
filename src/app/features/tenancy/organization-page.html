@@ -1,0 +1,239 @@
+<medsys-page-header
+  heading="Organización"
+  description="Datos del centro médico y sedes en las que se atiende. Los cambios afectan a todo lo que se emite en nombre del centro."
+>
+  <ng-container headerActions>
+    @if (editable()) {
+      <button type="button" class="btn btn-primary" (click)="openNewBranch()">
+        <medsys-icon name="plus" [size]="15" /> Nueva sucursal
+      </button>
+    }
+  </ng-container>
+</medsys-page-header>
+
+<section class="section">
+  @if (organization.isLoading()) {
+    <div class="card">
+      <div class="card-head"><medsys-skeleton width="220px" height="18px" /></div>
+      <div class="card-body">
+        <div class="deflist">
+          @for (slot of [1, 2, 3, 4, 5, 6]; track slot) {
+            <div class="stack gap-1">
+              <medsys-skeleton width="70px" height="10px" />
+              <medsys-skeleton width="130px" height="16px" />
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  } @else if (organization.error()) {
+    <div class="card">
+      <medsys-error-state
+        [failure]="organization.error()"
+        [compact]="true"
+        (retry)="organization.reload()"
+      />
+    </div>
+  } @else if (organization.value(); as centre) {
+    <div class="card">
+      <div class="card-head">
+        <div class="row gap-3">
+          <span class="org-mark" aria-hidden="true"
+            ><medsys-icon name="building" [size]="18"
+          /></span>
+          <div class="pair">
+            <h2 class="t-section">{{ centre.tradeName }}</h2>
+            <span class="t-sec">{{ centre.legalName }}</span>
+          </div>
+        </div>
+        <div class="row gap-2">
+          <medsys-status-chip [value]="centre.status" [dictionary]="organizationStatuses" />
+          @if (editable()) {
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="editingOrganization.set(true)"
+            >
+              <medsys-icon name="pencil" [size]="14" /> Editar
+            </button>
+          }
+        </div>
+      </div>
+      <div class="card-body">
+        <dl class="deflist">
+          <div>
+            <dt class="def-term">NIT</dt>
+            <dd class="def-value t-num">{{ centre.nit }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Código</dt>
+            <dd class="def-value">{{ centre.code }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Tipo</dt>
+            <dd class="def-value">{{ typeLabel(centre) }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Contacto</dt>
+            <dd class="def-value">{{ centre.contactEmail }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Teléfono</dt>
+            <dd class="def-value t-num">{{ centre.phoneE164 ?? '—' }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Ubicación</dt>
+            <dd class="def-value">{{ locationOf(centre) }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Moneda</dt>
+            <dd class="def-value">{{ centre.currency }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Zona horaria</dt>
+            <dd class="def-value">{{ centre.timeZone }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Alta</dt>
+            <dd class="def-value t-num">{{ centre.createdAt | msDate }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  }
+</section>
+
+<section class="section">
+  <div class="card">
+    <div class="card-head">
+      <div class="row gap-2">
+        <h2 class="t-section">Sucursales</h2>
+        @if (branches.value(); as page) {
+          <span class="t-sec t-num">{{ page.totalElements }}</span>
+        }
+      </div>
+    </div>
+
+    @if (branches.isLoading()) {
+      <medsys-table-skeleton [rows]="3" [columns]="5" />
+    } @else if (branches.error()) {
+      <medsys-error-state
+        [failure]="branches.error()"
+        [compact]="true"
+        (retry)="branches.reload()"
+      />
+    } @else if (branches.value()!.content.length === 0) {
+      <medsys-empty-state
+        icon="map-pin"
+        heading="Todavía no hay sucursales"
+        description="Una sucursal es la sede física donde se atiende al paciente. Registra al menos la casa matriz para poder emitir facturas y abrir encuentros."
+      >
+        @if (editable()) {
+          <button type="button" class="btn btn-primary" (click)="openNewBranch()">
+            <medsys-icon name="plus" [size]="15" /> Registrar la primera sucursal
+          </button>
+        }
+      </medsys-empty-state>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Sucursal</th>
+              <th scope="col">Dirección</th>
+              <th scope="col">Departamento</th>
+              <th scope="col">Teléfono</th>
+              <th scope="col">Estado</th>
+              @if (editable()) {
+                <th scope="col" class="td-tight"><span class="sr-only">Acciones</span></th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (branch of branches.value()!.content; track branch.id) {
+              <tr>
+                <td>
+                  <div class="pair">
+                    <span class="t-strong row gap-2">
+                      {{ branch.name }}
+                      @if (branch.headquarters) {
+                        <span class="chip chip-neutral">Casa matriz</span>
+                      }
+                    </span>
+                    <span class="t-micro">{{ branch.code }}</span>
+                  </div>
+                </td>
+                <td class="truncate" style="max-width: 260px">{{ branch.address }}</td>
+                <td>{{ departmentLabel(branch.department) }}</td>
+                <td class="t-num">{{ branch.phoneE164 ?? '—' }}</td>
+                <td>
+                  <medsys-status-chip [value]="branch.status" [dictionary]="branchStatuses" />
+                </td>
+                @if (editable()) {
+                  <td class="td-tight">
+                    <div class="row gap-1">
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-sm btn-icon"
+                        [attr.aria-label]="'Editar ' + branch.name"
+                        (click)="openEditBranch(branch)"
+                      >
+                        <medsys-icon name="pencil" [size]="14" />
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-sm btn-icon"
+                        [attr.aria-label]="
+                          branch.status === 'ACTIVE'
+                            ? 'Dar de baja ' + branch.name
+                            : 'Reactivar ' + branch.name
+                        "
+                        (click)="
+                          branch.status === 'ACTIVE'
+                            ? deactivating.set(branch)
+                            : changeStatus(branch, 'ACTIVE')
+                        "
+                      >
+                        <medsys-icon name="power" [size]="14" />
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>
+
+@if (organization.value(); as centre) {
+  <medsys-organization-form
+    [open]="editingOrganization()"
+    [organization]="centre"
+    (closed)="editingOrganization.set(false)"
+    (saved)="organization.reload()"
+  />
+}
+
+<medsys-branch-form
+  [open]="branchFormOpen()"
+  [branch]="editingBranch()"
+  (closed)="branchFormOpen.set(false)"
+  (saved)="branches.reload()"
+/>
+
+<medsys-confirm-dialog
+  [open]="deactivating() !== null"
+  heading="Dar de baja la sucursal"
+  [description]="
+    'La sucursal ' +
+    (deactivating()?.name ?? '') +
+    ' dejará de estar disponible para nuevas citas, encuentros y facturas. Las que ya existen conservan su referencia a esta sede y no se modifican. La baja es reversible y libera cuota del plan.'
+  "
+  confirmLabel="Dar de baja"
+  [pending]="statusPending()"
+  (cancelled)="deactivating.set(null)"
+  (confirmed)="changeStatus(deactivating()!, 'INACTIVE')"
+/>

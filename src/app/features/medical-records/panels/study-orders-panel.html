@@ -1,0 +1,150 @@
+<section class="card">
+  <div class="card-head">
+    <div class="row gap-2">
+      <medsys-icon name="flask" [size]="15" class="icon-muted" />
+      <h2 class="t-section">Órdenes de estudio</h2>
+      @if ((orders.value() ?? []).length > 0) {
+        <span class="t-sec t-num">{{ (orders.value() ?? []).length }}</span>
+      }
+    </div>
+    @if (editable()) {
+      <button type="button" class="btn btn-secondary btn-sm" (click)="openForm()">
+        <medsys-icon name="plus" [size]="14" /> Solicitar estudio
+      </button>
+    }
+  </div>
+
+  @if (orders.isLoading()) {
+    <div class="card-body"><medsys-skeleton width="100%" height="40px" /></div>
+  } @else if (orders.error()) {
+    <div class="card-body"><p class="t-sec">No se pudieron cargar las órdenes de estudio.</p></div>
+  } @else if ((orders.value() ?? []).length === 0) {
+    <div class="card-body">
+      <p class="t-sec">
+        {{
+          editable()
+            ? 'Sin estudios solicitados en este encuentro.'
+            : 'No se solicitó ningún estudio.'
+        }}
+      </p>
+    </div>
+  } @else {
+    <div class="clin-list">
+      @for (order of orders.value(); track order.id) {
+        <div class="clin-item">
+          <span class="clin-code">{{ order.studyTypeCode }}</span>
+          <div class="pair grow">
+            <div class="row gap-2 wrap">
+              <medsys-status-chip
+                [value]="order.status"
+                [dictionary]="orderStatuses"
+                [tones]="orderTones"
+              />
+              <medsys-status-chip [value]="order.priority" [dictionary]="priorities" />
+              @if (order.results.length > 0) {
+                <span class="t-micro t-num">
+                  {{ order.results.length }}
+                  {{ order.results.length === 1 ? 'resultado' : 'resultados' }}
+                </span>
+              }
+            </div>
+            @if (order.instructions) {
+              <p class="t-sec t-measure">{{ order.instructions }}</p>
+            }
+            <span class="t-micro t-num">Solicitada {{ order.requestedAt | msDateTime }}</span>
+          </div>
+          <a class="t-sec" style="flex-shrink: 0" [routerLink]="['/ordenes-estudio', order.id]">
+            Ver orden
+          </a>
+        </div>
+      }
+    </div>
+  }
+</section>
+
+<medsys-dialog
+  [open]="creating()"
+  [width]="500"
+  heading="Solicitar un estudio"
+  description="La orden nace en estado «solicitada» y avanza a medida que se toma la muestra y se informa el resultado."
+  (closed)="creating.set(false)"
+>
+  <div class="stack gap-4">
+    @if (errorMessage(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    <div class="field">
+      <label class="field-label" for="order-type">Tipo de estudio</label>
+      <input
+        id="order-type"
+        class="input t-mono"
+        maxlength="30"
+        autofocus
+        [value]="studyTypeCode()"
+        (input)="studyTypeCode.set($any($event.target).value.toUpperCase())"
+      />
+      <span class="field-hint">
+        Código del catálogo de estudios. Por ejemplo HEMOGRAMA o X_RAY.
+      </span>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="order-priority">Prioridad</label>
+        <span class="select-wrap">
+          <select
+            id="order-priority"
+            class="select"
+            [value]="priority()"
+            (change)="priority.set($any($event.target).value)"
+          >
+            @for (option of priorityOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="order-icd">
+          Diagnóstico asociado <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="order-icd"
+          class="input t-mono"
+          maxlength="10"
+          [value]="icd10Code()"
+          (input)="icd10Code.set($any($event.target).value.toUpperCase())"
+        />
+        <span class="field-hint">Código CIE-10.</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="order-instructions">
+        Indicaciones para el laboratorio <span class="field-optional">(opcional)</span>
+      </label>
+      <textarea
+        id="order-instructions"
+        class="textarea"
+        rows="3"
+        maxlength="500"
+        placeholder="Por ejemplo: paciente en ayunas de ocho horas."
+        [value]="instructions()"
+        (input)="instructions.set($any($event.target).value)"
+      ></textarea>
+    </div>
+  </div>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="creating.set(false)">Cancelar</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="studyTypeCode().trim().length === 0 || pending()"
+      (click)="save()"
+    >
+      Solicitar estudio
+    </button>
+  </ng-container>
+</medsys-dialog>

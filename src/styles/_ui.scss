@@ -1,0 +1,2120 @@
+/* MSYS · Primitivos de interfaz. Todo valor sale de tokens.css. */
+
+/* ============================================================ superficie ==== */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-subtle);
+  min-height: 46px;
+}
+.card-body {
+  padding: var(--s-4);
+}
+.card-body-flush {
+  padding: 0;
+}
+.card-foot {
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-sunken);
+  border-radius: 0 0 var(--r-card) var(--r-card);
+}
+
+/* ============================================================== botones ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  height: var(--h-control);
+  padding: 0 var(--s-3);
+  border-radius: var(--r-input);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  border: 1px solid transparent;
+  transition:
+    background-color var(--dur-micro) var(--ease-standard),
+    border-color var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* En puntero grueso (táctil) todo control crece a 44px de alto real. */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+  }
+  .btn-icon {
+    min-width: 44px;
+  }
+  .input,
+  .select,
+  .textarea {
+    min-height: 44px;
+  }
+}
+
+.btn-primary {
+  background: var(--brand-solid);
+  color: var(--text-onbrand);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--brand-solid-hover);
+}
+.btn-primary:active:not(:disabled) {
+  background: var(--brand-solid-press);
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.btn-secondary:active:not(:disabled) {
+  background: var(--bg-active);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background: var(--err-500);
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--err-700);
+}
+
+.btn-sm {
+  height: var(--h-control-sm);
+  padding: 0 var(--s-2);
+  font-size: 12px;
+}
+.btn-lg {
+  height: var(--h-control-lg);
+  padding: 0 var(--s-4);
+  font-size: 14px;
+}
+.btn-icon {
+  width: var(--h-control);
+  padding: 0;
+}
+.btn-icon.btn-sm {
+  width: var(--h-control-sm);
+}
+.btn-block {
+  width: 100%;
+}
+
+/* ============================================================== campos ====== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.field-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.field-optional {
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+.field-hint {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+}
+.field-error {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--err-700);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-1);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: var(--h-control);
+  padding: 0 var(--s-3);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  font-size: 14px;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background-color var(--dur-micro) var(--ease-standard);
+}
+.textarea {
+  padding: var(--s-2) var(--s-3);
+  line-height: 21px;
+  resize: vertical;
+  min-height: 80px;
+}
+.input:hover:not(:disabled),
+.select:hover:not(:disabled),
+.textarea:hover:not(:disabled) {
+  border-color: var(--n-400);
+}
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+  background: var(--bg-sunken);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+.input[aria-invalid='true'],
+.select[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
+  border-color: var(--err-500);
+}
+.input-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.select {
+  appearance: none;
+  padding-right: var(--s-8);
+  cursor: pointer;
+}
+.select-wrap {
+  position: relative;
+  display: block;
+}
+/* La flecha del desplegable se dibuja aquí, no en cada plantilla: es la única
+   señal de que el control abre una lista, y dejarla en manos de quien escribe
+   el HTML garantizaba que faltara —de hecho faltaba en los 23 desplegables. */
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--text-tertiary);
+  border-bottom: 1.5px solid var(--text-tertiary);
+  border-radius: 1px;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand-solid);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  cursor: pointer;
+}
+
+/* ============================================================== chips ======= */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 var(--s-2);
+  border-radius: var(--r-chip);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.chip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.chip-neutral {
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.chip-neutral .chip-dot {
+  background: var(--n-400);
+}
+.chip-brand {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  border-color: var(--ok-200);
+}
+.chip-brand .chip-dot {
+  background: var(--brand-solid);
+}
+.chip-ok {
+  background: var(--ok-50);
+  color: var(--ok-700);
+  border-color: var(--ok-200);
+}
+.chip-ok .chip-dot {
+  background: var(--ok-500);
+}
+.chip-warn {
+  background: var(--warn-50);
+  color: var(--warn-700);
+  border-color: var(--warn-200);
+}
+.chip-warn .chip-dot {
+  background: var(--warn-500);
+}
+.chip-err {
+  background: var(--err-50);
+  color: var(--err-700);
+  border-color: var(--err-200);
+}
+.chip-err .chip-dot {
+  background: var(--err-500);
+}
+.chip-muted {
+  background: transparent;
+  color: var(--text-tertiary);
+  border-color: var(--border);
+}
+.chip-muted .chip-dot {
+  background: var(--n-300);
+}
+.chip-strike {
+  text-decoration: line-through;
+}
+.chip-solid {
+  background: var(--brand-solid);
+  color: var(--text-onbrand);
+  border-color: transparent;
+}
+.chip-solid .chip-dot {
+  background: currentColor;
+}
+
+/* ============================================================== tablas ====== */
+.table-wrap {
+  overflow-x: auto;
+}
+.table {
+  font-size: 13px;
+}
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-sunken);
+  text-align: left;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 0 var(--s-4);
+  height: 34px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.table tbody td {
+  padding: 0 var(--s-4);
+  height: var(--h-row);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-body);
+  vertical-align: middle;
+}
+.table.is-compact tbody td {
+  height: var(--h-row-compact);
+}
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+.table tbody tr {
+  transition: background-color var(--dur-micro) var(--ease-standard);
+}
+.table tbody tr[data-clickable='true'] {
+  cursor: pointer;
+}
+.table tbody tr[data-clickable='true']:hover {
+  background: var(--bg-hover);
+}
+.table tbody tr:focus-visible {
+  background: var(--bg-hover);
+  outline-offset: -2px;
+}
+.td-num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.th-num {
+  text-align: right !important;
+}
+.td-tight {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* ============================================================== capas ======= */
+/* Se usa el elemento <dialog> nativo: aporta trampa de foco, cierre con Esc,
+   fondo inerte y devolucion del foco al elemento que lo abrio, sin necesidad de
+   una libreria de superposiciones. La animacion es CSS pura, con
+   @starting-style y allow-discrete para que la entrada y la salida ocurran
+   sobre un elemento que se muestra y se oculta de golpe. */
+
+.layer {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+}
+.layer::backdrop {
+  background: rgb(20 28 25 / 0.44);
+  opacity: 0;
+  transition:
+    opacity var(--dur-pop) var(--ease-standard),
+    overlay var(--dur-pop) allow-discrete,
+    display var(--dur-pop) allow-discrete;
+}
+.layer[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .layer[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.dialog {
+  width: min(560px, calc(100vw - var(--s-8)));
+  max-height: calc(100dvh - var(--s-16));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-dialog);
+  box-shadow: var(--shadow-overlay);
+}
+
+/* El dialogo nace 12px mas abajo y a escala 0.98; salir es mas rapido que entrar. */
+.layer.is-dialog {
+  margin: auto;
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transition:
+    opacity var(--dur-pop) var(--ease-out),
+    transform var(--dur-pop) var(--ease-out),
+    overlay var(--dur-pop) allow-discrete,
+    display var(--dur-pop) allow-discrete;
+}
+.layer.is-dialog[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition-duration: var(--dur-view);
+  transition-timing-function: var(--ease-in);
+}
+@starting-style {
+  .layer.is-dialog[open] {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+.dialog-head {
+  padding: var(--s-4) var(--s-5) var(--s-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.dialog-body {
+  padding: var(--s-4) var(--s-5);
+  overflow-y: auto;
+}
+.dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-sunken);
+  border-radius: 0 0 var(--r-dialog) var(--r-dialog);
+}
+
+/* Hoja lateral: se usa cuando el contexto de detras debe seguir visible. */
+.sheet {
+  width: min(520px, 100vw);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-overlay);
+}
+.layer.is-sheet {
+  margin: 0 0 0 auto;
+  transform: translateX(100%);
+  transition:
+    transform var(--dur-view) var(--ease-out),
+    overlay var(--dur-view) allow-discrete,
+    display var(--dur-view) allow-discrete;
+}
+.layer.is-sheet[open] {
+  transform: translateX(0);
+  transition-duration: var(--dur-sheet);
+  transition-timing-function: var(--ease-in);
+}
+@starting-style {
+  .layer.is-sheet[open] {
+    transform: translateX(100%);
+  }
+}
+
+.popover {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-overlay);
+  z-index: var(--z-overlay);
+}
+/* El menu desplegable nace 4px por encima de su disparador. */
+.popover-anchor {
+  position: relative;
+}
+.popover-panel {
+  position: absolute;
+  top: calc(100% + var(--s-1));
+  right: 0;
+  animation: pop-in var(--dur-pop) var(--ease-in);
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .popover-panel {
+    animation: none;
+  }
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--s-3);
+  margin: 1px var(--s-1);
+  border-radius: var(--r-input);
+  font-size: 13px;
+  color: var(--text-body);
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+  text-align: left;
+}
+.menu-item:hover,
+.menu-item.is-active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.menu-item:disabled {
+  color: var(--text-placeholder);
+  pointer-events: none;
+}
+.menu-item-danger {
+  color: var(--err-700);
+}
+.menu-sep {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--s-1) 0;
+}
+
+/* Descripcion emergente: nativa via [title] donde basta, y este panel cuando el
+   texto debe verse tambien con el foco del teclado. */
+.tip {
+  position: relative;
+  display: inline-flex;
+}
+.tip-bubble {
+  position: absolute;
+  bottom: calc(100% + var(--s-1));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-inverse);
+  color: var(--bg-surface);
+  padding: 5px var(--s-2);
+  border-radius: var(--r-input);
+  font-size: 12px;
+  line-height: 16px;
+  width: max-content;
+  max-width: 240px;
+  z-index: var(--z-overlay);
+  pointer-events: none;
+}
+.tip-right .tip-bubble {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + var(--s-2));
+  transform: translateY(-50%);
+}
+
+/* ============================================================== pestañas ==== */
+.tabs-list {
+  display: flex;
+  gap: var(--s-1);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.tab {
+  position: relative;
+  height: 38px;
+  padding: 0 var(--s-3);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  transition: color var(--dur-micro) var(--ease-standard);
+}
+.tab:hover {
+  color: var(--text-body);
+}
+.tab.is-active {
+  color: var(--text-primary);
+}
+/* El subrayado aparece con el estado activo y se desplaza en color, no en
+   posición: un salto horizontal a través de la barra distraería más de lo que
+   explica. */
+.tab::after {
+  content: '';
+  position: absolute;
+  left: var(--s-2);
+  right: var(--s-2);
+  bottom: -1px;
+  height: 2px;
+  border-radius: 1px;
+  pointer-events: none;
+  background: transparent;
+  transition: background-color var(--dur-micro) var(--ease-standard);
+}
+.tab.is-active::after {
+  background: var(--brand-solid);
+}
+
+/* ============================================================== esqueletos == */
+.skeleton {
+  background: var(--bg-sunken);
+  border-radius: var(--r-chip);
+  animation: sk 1600ms ease-in-out infinite;
+}
+@keyframes sk {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* ============================================================== estados ===== */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s-3);
+  padding: var(--s-12) var(--s-6);
+}
+.state-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-card);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+}
+.state-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+.state-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 44ch;
+}
+
+/* ============================================================== avisos ====== */
+.notice {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--bg-sunken);
+  font-size: 13px;
+  line-height: 19px;
+}
+.notice-title {
+  font-weight: 600;
+  color: var(--text-heading);
+}
+.notice-warn {
+  background: var(--warn-50);
+  border-color: var(--warn-200);
+  color: var(--warn-700);
+}
+.notice-warn .notice-title {
+  color: var(--warn-700);
+}
+.notice-err {
+  background: var(--err-50);
+  border-color: var(--err-200);
+  color: var(--err-700);
+}
+.notice-err .notice-title {
+  color: var(--err-700);
+}
+.notice-ok {
+  background: var(--ok-50);
+  border-color: var(--ok-200);
+  color: var(--ok-700);
+}
+.notice-ok .notice-title {
+  color: var(--ok-700);
+}
+
+/* ============================================================== distribución  */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Micro-pila «etiqueta sobre valor»: aparece en tablas, fichas y listas
+   clínicas. Se nombra porque es un patrón repetido, no un ajuste suelto: sin
+   esto el mismo par acababa escrito con 1, 2, 3 o 4 px según el archivo y las
+   filas dejaban de alinearse entre sí. */
+.pair {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Dato secundario dentro de una ficha de contexto, donde el valor compite con
+   poco espacio y no debe pesar tanto como en la vista principal. */
+.def-value.is-compact {
+  font-size: 13px;
+}
+
+/* La medida de lectura limita el texto corrido, no el ancho de un campo: un
+   área de texto estrecha obliga a escribir en una columna incómoda. */
+.textarea.t-measure {
+  max-width: none;
+}
+.row {
+  display: flex;
+  align-items: center;
+}
+.grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.gap-1 {
+  gap: var(--s-1);
+}
+.gap-2 {
+  gap: var(--s-2);
+}
+.gap-3 {
+  gap: var(--s-3);
+}
+.gap-4 {
+  gap: var(--s-4);
+}
+.gap-5 {
+  gap: var(--s-5);
+}
+.gap-6 {
+  gap: var(--s-6);
+}
+.wrap {
+  flex-wrap: wrap;
+}
+
+/* Rejilla de definiciones: etiqueta arriba, valor debajo. Densa y escaneable. */
+.deflist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--s-4);
+}
+.def-term {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.def-value {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+/* Indicador de espera. Rotación constante: es un reloj, no una animación de entrada. */
+.spin {
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation-duration: 2400ms;
+  }
+}
+
+/* ============================================================== avisos ====== */
+.toast-region {
+  position: fixed;
+  bottom: var(--s-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--s-2);
+  width: min(520px, calc(100vw - var(--s-8)));
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-overlay);
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-body);
+}
+.toast-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.toast-ok .toast-icon {
+  color: var(--ok-500);
+}
+.toast-info .toast-icon {
+  color: var(--text-tertiary);
+}
+.toast-warn .toast-icon {
+  color: var(--warn-500);
+}
+.toast-err .toast-icon {
+  color: var(--err-500);
+}
+.toast-err {
+  border-color: var(--err-200);
+}
+
+/* ============================================================== errores ===== */
+.error-inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-5) var(--s-4);
+}
+.error-inline .state-text {
+  max-width: 52ch;
+}
+.corr {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-chip);
+  background: var(--bg-sunken);
+  color: var(--text-tertiary);
+  transition: color var(--dur-micro) var(--ease-standard);
+}
+.corr:hover {
+  color: var(--text-body);
+}
+
+/* ============================================================== armazón ===== */
+.shell {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--bg-app);
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: var(--z-sidebar);
+  width: var(--w-sidebar);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  transition: width var(--dur-view) var(--ease-standard);
+}
+.is-collapsed .sidebar {
+  width: var(--w-sidebar-collapsed);
+}
+
+.sidebar-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: var(--h-topbar);
+  padding: 0 var(--s-3);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: inherit;
+}
+.brand-link:hover {
+  text-decoration: none;
+}
+.brand-mark {
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.brand-word {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+.sidebar-close {
+  display: none;
+  margin-left: auto;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s-3) var(--s-2);
+}
+.nav-group + .nav-group {
+  margin-top: var(--s-4);
+}
+.nav-group-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 0 var(--s-2) var(--s-2);
+}
+.nav-group-rule {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0 var(--s-2) var(--s-2);
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: 34px;
+  padding: 0 var(--s-2);
+  border-radius: var(--r-input);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--dur-micro) var(--ease-standard);
+}
+.nav-item:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.nav-item:hover:not(.is-active) {
+  background: var(--bg-hover);
+}
+/* El elemento activo se pinta con su propio fondo. No hay ninguna capa
+   superpuesta: una capa opaca por encima taparía el contenido, y por debajo
+   obligaría a posicionar cada hijo por separado. */
+.nav-item.is-active {
+  color: var(--brand-text);
+  background: var(--brand-soft);
+}
+.nav-item > medsys-icon {
+  flex-shrink: 0;
+}
+.is-collapsed .nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+/* ------------------------------------------------------------ la cuenta ---- */
+.sidebar-foot {
+  position: relative;
+  padding: var(--s-2);
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.account-button {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: var(--s-2);
+  border-radius: var(--r-input);
+  text-align: left;
+  transition: background-color var(--dur-micro) var(--ease-standard);
+}
+.account-button:hover {
+  background: var(--bg-hover);
+}
+.is-collapsed .account-button {
+  justify-content: center;
+  padding: var(--s-2) 0;
+}
+
+.account-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.account-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.account-role {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+/* La flecha apunta hacia donde se abre el menú: arriba, sobre la barra. */
+.account-caret {
+  color: var(--text-tertiary);
+  transform: rotate(-90deg);
+}
+
+.account-menu {
+  position: absolute;
+  bottom: calc(100% - var(--s-1));
+  left: var(--s-2);
+  right: var(--s-2);
+  padding-bottom: var(--s-1);
+  animation: pop-in var(--dur-pop) var(--ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-menu {
+    animation: none;
+  }
+}
+.account-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-3);
+  min-width: 0;
+}
+
+/* Contraer es una preferencia del marco, no una acción del trabajo: acompaña a
+   la marca y se mantiene callado hasta que se pasa por encima. */
+.sidebar-collapse {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  border-radius: var(--r-input);
+  color: var(--text-placeholder);
+  flex-shrink: 0;
+  transition:
+    color var(--dur-micro) var(--ease-standard),
+    background-color var(--dur-micro) var(--ease-standard);
+}
+.sidebar-collapse:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+/* Contraída no hay «a la derecha del logo», así que el botón pasa debajo: sigue
+   junto a la marca y sigue visible. Esconderlo hasta el hover dejaría sin salida
+   a quien use una pantalla táctil, que no tiene hover con el que descubrirlo. */
+.is-collapsed .sidebar-brand {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--s-2) 0;
+}
+.is-collapsed .sidebar-collapse {
+  width: 22px;
+  height: 18px;
+  margin-left: 0;
+}
+
+.shell-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--w-sidebar);
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--dur-view) var(--ease-standard);
+}
+.is-collapsed .shell-main {
+  margin-left: var(--w-sidebar-collapsed);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: var(--h-topbar);
+  padding: 0 var(--s-5);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-menu {
+  display: none;
+}
+/* El estado del sistema cierra la cabecera por la derecha: es un indicador
+   global, no parte de la búsqueda, y anclarlo evita que quede suelto a media
+   barra desde que el perfil dejó de acompañarlo. */
+.topbar medsys-system-status {
+  margin-left: auto;
+}
+
+.global-search {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: var(--h-control-sm);
+  max-width: 380px;
+  flex: 1;
+  padding: 0 var(--s-2) 0 var(--s-3);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  color: var(--text-tertiary);
+  font-size: 13px;
+  text-align: left;
+  transition: border-color var(--dur-micro) var(--ease-standard);
+}
+.global-search:hover {
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
+}
+.global-search > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kbd {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-chip);
+  background: var(--bg-surface);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.avatar-button {
+  border-radius: 50%;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  border: 1px solid var(--ok-200);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.content {
+  flex: 1;
+  width: 100%;
+  max-width: var(--w-content-max);
+  margin: 0 auto;
+  padding: var(--s-6) var(--s-8) var(--s-16);
+}
+.content:focus {
+  outline: none;
+}
+
+.shell-scrim {
+  display: none;
+}
+
+/* ------------------------------------------------------------- responsive -- */
+@media (max-width: 1080px) {
+  .content {
+    padding: var(--s-5) var(--s-6) var(--s-12);
+  }
+}
+
+@media (max-width: 860px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--dur-sheet) var(--ease-standard);
+    box-shadow: var(--shadow-overlay);
+    width: var(--w-sidebar);
+  }
+  .is-mobile-open .sidebar {
+    transform: translateX(0);
+  }
+  .is-collapsed .sidebar {
+    width: var(--w-sidebar);
+  }
+  .shell-main,
+  .is-collapsed .shell-main {
+    margin-left: 0;
+  }
+  .sidebar-close {
+    display: inline-flex;
+  }
+  .sidebar-foot {
+    display: none;
+  }
+  .topbar-menu {
+    display: inline-flex;
+  }
+  .topbar {
+    padding: 0 var(--s-4);
+  }
+  .content {
+    padding: var(--s-4) var(--s-4) var(--s-12);
+  }
+  .global-search > span,
+  /* En un teléfono no hay tecla ⌘: anunciar el atajo solo ocupa sitio. */
+  .global-search .kbd {
+    display: none;
+  }
+  .global-search {
+    max-width: none;
+    flex: 0 0 auto;
+    width: var(--h-control-sm);
+    justify-content: center;
+    padding: 0;
+  }
+  .shell-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-sidebar) - 1);
+    background: rgb(20 28 25 / 0.4);
+  }
+  .is-collapsed .nav-item {
+    justify-content: flex-start;
+    padding: 0 var(--s-2);
+  }
+}
+
+/* ============================================================== estado ====== */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+/* En la cabecera el punto acompaña al icono de actividad: juntos son un solo
+   indicador, no dos elementos sueltos. */
+.status-trigger {
+  gap: 5px;
+}
+.status-ok {
+  background: var(--ok-500);
+}
+.status-warn {
+  background: var(--warn-500);
+}
+.status-err {
+  background: var(--err-500);
+}
+.status-neutral {
+  background: var(--n-300);
+}
+
+.session-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-5);
+  background: var(--warn-50);
+  border-bottom: 1px solid var(--warn-200);
+  color: var(--warn-700);
+  font-size: 13px;
+}
+
+/* ============================================================== cabecera ==== */
+.page-header {
+  /* La separación con lo que viene debajo la pone el ritmo de la página. */
+  margin-bottom: 0;
+}
+.page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+.page-actions {
+  flex-shrink: 0;
+}
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: var(--s-2);
+}
+.crumbs a {
+  color: var(--text-tertiary);
+}
+.crumbs a:hover {
+  color: var(--text-body);
+}
+.crumb-sep {
+  color: var(--n-300);
+  flex-shrink: 0;
+}
+
+/* ============================================================== secciones === */
+/* Ritmo vertical de la página.
+   El componente de ruta es el único hijo de `.content`, así que la separación
+   entre sus bloques de primer nivel se resuelve aquí una sola vez. Antes
+   dependía de `.section + .section`, que solo separaba dos `.section`
+   adyacentes: en cuanto una plantilla ponía un `.card` o un `.grid-2` al mismo
+   nivel, el hueco desaparecía. Con el hueco en el contenedor no hay nada que
+   cada plantilla deba recordar. */
+.content > * {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+/* `.section` ya no aporta margen; se conserva como agrupador semántico. */
+.section {
+  display: block;
+}
+
+/* Los componentes que solo envuelven una capa no deben ocupar un hueco en ese
+   ritmo: `display: contents` los saca del flujo y deja que su `<dialog>`
+   cerrado —que es `display: none`— no genere ninguna caja. Sin esto, cada
+   diálogo declarado al final de una plantilla añadía un vacío al pie. */
+medsys-dialog,
+medsys-confirm-dialog,
+medsys-open-record-dialog,
+medsys-open-encounter-dialog,
+medsys-branch-form,
+medsys-organization-form,
+medsys-offering-form,
+medsys-register-patient-sheet,
+medsys-command-palette,
+medsys-toast-host {
+  display: contents;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+@media (max-width: 1080px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 860px) {
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Barra de filtros: siempre encima de la tabla y siempre con la misma forma. */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.filters .input,
+.filters .select {
+  width: auto;
+  min-width: 180px;
+}
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 380px;
+}
+.search-field .input {
+  width: 100%;
+  padding-left: var(--s-8);
+}
+.search-field > medsys-icon {
+  position: absolute;
+  left: var(--s-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+/* Pie de paginación de tabla. */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ============================================================== acceso ====== */
+.login {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100dvh;
+}
+.login-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  padding: var(--s-8) var(--s-6);
+}
+.login-form {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+.login-logo {
+  margin-bottom: var(--s-2);
+}
+
+.login-demo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--border-subtle);
+}
+.demo-account {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: var(--h-control);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--bg-surface);
+  font-size: 13px;
+  color: var(--text-body);
+  text-align: left;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background-color var(--dur-micro) var(--ease-standard);
+}
+.demo-account:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.login-aside {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-sunken);
+  border-left: 1px solid var(--border);
+  padding: var(--s-8);
+}
+.login-aside-inner {
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+.login-aside-mark {
+  opacity: 0.9;
+}
+.login-claim {
+  font-size: 22px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-heading);
+}
+.login-env {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 900px) {
+  .login {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .login-aside {
+    display: none;
+  }
+}
+
+/* ============================================================== buscador ==== */
+.palette-results {
+  max-height: 46vh;
+  overflow-y: auto;
+  margin: 0 calc(var(--s-2) * -1);
+}
+.palette-group + .palette-group {
+  margin-top: var(--s-3);
+}
+.palette-group > .t-label {
+  padding: 0 var(--s-3) var(--s-1);
+}
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-input);
+  font-size: 13px;
+  color: var(--text-body);
+  text-align: left;
+}
+.palette-item > medsys-icon {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+.palette-item.is-active {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+}
+.palette-item.is-active > medsys-icon {
+  color: var(--brand-text);
+}
+.palette-item .t-micro {
+  flex-shrink: 0;
+  max-width: 45%;
+}
+
+/* En BillingIcons y otros iconos decorativos de MSYS. */
+.icon-muted {
+  color: var(--text-tertiary);
+}
+
+/* ============================================================ organización == */
+.org-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-input);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  border: 1px solid var(--ok-200);
+  flex-shrink: 0;
+}
+
+/* ============================================================== medidor ===== */
+.meter {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-active);
+  overflow: hidden;
+}
+.meter-fill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: 2px;
+  transition: width var(--dur-view) var(--ease-standard);
+}
+.meter-ok {
+  background: var(--ok-500);
+}
+.meter-warn {
+  background: var(--warn-500);
+}
+.meter-err {
+  background: var(--err-500);
+}
+.meter-neutral {
+  background: var(--n-300);
+}
+
+/* ========================================================== facturación ===== */
+/* La leyenda de demostración usa el naranja de marca: es lo que exige atención,
+   nunca un error. Y nunca lleva botón de cierre. */
+.demo-caption {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  background: var(--warn-50);
+  border: 1px solid var(--warn-200);
+  border-radius: var(--r-input);
+  color: var(--warn-700);
+  font-size: 12px;
+  line-height: 18px;
+}
+.demo-caption > medsys-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.demo-caption strong {
+  font-weight: 600;
+}
+.demo-caption-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px var(--s-2);
+  border-radius: var(--r-chip);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+}
+.demo-caption-compact > medsys-icon {
+  margin-top: 0;
+}
+
+/* Documento de factura: hoja sobria, sin adornos, pensada para imprimirse. */
+.invoice-sheet {
+  max-width: 720px;
+}
+.invoice-total-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-1) 0;
+}
+.invoice-total-row.is-grand {
+  padding-top: var(--s-3);
+  margin-top: var(--s-2);
+  border-top: 1px solid var(--border);
+}
+.invoice-number {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+/* ============================================================= pacientes ==== */
+.patient-picker {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  max-width: 420px;
+}
+.patient-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-overlay);
+  padding: var(--s-1);
+  max-height: 280px;
+  overflow-y: auto;
+}
+.patient-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: var(--s-2) var(--s-2);
+  border-radius: var(--r-input);
+  text-align: left;
+}
+.patient-option.is-active {
+  background: var(--brand-soft);
+}
+.patient-option.is-active .t-strong {
+  color: var(--brand-text);
+}
+
+.patient-chosen {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: 1;
+  min-width: 240px;
+  max-width: 420px;
+  min-height: var(--h-control);
+  padding: var(--s-1) var(--s-1) var(--s-1) var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--bg-sunken);
+}
+.patient-avatar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-chip);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Emisión de factura: trabajo a la izquierda, total siempre visible a la derecha. */
+.invoice-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--s-5);
+  align-items: start;
+}
+.invoice-summary {
+  position: sticky;
+  top: calc(var(--h-topbar) + var(--s-5));
+}
+@media (max-width: 1080px) {
+  .invoice-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .invoice-summary {
+    position: static;
+  }
+}
+
+.step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: var(--s-2);
+  border-radius: var(--r-chip);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  border: 1px solid var(--ok-200);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  vertical-align: 1px;
+}
+
+.qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.qty-value {
+  min-width: 24px;
+  text-align: center;
+}
+
+/* ============================================================ encuentro ===== */
+.encounter-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--s-5);
+  align-items: start;
+}
+.encounter-context {
+  position: sticky;
+  top: calc(var(--h-topbar) + var(--s-5));
+}
+@media (max-width: 1080px) {
+  .encounter-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .encounter-context {
+    position: static;
+  }
+}
+
+/* Indicador de autoguardado: discreto por definición. Nunca un aviso emergente. */
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.save-status.is-error {
+  color: var(--err-700);
+}
+
+/* Texto clínico en modo lectura: se respeta el salto de línea que escribió el
+   profesional; la medida se limita para poder leerlo de un vistazo. */
+.narrative-read {
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-body);
+  padding: var(--s-2) 0;
+}
+
+/* Lista clínica: cada elemento es una fila con su acción a la derecha. */
+.clin-list {
+  display: flex;
+  flex-direction: column;
+}
+.clin-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.clin-item:last-child {
+  border-bottom: none;
+}
+.clin-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 1px var(--s-2);
+  border-radius: var(--r-chip);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* Rejilla de signos vitales: cifras grandes, tabulares y comparables. */
+.vitals-grid {
+  display: grid;
+  /* 132px es el ancho al que «Presión arterial» y «Perímetro abdominal» dejan
+     de partirse en tres líneas y las filas vuelven a alinearse entre sí. */
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--s-4);
+  align-items: start;
+}
+.vital {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.vital-value {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.vital-unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 3px;
+}
+.vital-out {
+  color: var(--err-700);
+}
+
+/* Tarjeta que porta una alerta clínica: borde marcado, sin fondo agresivo. */
+.card.is-alert {
+  border-color: var(--err-200);
+}
+.card.is-alert .card-head {
+  border-bottom-color: var(--err-200);
+  background: var(--err-50);
+}
+
+/* ============================================================ línea de tiempo */
+.timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  overflow-x: auto;
+}
+.timeline-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  flex: 1;
+  min-width: 96px;
+  padding: 0 var(--s-1);
+  text-align: center;
+}
+/* La línea que une los pasos nace del punto anterior, no del texto. */
+.timeline-step::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  right: 50%;
+  left: -50%;
+  height: 1px;
+  background: var(--border);
+  pointer-events: none;
+}
+.timeline-step:first-child::before {
+  display: none;
+}
+.timeline-step.is-done::before,
+.timeline-step.is-current::before {
+  background: var(--brand-solid);
+}
+
+.timeline-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--text-onbrand);
+  border: 1px solid var(--border-strong);
+  transition:
+    background-color var(--dur-view) var(--ease-standard),
+    border-color var(--dur-view) var(--ease-standard);
+}
+.timeline-step.is-done .timeline-dot {
+  background: var(--brand-solid);
+  border-color: var(--brand-solid);
+}
+.timeline-step.is-current .timeline-dot {
+  background: var(--bg-surface);
+  border-color: var(--brand-solid);
+  border-width: 4px;
+}
+
+.timeline-label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+}
+.timeline-step.is-done .timeline-label {
+  color: var(--text-secondary);
+}
+.timeline-step.is-current .timeline-label {
+  color: var(--brand-text);
+  font-weight: 600;
+}
+
+/* ============================================================== inicio ====== */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--s-3);
+}
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  text-align: left;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background-color var(--dur-micro) var(--ease-standard);
+}
+.quick-action:hover {
+  border-color: var(--brand-300);
+  background: var(--bg-hover);
+}
+.quick-action-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-input);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  border: 1px solid var(--ok-200);
+  flex-shrink: 0;
+}
+
+/* Addendum: el texto ocupa todo el ancho de su fila, sin sangrado propio. */
+.narrative-read.is-flush {
+  padding: 0;
+  width: 100%;
+}
+
+/* Dentro de una capa el buscador ocupa todo el ancho disponible: ahí no compite
+   con nada y recortarlo solo dejaría hueco muerto a su derecha. */
+.search-field.is-wide {
+  max-width: none;
+}
+
+/* Fila de cifras del panel de inicio. Se ajusta al número real de métricas —el
+   plan puede tener tres o cinco— en vez de fijar cuatro columnas y dejar la
+   última huérfana en una fila propia. */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: var(--s-4);
+}
+
+/* ========================================================== configuración === */
+.mode-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--s-3);
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+.mode-picker > .field-label {
+  grid-column: 1 / -1;
+  padding: 0;
+}
+
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background-color var(--dur-micro) var(--ease-standard);
+}
+.mode-option:hover {
+  border-color: var(--border-strong);
+}
+.mode-option.is-selected {
+  border-color: var(--brand-solid);
+  background: var(--brand-soft);
+}
+/* El anillo de foco lo dibuja la etiqueta, porque el radio real está oculto
+   para lectores de pantalla pero fuera de la vista. */
+.mode-option:has(:focus-visible) {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Miniatura de la aplicación en cada modo: se ve lo que se elige antes de
+   elegirlo, sin tener que aplicarlo para comprobarlo. */
+.mode-preview {
+  display: flex;
+  flex-direction: column;
+  width: 44px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.mode-preview-bar {
+  height: 9px;
+}
+.mode-preview-body {
+  flex: 1;
+}
+.mode-preview[data-mode='light'] .mode-preview-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #e8edea;
+}
+.mode-preview[data-mode='light'] .mode-preview-body {
+  background: #f3f6f4;
+}
+.mode-preview[data-mode='dark'] .mode-preview-bar {
+  background: #161c19;
+  border-bottom: 1px solid #2b342f;
+}
+.mode-preview[data-mode='dark'] .mode-preview-body {
+  background: #0f1412;
+}
+
+/* Casilla de tamaño fijo: la marca aparece y desaparece sin mover el texto de
+   al lado, que es lo que pasaba con una etiqueta de ancho variable. */
+.mode-check {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--brand-text);
+}

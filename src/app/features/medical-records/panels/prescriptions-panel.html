@@ -1,0 +1,251 @@
+<section class="card">
+  <div class="card-head">
+    <div class="row gap-2">
+      <medsys-icon name="pill" [size]="15" class="icon-muted" />
+      <h2 class="t-section">Recetas</h2>
+      @if ((prescriptions.value() ?? []).length > 0) {
+        <span class="t-sec t-num">{{ (prescriptions.value() ?? []).length }}</span>
+      }
+    </div>
+    @if (editable()) {
+      <button type="button" class="btn btn-secondary btn-sm" (click)="openForm()">
+        <medsys-icon name="plus" [size]="14" /> Emitir receta
+      </button>
+    }
+  </div>
+
+  @if (prescriptions.isLoading()) {
+    <div class="card-body"><medsys-skeleton width="100%" height="48px" /></div>
+  } @else if (prescriptions.error()) {
+    <div class="card-body"><p class="t-sec">No se pudieron cargar las recetas.</p></div>
+  } @else if ((prescriptions.value() ?? []).length === 0) {
+    <div class="card-body">
+      <p class="t-sec">
+        {{
+          editable() ? 'Sin recetas emitidas en este encuentro.' : 'No se emitió ninguna receta.'
+        }}
+      </p>
+    </div>
+  } @else {
+    <div class="clin-list">
+      @for (prescription of prescriptions.value(); track prescription.id) {
+        <div class="clin-item" style="flex-direction: column; gap: var(--s-3)">
+          <div class="row gap-3 wrap" style="width: 100%">
+            <span class="clin-code">{{ prescription.folio }}</span>
+            <medsys-status-chip
+              [value]="prescription.status"
+              [dictionary]="prescriptionStatuses"
+              [tones]="prescriptionTones"
+            />
+            <span class="grow"></span>
+            <span class="t-micro t-num">{{ prescription.issuedAt | msDateTime }}</span>
+            @if (transitionsFor(prescription.status).length > 0) {
+              <span class="select-wrap">
+                <select
+                  class="select"
+                  style="min-width: 160px"
+                  aria-label="Cambiar el estado de la receta"
+                  [value]="''"
+                  (change)="
+                    changeStatus(prescription, $any($event.target).value);
+                    $any($event.target).value = ''
+                  "
+                >
+                  <option value="">Cambiar estado…</option>
+                  @for (target of transitionsFor(prescription.status); track target) {
+                    <option [value]="target">{{ statusLabel(target) }}</option>
+                  }
+                </select>
+              </span>
+            }
+          </div>
+
+          <ul class="stack gap-2" style="width: 100%">
+            @for (item of prescription.items; track item.itemNumber) {
+              <li class="pair">
+                <span class="t-strong">{{ itemName(item) }}</span>
+                <span class="t-micro">{{ itemLine(item) }}</span>
+                @if (item.instructions) {
+                  <span class="t-sec">{{ item.instructions }}</span>
+                }
+              </li>
+            }
+          </ul>
+
+          @if (prescription.generalInstructions) {
+            <p class="t-sec t-measure">{{ prescription.generalInstructions }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>
+
+<medsys-dialog
+  [open]="creating()"
+  variant="sheet"
+  [width]="560"
+  heading="Emitir receta"
+  description="Cada medicamento necesita, como mínimo, su nombre y la dosis."
+  (closed)="creating.set(false)"
+>
+  <div class="stack gap-5">
+    @if (errorMessage(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    @for (item of items(); track item.key; let i = $index) {
+      <div class="card">
+        <div class="card-head">
+          <span class="t-card">Medicamento {{ i + 1 }}</span>
+          @if (items().length > 1) {
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm btn-icon"
+              [attr.aria-label]="'Quitar el medicamento ' + (i + 1)"
+              (click)="removeItem(item.key)"
+            >
+              <medsys-icon name="trash" [size]="14" />
+            </button>
+          }
+        </div>
+        <div class="card-body stack gap-3">
+          <div class="field">
+            <label class="field-label" [attr.for]="'med-name-' + item.key">Medicamento</label>
+            <input
+              [id]="'med-name-' + item.key"
+              class="input"
+              maxlength="200"
+              placeholder="Paracetamol 500 mg comprimidos"
+              [value]="item.description"
+              (input)="patchItem(item.key, 'description', $any($event.target).value)"
+            />
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label" [attr.for]="'med-dose-' + item.key">Dosis</label>
+              <input
+                [id]="'med-dose-' + item.key"
+                class="input"
+                maxlength="80"
+                placeholder="1 comprimido"
+                [value]="item.dose"
+                (input)="patchItem(item.key, 'dose', $any($event.target).value)"
+              />
+            </div>
+            <div class="field">
+              <label class="field-label" [attr.for]="'med-route-' + item.key">Vía</label>
+              <span class="select-wrap">
+                <select
+                  [id]="'med-route-' + item.key"
+                  class="select"
+                  [value]="item.route"
+                  (change)="patchItem(item.key, 'route', $any($event.target).value)"
+                >
+                  @for (option of routeOptions; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label" [attr.for]="'med-freq-' + item.key">
+                Cada cuántas horas <span class="field-optional">(opcional)</span>
+              </label>
+              <input
+                [id]="'med-freq-' + item.key"
+                class="input input-num"
+                type="number"
+                min="1"
+                max="168"
+                [value]="item.frequencyHours"
+                (input)="patchItem(item.key, 'frequencyHours', $any($event.target).value)"
+              />
+            </div>
+            <div class="field">
+              <label class="field-label" [attr.for]="'med-days-' + item.key">
+                Durante cuántos días <span class="field-optional">(opcional)</span>
+              </label>
+              <input
+                [id]="'med-days-' + item.key"
+                class="input input-num"
+                type="number"
+                min="1"
+                max="365"
+                [value]="item.durationDays"
+                (input)="patchItem(item.key, 'durationDays', $any($event.target).value)"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" [attr.for]="'med-inst-' + item.key">
+              Indicaciones <span class="field-optional">(opcional)</span>
+            </label>
+            <textarea
+              [id]="'med-inst-' + item.key"
+              class="textarea"
+              rows="2"
+              maxlength="1000"
+              placeholder="Tomar después de las comidas."
+              [value]="item.instructions"
+              (input)="patchItem(item.key, 'instructions', $any($event.target).value)"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+    }
+
+    <button type="button" class="btn btn-secondary" (click)="addItem()">
+      <medsys-icon name="plus" [size]="14" /> Añadir otro medicamento
+    </button>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="prescription-validity">
+          Validez en días <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="prescription-validity"
+          class="input input-num"
+          type="number"
+          min="1"
+          max="365"
+          [value]="validityDays()"
+          (input)="validityDays.set($any($event.target).value)"
+        />
+        <span class="field-hint">Entre 1 y 365.</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="prescription-instructions">
+        Indicaciones generales <span class="field-optional">(opcional)</span>
+      </label>
+      <textarea
+        id="prescription-instructions"
+        class="textarea"
+        rows="3"
+        maxlength="2000"
+        [value]="generalInstructions()"
+        (input)="generalInstructions.set($any($event.target).value)"
+      ></textarea>
+    </div>
+  </div>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="creating.set(false)">Cancelar</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="!valid() || pending()"
+      (click)="save()"
+    >
+      Emitir receta
+    </button>
+  </ng-container>
+</medsys-dialog>

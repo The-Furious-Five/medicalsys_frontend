@@ -1,0 +1,106 @@
+<section class="card">
+  <div class="card-head">
+    <div class="row gap-2">
+      <medsys-icon name="message-plus" [size]="15" class="icon-muted" />
+      <h2 class="t-section">Addendums</h2>
+      @if ((addendums.value() ?? []).length > 0) {
+        <span class="t-sec t-num">{{ (addendums.value() ?? []).length }}</span>
+      }
+    </div>
+    @if (canAdd()) {
+      <button type="button" class="btn btn-secondary btn-sm" (click)="openForm()">
+        <medsys-icon name="plus" [size]="14" /> Agregar addendum
+      </button>
+    }
+  </div>
+
+  @if (addendums.isLoading()) {
+    <div class="card-body"><medsys-skeleton width="100%" height="40px" /></div>
+  } @else if (addendums.error()) {
+    <div class="card-body"><p class="t-sec">No se pudieron cargar los addendums.</p></div>
+  } @else if ((addendums.value() ?? []).length === 0) {
+    <div class="card-body">
+      <p class="t-sec t-measure">
+        @if (canAdd()) {
+          No hay addendums. Un addendum es la forma de corregir o ampliar un encuentro ya firmado:
+          se añade al final y no borra nada de lo anterior.
+        } @else {
+          No se registró ningún addendum en este encuentro.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="clin-list">
+      @for (addendum of addendums.value(); track addendum.id) {
+        <div class="clin-item" style="flex-direction: column; gap: var(--s-2)">
+          <div class="row gap-2 wrap" style="width: 100%">
+            <span class="chip chip-warn"
+              ><span class="chip-dot"></span>{{ reasonLabel(addendum.reason) }}</span
+            >
+            <span class="grow"></span>
+            <span class="t-micro t-num">{{ addendum.createdAt | msDateTime }}</span>
+          </div>
+          <p class="narrative-read t-measure is-flush">
+            {{ addendum.text }}
+          </p>
+        </div>
+      }
+    </div>
+  }
+</section>
+
+<medsys-dialog
+  [open]="adding()"
+  [width]="520"
+  heading="Agregar addendum"
+  description="Se añade al final del encuentro firmado, con tu nombre y la fecha. No modifica ni borra lo que ya estaba escrito."
+  (closed)="adding.set(false)"
+>
+  <div class="stack gap-4">
+    @if (errorMessage(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    <div class="field">
+      <label class="field-label" for="addendum-reason">Motivo</label>
+      <span class="select-wrap">
+        <select
+          id="addendum-reason"
+          class="select"
+          [value]="reason()"
+          (change)="reason.set($any($event.target).value)"
+        >
+          @for (option of reasonOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </span>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="addendum-text">Texto del addendum</label>
+      <textarea
+        id="addendum-text"
+        class="textarea t-measure"
+        rows="6"
+        maxlength="4000"
+        autofocus
+        [value]="text()"
+        (input)="text.set($any($event.target).value)"
+      ></textarea>
+      <span class="field-hint">Máximo 4000 caracteres.</span>
+    </div>
+  </div>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="adding.set(false)">Cancelar</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="text().trim().length === 0 || pending()"
+      (click)="save()"
+    >
+      Agregar addendum
+    </button>
+  </ng-container>
+</medsys-dialog>

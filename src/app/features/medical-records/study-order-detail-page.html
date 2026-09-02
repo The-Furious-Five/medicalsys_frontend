@@ -1,0 +1,343 @@
+@if (order.isLoading()) {
+  <medsys-page-header
+    heading="Orden de estudio"
+    [crumbs]="[{ label: 'Órdenes de estudio', link: '/ordenes-estudio' }]"
+  />
+  <div class="card">
+    <div class="card-body stack gap-4">
+      <medsys-skeleton width="40%" height="24px" />
+      <medsys-skeleton width="100%" height="60px" />
+    </div>
+  </div>
+} @else if (order.error()) {
+  <medsys-page-header
+    heading="Orden de estudio"
+    [crumbs]="[{ label: 'Órdenes de estudio', link: '/ordenes-estudio' }]"
+  />
+  <div class="card"><medsys-error-state [failure]="order.error()" (retry)="order.reload()" /></div>
+} @else if (order.value(); as data) {
+  <medsys-page-header
+    [heading]="data.studyTypeCode"
+    [crumbs]="crumbs()"
+    [description]="description()"
+  >
+    <ng-container headerMeta>
+      <div class="row gap-2 wrap">
+        <medsys-status-chip
+          [value]="data.status"
+          [dictionary]="orderStatuses"
+          [tones]="orderTones"
+        />
+        <medsys-status-chip [value]="data.priority" [dictionary]="priorities" />
+      </div>
+    </ng-container>
+    <ng-container headerActions>
+      @if (acceptsResults()) {
+        <button type="button" class="btn btn-primary" (click)="openResultForm()">
+          <medsys-icon name="file-plus" [size]="15" /> Registrar resultado
+        </button>
+      }
+    </ng-container>
+  </medsys-page-header>
+
+  <section class="section">
+    <div class="card">
+      <div class="card-head"><h2 class="t-section">Ciclo de la orden</h2></div>
+      <div class="card-body stack gap-5">
+        @if (isVoided()) {
+          <medsys-notice tone="warn" heading="La orden fue anulada">
+            No continuará su recorrido. Si el estudio sigue siendo necesario, solicita una orden
+            nueva desde el encuentro clínico.
+          </medsys-notice>
+        } @else {
+          <ol class="timeline" aria-label="Estado de la orden">
+            @for (step of timeline; track step; let i = $index) {
+              <li
+                class="timeline-step"
+                [class.is-done]="stepState(i) === 'done'"
+                [class.is-current]="stepState(i) === 'current'"
+              >
+                <span class="timeline-dot" aria-hidden="true">
+                  @if (stepState(i) === 'done') {
+                    <medsys-icon name="check" [size]="11" [strokeWidth]="2.5" />
+                  }
+                </span>
+                <span class="timeline-label">{{ statusLabel(step) }}</span>
+                @if (stepState(i) === 'current') {
+                  <span class="sr-only">Estado actual</span>
+                }
+              </li>
+            }
+          </ol>
+        }
+
+        @if (transitions().length === 0) {
+          <p class="t-sec">
+            La orden llegó al final de su ciclo y ya no admite más cambios de estado.
+          </p>
+        } @else {
+          <div class="stack gap-2">
+            <span class="t-label">Avanzar la orden</span>
+            <div class="row gap-2 wrap">
+              @for (target of transitions(); track target) {
+                <button
+                  type="button"
+                  class="btn"
+                  [class.btn-secondary]="target === 'VOIDED'"
+                  [class.btn-primary]="target !== 'VOIDED'"
+                  [disabled]="changingTo() !== null"
+                  (click)="changeStatus(target)"
+                >
+                  {{ transitionLabel(target) }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="t-section">Resultados</h2>
+        @if (data.results.length > 0) {
+          <span class="t-sec t-num">{{ data.results.length }}</span>
+        }
+      </div>
+
+      @if (data.results.length === 0) {
+        <div class="card-body">
+          <p class="t-sec t-measure">
+            Todavía no se informó ningún resultado. Cuando el laboratorio lo registre, la orden pasa
+            automáticamente a «con resultado» y el profesional lo verá en el expediente.
+          </p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Parámetro</th>
+                <th scope="col" class="th-num">Valor</th>
+                <th scope="col" class="th-num">Referencia</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Informado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (result of data.results; track result.id) {
+                <tr>
+                  <td>
+                    <div class="pair">
+                      <span class="t-strong">{{ result.parameter }}</span>
+                      @if (result.textValue) {
+                        <span class="t-sec t-measure">{{ result.textValue }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="td-num">
+                    @if (result.numericValue !== null) {
+                      <span class="t-strong" [class.vital-out]="result.outOfRange">
+                        {{ result.numericValue | msNumber: 2 }}
+                        @if (result.unit) {
+                          <span class="vital-unit">{{ result.unit }}</span>
+                        }
+                      </span>
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td class="td-num t-sec">
+                    {{ referenceRange(result.referenceMin, result.referenceMax) ?? '—' }}
+                  </td>
+                  <td>
+                    <div class="row gap-2 wrap">
+                      <medsys-status-chip [value]="result.status" [dictionary]="resultStatuses" />
+                      @if (result.outOfRange) {
+                        <span class="chip chip-err"
+                          ><span class="chip-dot"></span>Fuera de rango</span
+                        >
+                      }
+                    </div>
+                  </td>
+                  <td class="t-num t-sec">{{ result.reportedAt | msDateTime }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <div class="card-head"><h2 class="t-section">Datos de la solicitud</h2></div>
+      <div class="card-body stack gap-4">
+        <dl class="deflist">
+          <div>
+            <dt class="def-term">Solicitada</dt>
+            <dd class="def-value t-num">{{ data.requestedAt | msDateTime }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Diagnóstico asociado</dt>
+            <dd class="def-value t-mono">{{ data.icd10Code ?? '—' }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Encuentro de origen</dt>
+            <dd class="def-value">
+              <a [routerLink]="['/encuentros', data.encounterId]">Ver el encuentro</a>
+            </dd>
+          </div>
+        </dl>
+        @if (data.instructions) {
+          <div class="stack gap-1">
+            <span class="def-term">Indicaciones</span>
+            <p class="t-body t-measure">{{ data.instructions }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <medsys-dialog
+    [open]="registering()"
+    [width]="560"
+    heading="Registrar resultado"
+    description="Puedes informar un valor numérico, un informe en texto, o ambos. Cada parámetro se informa una sola vez por orden."
+    (closed)="registering.set(false)"
+  >
+    <div class="stack gap-4">
+      @if (errorMessage(); as message) {
+        <medsys-notice tone="err">{{ message }}</medsys-notice>
+      }
+
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label" for="result-parameter">
+            Parámetro <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            id="result-parameter"
+            class="input"
+            maxlength="120"
+            autofocus
+            placeholder="Hemoglobina"
+            [value]="parameter()"
+            (input)="parameter.set($any($event.target).value)"
+          />
+          <span class="field-hint">Si se deja vacío se usa el parámetro general de la orden.</span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="result-status">Estado del informe</label>
+          <span class="select-wrap">
+            <select
+              id="result-status"
+              class="select"
+              [value]="resultStatus()"
+              (change)="resultStatus.set($any($event.target).value)"
+            >
+              @for (option of resultStatusOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label" for="result-value">
+            Valor numérico <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            id="result-value"
+            class="input input-num"
+            type="number"
+            step="0.01"
+            [value]="numericValue()"
+            (input)="numericValue.set($any($event.target).value)"
+          />
+        </div>
+        <div class="field">
+          <label class="field-label" for="result-unit">
+            Unidad <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            id="result-unit"
+            class="input"
+            maxlength="30"
+            placeholder="g/dL"
+            [value]="unit()"
+            (input)="unit.set($any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label" for="result-min">
+            Referencia mínima <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            id="result-min"
+            class="input input-num"
+            type="number"
+            step="0.01"
+            [value]="referenceMin()"
+            (input)="referenceMin.set($any($event.target).value)"
+          />
+        </div>
+        <div class="field">
+          <label class="field-label" for="result-max">
+            Referencia máxima <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            id="result-max"
+            class="input input-num"
+            type="number"
+            step="0.01"
+            [value]="referenceMax()"
+            (input)="referenceMax.set($any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="result-text">
+          Informe <span class="field-optional">(opcional)</span>
+        </label>
+        <textarea
+          id="result-text"
+          class="textarea t-measure"
+          rows="5"
+          maxlength="3000"
+          [value]="textValue()"
+          (input)="textValue.set($any($event.target).value)"
+        ></textarea>
+        <span class="field-hint">El texto del informe se guarda cifrado.</span>
+      </div>
+
+      <p class="field-hint row gap-2">
+        <medsys-icon name="flask" [size]="13" />
+        Con referencia mínima y máxima, el sistema marca solo si el valor queda fuera de rango.
+      </p>
+    </div>
+
+    <ng-container dialogFooter>
+      <button type="button" class="btn btn-secondary" (click)="registering.set(false)">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="!hasValue() || pending()"
+        (click)="saveResult()"
+      >
+        Registrar resultado
+      </button>
+    </ng-container>
+  </medsys-dialog>
+}

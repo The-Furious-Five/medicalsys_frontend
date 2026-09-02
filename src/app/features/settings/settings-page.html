@@ -1,0 +1,67 @@
+<medsys-page-header
+  heading="Configuración"
+  description="Ajustes de tu cuenta en este equipo. No afectan a lo que ven el resto de personas del centro."
+/>
+
+<section class="card">
+  <div class="card-head"><h2 class="t-section">Apariencia</h2></div>
+  <div class="card-body stack gap-4">
+    <fieldset class="mode-picker">
+      <legend class="field-label">Modo de color</legend>
+
+      @for (option of modes; track option.value) {
+        <label class="mode-option" [class.is-selected]="mode() === option.value">
+          <input
+            type="radio"
+            name="theme-mode"
+            class="sr-only"
+            [value]="option.value"
+            [checked]="mode() === option.value"
+            (change)="select(option.value)"
+          />
+          <span class="mode-preview" [attr.data-mode]="option.value" aria-hidden="true">
+            <span class="mode-preview-bar"></span>
+            <span class="mode-preview-body"></span>
+          </span>
+          <span class="pair grow">
+            <span class="row gap-2">
+              <medsys-icon [name]="option.icon" [size]="14" />
+              <span class="t-strong">{{ option.label }}</span>
+            </span>
+            <span class="t-sec">{{ option.description }}</span>
+          </span>
+          <span class="mode-check">
+            @if (mode() === option.value) {
+              <medsys-icon name="check" [size]="14" [strokeWidth]="2.2" />
+            }
+          </span>
+        </label>
+      }
+    </fieldset>
+
+    <p class="field-hint">
+      La elección se guarda en este navegador. Al entrar desde otro equipo, la aplicación vuelve a
+      abrirse en modo claro.
+    </p>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2 class="t-section">Tu cuenta</h2></div>
+  <div class="card-body">
+    <dl class="deflist">
+      <div>
+        <dt class="def-term">Nombre</dt>
+        <dd class="def-value">{{ user()?.fullName }}</dd>
+      </div>
+      <div>
+        <dt class="def-term">Correo</dt>
+        <dd class="def-value">{{ user()?.email }}</dd>
+      </div>
+      <div>
+        <dt class="def-term">Rol</dt>
+        <dd class="def-value">{{ roleSummary() }}</dd>
+      </div>
+    </dl>
+  </div>
+</section>

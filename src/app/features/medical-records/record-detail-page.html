@@ -1,0 +1,513 @@
+@if (record.isLoading()) {
+  <medsys-page-header
+    heading="Expediente"
+    [crumbs]="[{ label: 'Expedientes', link: '/expedientes' }]"
+  />
+  <div class="card">
+    <div class="card-body stack gap-3">
+      <medsys-skeleton width="40%" height="22px" />
+      <medsys-skeleton width="100%" height="80px" />
+    </div>
+  </div>
+} @else if (record.error()) {
+  <medsys-page-header
+    heading="Expediente"
+    [crumbs]="[{ label: 'Expedientes', link: '/expedientes' }]"
+  />
+  <div class="card">
+    <medsys-error-state [failure]="record.error()" (retry)="record.reload()" />
+  </div>
+} @else if (record.value(); as file) {
+  <medsys-page-header [heading]="heading()" [crumbs]="crumbs()" [description]="description()">
+    <ng-container headerMeta>
+      <div class="row gap-2 wrap">
+        <medsys-status-chip
+          [value]="file.status"
+          [dictionary]="recordStatuses"
+          [tones]="recordTones"
+        />
+        @if (file.sharesWithNetwork) {
+          <span class="chip chip-brand"><span class="chip-dot"></span>Compartido con la red</span>
+        } @else {
+          <span class="chip chip-muted"><span class="chip-dot"></span>Solo este centro</span>
+        }
+      </div>
+    </ng-container>
+    <ng-container headerActions>
+      @if (patient.value(); as person) {
+        <a class="btn btn-secondary" [routerLink]="['/pacientes', person.patientId]">
+          Ficha del paciente
+        </a>
+      }
+      @if (canOpenEncounter() && isActive()) {
+        <button type="button" class="btn btn-primary" (click)="openingEncounter.set(true)">
+          <medsys-icon name="plus" [size]="15" /> Abrir encuentro
+        </button>
+      }
+    </ng-container>
+  </medsys-page-header>
+
+  @if (!isActive()) {
+    <div class="section">
+      <medsys-notice tone="warn" [heading]="'Este expediente está ' + statusLabel()">
+        No se pueden abrir encuentros nuevos sobre un expediente que no está activo. El contenido
+        registrado sigue disponible para consulta.
+      </medsys-notice>
+    </div>
+  }
+
+  <div class="tabs-list" role="tablist" aria-label="Secciones del expediente">
+    <button
+      type="button"
+      class="tab"
+      role="tab"
+      [class.is-active]="tab() === 'encuentros'"
+      [attr.aria-selected]="tab() === 'encuentros'"
+      (click)="tab.set('encuentros')"
+    >
+      Encuentros
+    </button>
+    <button
+      type="button"
+      class="tab"
+      role="tab"
+      [class.is-active]="tab() === 'alergias'"
+      [attr.aria-selected]="tab() === 'alergias'"
+      (click)="tab.set('alergias')"
+    >
+      Alergias
+    </button>
+    <button
+      type="button"
+      class="tab"
+      role="tab"
+      [class.is-active]="tab() === 'antecedentes'"
+      [attr.aria-selected]="tab() === 'antecedentes'"
+      (click)="tab.set('antecedentes')"
+    >
+      Antecedentes
+    </button>
+  </div>
+
+  <div style="margin-top: var(--s-4)">
+    @switch (tab()) {
+      @case ('encuentros') {
+        <div class="card" role="tabpanel">
+          @if (encounters.isLoading()) {
+            <div class="card-body"><medsys-skeleton width="100%" height="80px" /></div>
+          } @else if (encounters.error()) {
+            <medsys-error-state
+              [failure]="encounters.error()"
+              [compact]="true"
+              (retry)="encounters.reload()"
+            />
+          } @else if (encounters.value()!.content.length === 0) {
+            <medsys-empty-state
+              icon="stethoscope"
+              heading="Sin encuentros registrados"
+              description="Cada atención que se documenta queda aquí, en orden cronológico, y forma la historia clínica de la persona."
+            >
+              @if (canOpenEncounter()) {
+                <button type="button" class="btn btn-primary" (click)="openingEncounter.set(true)">
+                  <medsys-icon name="plus" [size]="15" /> Abrir el primer encuentro
+                </button>
+              }
+            </medsys-empty-state>
+          } @else {
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (encounter of encounters.value()!.content; track encounter.id) {
+                    <tr
+                      data-clickable="true"
+                      tabindex="0"
+                      (click)="openEncounterView(encounter.id)"
+                      (keydown)="onRowKey($event, encounter.id)"
+                    >
+                      <td class="t-num t-strong">{{ encounter.startsAt | msDateTime }}</td>
+                      <td>{{ encounterTypeLabel(encounter.type) }}</td>
+                      <td>
+                        <medsys-status-chip
+                          [value]="encounter.status"
+                          [dictionary]="encounterStatuses"
+                          [tones]="encounterTones"
+                          [strike]="encounter.status === 'VOIDED'"
+                        />
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+
+      @case ('alergias') {
+        <div class="card" role="tabpanel">
+          <div class="card-head">
+            <h2 class="t-section">Alergias registradas</h2>
+            @if (canWrite()) {
+              <button type="button" class="btn btn-secondary btn-sm" (click)="openAllergyForm()">
+                <medsys-icon name="plus" [size]="14" /> Registrar alergia
+              </button>
+            }
+          </div>
+
+          @if (allergies.isLoading()) {
+            <div class="card-body"><medsys-skeleton width="100%" height="60px" /></div>
+          } @else if (allergies.error()) {
+            <medsys-error-state
+              [failure]="allergies.error()"
+              [compact]="true"
+              (retry)="allergies.reload()"
+            />
+          } @else if ((allergies.value() ?? []).length === 0) {
+            <medsys-empty-state
+              icon="alert-triangle"
+              heading="Sin alergias registradas"
+              description="Registrar las alergias conocidas es lo que permite advertir al profesional antes de prescribir. Si se confirmó que no tiene ninguna, es igual de útil dejarlo dicho aquí."
+            >
+              @if (canWrite()) {
+                <button type="button" class="btn btn-primary" (click)="openAllergyForm()">
+                  <medsys-icon name="plus" [size]="15" /> Registrar una alergia
+                </button>
+              }
+            </medsys-empty-state>
+          } @else {
+            <div class="clin-list">
+              @for (allergy of allergies.value(); track allergy.id) {
+                <div class="clin-item">
+                  <div class="pair grow">
+                    <div class="row gap-2 wrap">
+                      <span class="t-strong">{{ allergy.substance }}</span>
+                      <medsys-status-chip [value]="allergy.type" [dictionary]="allergyTypes" />
+                      @if (allergy.severity) {
+                        <medsys-status-chip
+                          [value]="allergy.severity"
+                          [dictionary]="allergySeverities"
+                        />
+                      }
+                      <medsys-status-chip [value]="allergy.status" [dictionary]="allergyStatuses" />
+                    </div>
+                    @if (allergy.reaction) {
+                      <p class="t-sec t-measure">{{ allergy.reaction }}</p>
+                    }
+                    <span class="t-micro t-num"
+                      >Registrada {{ allergy.recordedAt | msDateTime }}</span
+                    >
+                  </div>
+                  @if (canWrite() && allergy.status === 'ACTIVE') {
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      (click)="resolving.set({ id: allergy.id, substance: allergy.substance })"
+                    >
+                      Marcar resuelta
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @case ('antecedentes') {
+        <div class="card" role="tabpanel">
+          <div class="card-head">
+            <h2 class="t-section">Antecedentes activos</h2>
+            @if (canWrite()) {
+              <button type="button" class="btn btn-secondary btn-sm" (click)="openBackgroundForm()">
+                <medsys-icon name="plus" [size]="14" /> Registrar antecedente
+              </button>
+            }
+          </div>
+
+          @if (backgrounds.isLoading()) {
+            <div class="card-body"><medsys-skeleton width="100%" height="60px" /></div>
+          } @else if (backgrounds.error()) {
+            <medsys-error-state
+              [failure]="backgrounds.error()"
+              [compact]="true"
+              (retry)="backgrounds.reload()"
+            />
+          } @else if (activeBackgrounds().length === 0) {
+            <medsys-empty-state
+              icon="clipboard-list"
+              heading="Sin antecedentes registrados"
+              description="Los antecedentes personales, familiares y quirúrgicos acompañan a la persona en cada atención y ayudan a interpretar lo que ocurre hoy."
+            >
+              @if (canWrite()) {
+                <button type="button" class="btn btn-primary" (click)="openBackgroundForm()">
+                  <medsys-icon name="plus" [size]="15" /> Registrar un antecedente
+                </button>
+              }
+            </medsys-empty-state>
+          } @else {
+            <div class="clin-list">
+              @for (background of activeBackgrounds(); track background.id) {
+                <div class="clin-item">
+                  <div class="pair grow">
+                    <div class="row gap-2 wrap">
+                      <span class="t-strong">{{ background.title }}</span>
+                      <medsys-status-chip
+                        [value]="background.type"
+                        [dictionary]="backgroundTypes"
+                      />
+                      @if (background.icd10Code) {
+                        <span class="clin-code">{{ background.icd10Code }}</span>
+                      }
+                    </div>
+                    @if (background.detail) {
+                      <p class="t-sec t-measure">{{ background.detail }}</p>
+                    }
+                    <span class="t-micro t-num">
+                      @if (background.eventDate) {
+                        Ocurrió el {{ background.eventDate | msDate }} ·
+                      }
+                      Registrado {{ background.recordedAt | msDateTime }}
+                    </span>
+                  </div>
+                  @if (canWrite()) {
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm btn-icon"
+                      [attr.aria-label]="'Retirar ' + background.title"
+                      (click)="removing.set(background)"
+                    >
+                      <medsys-icon name="trash" [size]="14" />
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <medsys-open-encounter-dialog
+    [open]="openingEncounter()"
+    [presetPatientId]="file.patientId"
+    (closed)="openingEncounter.set(false)"
+  />
+
+  <medsys-dialog
+    [open]="addingAllergy()"
+    [width]="500"
+    heading="Registrar alergia"
+    description="Aparecerá destacada en la columna de contexto de cada encuentro clínico de esta persona."
+    (closed)="addingAllergy.set(false)"
+  >
+    <div class="stack gap-4">
+      @if (allergyError(); as message) {
+        <medsys-notice tone="err">{{ message }}</medsys-notice>
+      }
+      <div class="field">
+        <label class="field-label" for="allergy-substance">Sustancia</label>
+        <input
+          id="allergy-substance"
+          class="input"
+          maxlength="160"
+          autofocus
+          placeholder="Penicilina"
+          [value]="substance()"
+          (input)="substance.set($any($event.target).value)"
+        />
+        <span class="field-hint">El agente que provoca la reacción.</span>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label" for="allergy-type">Tipo</label>
+          <span class="select-wrap">
+            <select
+              id="allergy-type"
+              class="select"
+              [value]="allergyType()"
+              (change)="allergyType.set($any($event.target).value)"
+            >
+              @for (option of allergyTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="allergy-severity">Gravedad</label>
+          <span class="select-wrap">
+            <select
+              id="allergy-severity"
+              class="select"
+              [value]="severity()"
+              (change)="severity.set($any($event.target).value)"
+            >
+              @for (option of severityOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </span>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="allergy-reaction">
+          Reacción <span class="field-optional">(opcional)</span>
+        </label>
+        <textarea
+          id="allergy-reaction"
+          class="textarea"
+          rows="3"
+          maxlength="300"
+          placeholder="Urticaria generalizada y edema facial."
+          [value]="reaction()"
+          (input)="reaction.set($any($event.target).value)"
+        ></textarea>
+        <span class="field-hint">Qué le ocurre a la persona al exponerse.</span>
+      </div>
+    </div>
+    <ng-container dialogFooter>
+      <button type="button" class="btn btn-secondary" (click)="addingAllergy.set(false)">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="substance().trim().length === 0 || allergyPending()"
+        (click)="saveAllergy()"
+      >
+        Registrar alergia
+      </button>
+    </ng-container>
+  </medsys-dialog>
+
+  <medsys-confirm-dialog
+    [open]="resolving() !== null"
+    [danger]="false"
+    heading="Marcar la alergia como resuelta"
+    [description]="
+      'La alergia a ' +
+      (resolving()?.substance ?? '') +
+      ' dejará de aparecer como advertencia activa durante los encuentros. El registro se conserva en el historial y puede volver a activarse.'
+    "
+    confirmLabel="Marcar resuelta"
+    [pending]="allergyPending()"
+    (cancelled)="resolving.set(null)"
+    (confirmed)="resolveAllergy()"
+  />
+
+  <medsys-dialog
+    [open]="addingBackground()"
+    [width]="520"
+    heading="Registrar antecedente"
+    description="Queda asociado al expediente y se muestra durante cada encuentro clínico."
+    (closed)="addingBackground.set(false)"
+  >
+    <div class="stack gap-4">
+      @if (backgroundError(); as message) {
+        <medsys-notice tone="err">{{ message }}</medsys-notice>
+      }
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label" for="background-type">Tipo</label>
+          <span class="select-wrap">
+            <select
+              id="background-type"
+              class="select"
+              [value]="backgroundType()"
+              (change)="backgroundType.set($any($event.target).value)"
+            >
+              @for (option of backgroundTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="background-date">
+            Fecha del evento <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            id="background-date"
+            class="input input-num"
+            type="date"
+            [value]="eventDate()"
+            (input)="eventDate.set($any($event.target).value)"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="background-title">Título</label>
+        <input
+          id="background-title"
+          class="input"
+          maxlength="160"
+          autofocus
+          placeholder="Hipertensión arterial diagnosticada en 2019"
+          [value]="title()"
+          (input)="title.set($any($event.target).value)"
+        />
+        <span class="field-hint">Resumen en una línea.</span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="background-detail">
+          Detalle <span class="field-optional">(opcional)</span>
+        </label>
+        <textarea
+          id="background-detail"
+          class="textarea"
+          rows="4"
+          maxlength="3000"
+          [value]="detail()"
+          (input)="detail.set($any($event.target).value)"
+        ></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="background-icd">
+          Código CIE-10 <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="background-icd"
+          class="input t-mono"
+          maxlength="10"
+          [value]="backgroundIcd10()"
+          (input)="backgroundIcd10.set($any($event.target).value.toUpperCase())"
+        />
+      </div>
+    </div>
+    <ng-container dialogFooter>
+      <button type="button" class="btn btn-secondary" (click)="addingBackground.set(false)">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="title().trim().length === 0 || backgroundPending()"
+        (click)="saveBackground()"
+      >
+        Registrar antecedente
+      </button>
+    </ng-container>
+  </medsys-dialog>
+
+  <medsys-confirm-dialog
+    [open]="removing() !== null"
+    heading="Retirar el antecedente"
+    [description]="
+      '«' +
+      (removing()?.title ?? '') +
+      '» dejará de mostrarse entre los antecedentes activos de la persona. El registro se conserva en el historial del expediente.'
+    "
+    confirmLabel="Retirar antecedente"
+    [pending]="backgroundPending()"
+    (cancelled)="removing.set(null)"
+    (confirmed)="removeBackground()"
+  />
+}
