@@ -253,6 +253,39 @@ export const PAYMENT_METHOD: Dict = dict({
   '8': 'Cheque',
 });
 
+/* ---------------------------------------------------------- profesionales */
+/* Copiados de `ms-profesionales/domain/*.java`. Dos avisos para quien los lea
+   esperando otra cosa: el estado del vínculo es ACTIVE | SUSPENDED | ENDED —no
+   existe INACTIVE— y la modalidad describe la relación contractual con el
+   centro, no si la atención es presencial o remota; esa otra modalidad es
+   `MODALITY`, de ms-agenda. */
+export const PROFESSIONAL_TYPE: Dict = dict({
+  PHYSICIAN: 'Médico',
+  DENTIST: 'Odontólogo',
+  PSYCHOLOGIST: 'Psicólogo',
+  NUTRITIONIST: 'Nutricionista',
+  PHYSIOTHERAPIST: 'Fisioterapeuta',
+  NURSING: 'Enfermería',
+  BIOCHEMIST: 'Bioquímico',
+  OTHER: 'Otro',
+});
+export const PROFESSIONAL_STATUS: Dict = dict({
+  ACTIVE: 'Activo',
+  SUSPENDED: 'Suspendido',
+  INACTIVE: 'Inactivo',
+});
+export const PROFESSIONAL_LINK_STATUS: Dict = dict({
+  ACTIVE: 'Vigente',
+  SUSPENDED: 'Suspendido',
+  ENDED: 'Terminado',
+});
+export const WORK_MODALITY: Dict = dict({
+  STAFF: 'De planta',
+  EXTERNAL_CONSULTANT: 'Consultor externo',
+  FEE_BASED: 'Por honorarios',
+  PARTNER: 'Socio',
+});
+
 /** Traduce un valor de enum; si el backend añade uno nuevo, se muestra tal cual
  *  en vez de dejar la celda vacía. Un valor sin traducir es visible, no invisible. */
 export function label(dictionary: Dict, value?: string | null, fallback = '—') {

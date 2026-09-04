@@ -1,0 +1,123 @@
+<medsys-page-header
+  heading="Profesionales"
+  description="Quiénes atienden en el centro, con qué matrícula y bajo qué vínculo. Desde aquí se abre su ficha."
+>
+  <ng-container headerActions>
+    @if (canManage()) {
+      <button type="button" class="btn btn-primary" (click)="registering.set(true)">
+        <medsys-icon name="user-plus" [size]="15" /> Registrar profesional
+      </button>
+    }
+  </ng-container>
+</medsys-page-header>
+
+<div class="card">
+  <div class="filters">
+    <div class="search-field">
+      <medsys-icon name="search" [size]="15" />
+      <input
+        id="professionals-search"
+        class="input"
+        type="search"
+        autofocus
+        aria-label="Buscar profesional"
+        placeholder="Buscar por nombre o matrícula"
+        [value]="term()"
+        (input)="term.set($any($event.target).value)"
+      />
+    </div>
+
+    <medsys-select
+      [options]="specialtyOptions()"
+      [value]="specialty() ?? ''"
+      (valueChange)="onSpecialty($event)"
+      ariaLabel="Filtrar por especialidad"
+      placeholder="Todas las especialidades"
+    />
+
+    @if (term()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="clearSearch()">
+        <medsys-icon name="x" [size]="14" /> Limpiar
+      </button>
+    }
+    <span class="grow"></span>
+    @if (directory.hasValue()) {
+      <span class="t-sec t-num">{{ countLabel() }}</span>
+    }
+  </div>
+
+  @if (directory.isLoading()) {
+    <medsys-table-skeleton [rows]="7" [columns]="5" />
+  } @else if (directory.error()) {
+    <medsys-error-state
+      [failure]="directory.error()"
+      [compact]="true"
+      (retry)="directory.reload()"
+    />
+  } @else if (filteredOut()) {
+    <medsys-empty-state
+      icon="search-x"
+      [heading]="'Nadie coincide con «' + term() + '»'"
+      description="Prueba con el apellido o con el número de matrícula. La búsqueda solo recorre la especialidad que esté filtrada arriba."
+    >
+      <button type="button" class="btn btn-secondary" (click)="clearSearch()">
+        <medsys-icon name="x" [size]="14" /> Limpiar búsqueda
+      </button>
+    </medsys-empty-state>
+  } @else if (results().length === 0) {
+    <medsys-empty-state
+      icon="stethoscope"
+      heading="Todavía no hay profesionales"
+      description="Registrar a quien atiende es lo que permite abrirle agenda, asignarle citas y firmar sus encuentros."
+    >
+      @if (canManage()) {
+        <button type="button" class="btn btn-primary" (click)="registering.set(true)">
+          <medsys-icon name="user-plus" [size]="15" /> Registrar al primer profesional
+        </button>
+      }
+    </medsys-empty-state>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Matrícula</th>
+            <th scope="col">Especialidad principal</th>
+            <th scope="col">Modalidad</th>
+            <th scope="col">Vínculo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (person of results(); track person.id) {
+            <tr
+              data-clickable="true"
+              tabindex="0"
+              (click)="open(person.id)"
+              (keydown)="onRowKey($event, person.id)"
+            >
+              <td>
+                <div class="pair">
+                  <span class="t-strong">{{ person.fullName }}</span>
+                  <span class="t-micro">{{ typeLabel(person) }}</span>
+                </div>
+              </td>
+              <td class="t-num">{{ person.licenseNumber }}</td>
+              <td>{{ specialtyLabel(person) }}</td>
+              <td class="t-sec">{{ modalityLabel(person) }}</td>
+              <td>
+                <medsys-status-chip [value]="link(person)?.status" [dictionary]="linkStatuses" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<medsys-register-professional-sheet
+  [open]="registering()"
+  (closed)="registering.set(false)"
+  (saved)="directory.reload()"
+/>

@@ -27,6 +27,14 @@ export const can = {
   manageStudyOrders: (r: Roles) =>
     has(r, 'PHYSICIAN', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
 
+  /* ms-profesionales.
+     Recepción consulta el directorio para saber a quién citar, pero no da de
+     alta ni desactiva vínculos: eso cambia quién puede atender en el centro y
+     lo decide quien lo organiza. */
+  viewProfessionals: (r: Roles) =>
+    has(r, 'RECEPTIONIST', 'ADMINISTRATOR', 'PHYSICIAN', 'PLATFORM_ADMIN'),
+  manageProfessionals: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+
   /* ms-tenencia */
   viewOrganization: (r: Roles) =>
     has(r, 'ADMINISTRATOR', 'RECEPTIONIST', 'BILLING_CLERK', 'PHYSICIAN', 'PLATFORM_ADMIN'),
