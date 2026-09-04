@@ -20,6 +20,35 @@ export const routes: Routes = [
         loadComponent: () => import('./features/home/home-page').then((m) => m.HomePage),
       },
 
+      /* --------------------------------------------------------- agenda -- */
+      {
+        path: 'agenda',
+        title: 'MSYS · Agenda',
+        canActivate: [permissionGuard('viewSchedule')],
+        loadComponent: () => import('./features/scheduling/agenda-page').then((m) => m.AgendaPage),
+      },
+      {
+        path: 'citas',
+        title: 'MSYS · Citas',
+        canActivate: [permissionGuard('viewSchedule')],
+        loadComponent: () =>
+          import('./features/scheduling/appointments-page').then((m) => m.AppointmentsPage),
+      },
+      {
+        path: 'disponibilidad',
+        title: 'MSYS · Disponibilidad',
+        canActivate: [permissionGuard('manageAvailability')],
+        loadComponent: () =>
+          import('./features/scheduling/availability-page').then((m) => m.AvailabilityPage),
+      },
+      {
+        path: 'recursos',
+        title: 'MSYS · Recursos',
+        canActivate: [permissionGuard('manageResources')],
+        loadComponent: () =>
+          import('./features/scheduling/resources-page').then((m) => m.ResourcesPage),
+      },
+
       /* ------------------------------------------------------- historial -- */
       {
         path: 'pacientes',

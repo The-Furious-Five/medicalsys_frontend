@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { describeFailure } from '../../core/http/api-error';
-import { Icon } from '../../core/ui/icon';
+import { Icon, IconName } from '../../core/ui/icon';
 import { Notice } from '../../shared/notice';
 
 interface DemoAccount {
@@ -25,10 +25,25 @@ const DEMO_ACCOUNTS: readonly DemoAccount[] = [
 ];
 const DEMO_PASSWORD = 'Demo1234!';
 
+interface BrandPoint {
+  readonly icon: IconName;
+  readonly label: string;
+}
+
+/** Tres frases, no diez: lo que la plataforma hace, dicho en verbos concretos. */
+const BRAND_POINTS: readonly BrandPoint[] = [
+  { icon: 'clipboard-list', label: 'Expediente clínico completo de cada paciente' },
+  { icon: 'calendar', label: 'Agenda del centro y de cada profesional' },
+  { icon: 'receipt', label: 'Facturación de las prestaciones sin duplicar datos' },
+];
+
 /**
- * Jerarquía: el formulario manda y ocupa la columna izquierda, sobre superficie
- * blanca; la marca y la naturaleza del entorno viven a la derecha, en una
- * superficie neutra que nunca compite con el campo de contraseña.
+ * Jerarquía: el formulario manda. Vive en una tarjeta blanca elevada sobre un
+ * lienzo teñido de verde de marca; la presentación de la plataforma ocupa la
+ * columna izquierda, plana y sin elevación, para no competir con él.
+ *
+ * En el marcado la tarjeta va primero y la rejilla la coloca a la derecha: el
+ * orden de lectura empieza donde empieza la tarea.
  */
 @Component({
   selector: 'medsys-login-page',
@@ -43,6 +58,7 @@ export class LoginPage {
   private readonly route = inject(ActivatedRoute);
 
   protected readonly demoAccounts = DEMO_ACCOUNTS;
+  protected readonly brandPoints = BRAND_POINTS;
   protected readonly email = signal('');
   protected readonly password = signal('');
   protected readonly error = signal<string | null>(null);

@@ -15,7 +15,32 @@ export type StudyOrderStatus =
   'REQUESTED' | 'SCHEDULED' | 'SAMPLE_COLLECTED' | 'IN_PROGRESS' | 'REPORTED' | 'VOIDED';
 export type PrescriptionStatus =
   'ISSUED' | 'PARTIALLY_DISPENSED' | 'DISPENSED' | 'EXPIRED' | 'VOIDED';
+export type AppointmentStatus =
+  | 'REQUESTED'
+  | 'CONFIRMED'
+  | 'WAITING'
+  | 'IN_PROGRESS'
+  | 'ATTENDED'
+  | 'CANCELLED'
+  | 'NO_SHOW'
+  | 'RESCHEDULED';
 export type RecordStatus = 'ACTIVE' | 'ARCHIVED' | 'CLOSED';
+
+/**
+ * Fuente: ms-agenda · domain/AppointmentStatus.java · mapa TRANSITIONS.
+ * Reprogramar no es un botón de estado: crea una cita nueva, por eso vive en su
+ * propio formulario y no en la lista de transiciones que se ofrecen como acción.
+ */
+const APPOINTMENT: Record<AppointmentStatus, AppointmentStatus[]> = {
+  REQUESTED: ['CONFIRMED', 'WAITING', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED'],
+  CONFIRMED: ['WAITING', 'IN_PROGRESS', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED'],
+  WAITING: ['IN_PROGRESS', 'CANCELLED', 'NO_SHOW'],
+  IN_PROGRESS: ['ATTENDED', 'CANCELLED'],
+  ATTENDED: [],
+  CANCELLED: [],
+  NO_SHOW: [],
+  RESCHEDULED: [],
+};
 
 const ENCOUNTER: Record<EncounterStatus, EncounterStatus[]> = {
   DRAFT: ['SIGNED', 'VOIDED'],
@@ -39,6 +64,21 @@ const PRESCRIPTION: Record<PrescriptionStatus, PrescriptionStatus[]> = {
   EXPIRED: [],
   VOIDED: [],
 };
+
+export const appointmentTransitions = (from: AppointmentStatus) => APPOINTMENT[from] ?? [];
+
+/** Una cita cerrada ya no ocupa la agenda ni admite cambios. */
+export const isAppointmentClosed = (status: AppointmentStatus) =>
+  appointmentTransitions(status).length === 0;
+
+/** Recorrido normal de una cita atendida, para dibujar su línea de tiempo. */
+export const APPOINTMENT_TIMELINE: AppointmentStatus[] = [
+  'REQUESTED',
+  'CONFIRMED',
+  'WAITING',
+  'IN_PROGRESS',
+  'ATTENDED',
+];
 
 export const encounterTransitions = (from: EncounterStatus) => ENCOUNTER[from] ?? [];
 export const studyOrderTransitions = (from: StudyOrderStatus) => STUDY_ORDER[from] ?? [];
@@ -131,4 +171,36 @@ export const genericTone: Record<string, Tone> = {
   SCHEDULED: 'brand',
   IN_PROGRESS: 'warn',
   COMPLETED: 'ok',
+};
+
+/**
+ * Agenda. El tablero pinta muchas citas a la vez, así que el estado tiene que
+ * distinguirse de un vistazo sin depender solo del color: cada bloque lleva
+ * además el nombre del estado. Neutro = pedida y aún sin confirmar; naranja =
+ * la persona ya está en el centro y alguien la espera; verde = en marcha o
+ * resuelta; rojo = no vino; apagado = fuera de juego.
+ */
+export const appointmentTone: Record<AppointmentStatus, Tone> = {
+  REQUESTED: 'neutral',
+  CONFIRMED: 'brand',
+  WAITING: 'warn',
+  IN_PROGRESS: 'solid',
+  ATTENDED: 'ok',
+  NO_SHOW: 'err',
+  CANCELLED: 'muted',
+  RESCHEDULED: 'muted',
+};
+
+export const resourceTone: Record<string, Tone> = {
+  AVAILABLE: 'ok',
+  OCCUPIED: 'brand',
+  UNDER_MAINTENANCE: 'warn',
+  OUT_OF_SERVICE: 'err',
+};
+
+export const reservationTone: Record<string, Tone> = {
+  RESERVED: 'brand',
+  IN_USE: 'warn',
+  RELEASED: 'muted',
+  CANCELLED: 'muted',
 };

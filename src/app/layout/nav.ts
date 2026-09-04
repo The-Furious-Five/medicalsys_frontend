@@ -37,6 +37,21 @@ const NAV: readonly NavGroup[] = [
     ],
   },
   {
+    id: 'agenda',
+    label: 'Agenda',
+    items: [
+      { link: '/agenda', label: 'Agenda', icon: 'calendar', permission: 'viewSchedule' },
+      { link: '/citas', label: 'Citas', icon: 'clipboard-list', permission: 'viewSchedule' },
+      {
+        link: '/disponibilidad',
+        label: 'Disponibilidad',
+        icon: 'clock',
+        permission: 'manageAvailability',
+      },
+      { link: '/recursos', label: 'Recursos', icon: 'building', permission: 'manageResources' },
+    ],
+  },
+  {
     id: 'historial',
     label: 'Historial clínico',
     items: [

@@ -80,11 +80,19 @@ Abrir:
 http://localhost:4200
 ```
 
-El servidor de Angular reenvía `/api/**` y `/actuator/**` a `http://localhost:8080` mediante
-`proxy.conf.json`. Esto evita CORS durante el desarrollo y permite usar URLs relativas.
+El servidor de Angular reenvía `/api/**` y `/actuator/**` al gateway mediante
+`proxy.conf.mjs`. Esto evita CORS durante el desarrollo y permite usar URLs relativas.
 
-Si el gateway local utiliza otro puerto, por ejemplo `8088`, cambia únicamente `target` en
-`proxy.conf.json`. No cambies las URLs dentro de componentes o servicios.
+El destino se configura en `.env` (copiar desde `.env.example`):
+
+```dotenv
+API_TARGET=http://localhost:8080
+```
+
+Sirve tanto para un gateway local en otro puerto como para uno remoto, por ejemplo un túnel
+`https://<subdominio>.trycloudflare.com`. Tras editar `.env` hay que reiniciar `npm start`.
+No cambies las URLs dentro de componentes o servicios: deben seguir siendo relativas, porque
+el interceptor solo adjunta el token `Bearer` a las peticiones que empiezan por `/api/`.
 
 ## Comandos disponibles
 

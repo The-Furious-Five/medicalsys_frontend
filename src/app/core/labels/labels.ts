@@ -253,6 +253,89 @@ export const PAYMENT_METHOD: Dict = dict({
   '8': 'Cheque',
 });
 
+/* ------------------------------------------------------------------ agenda */
+export const APPOINTMENT_STATUS: Dict = dict({
+  REQUESTED: 'Programada',
+  CONFIRMED: 'Confirmada',
+  WAITING: 'En sala',
+  IN_PROGRESS: 'En curso',
+  ATTENDED: 'Completada',
+  NO_SHOW: 'No asistió',
+  CANCELLED: 'Cancelada',
+  RESCHEDULED: 'Reprogramada',
+});
+export const MODALITY: Dict = dict({
+  IN_PERSON: 'Presencial',
+  TELECONSULTATION: 'Teleconsulta',
+});
+export const AVAILABILITY_MODALITY: Dict = dict({
+  IN_PERSON: 'Presencial',
+  TELECONSULTATION: 'Teleconsulta',
+  BOTH: 'Presencial y teleconsulta',
+});
+export const CHANNEL_ORIGIN: Dict = dict({
+  RECEPTION: 'Mostrador',
+  PHONE: 'Teléfono',
+  WHATSAPP: 'WhatsApp',
+  WEB_PORTAL: 'Portal web',
+  MOBILE_APP: 'Aplicación móvil',
+});
+export const STATUS_CHANGE_ORIGIN: Dict = dict({
+  USER: 'Personal del centro',
+  PATIENT: 'Paciente',
+  SYSTEM: 'Sistema',
+  WHATSAPP: 'WhatsApp',
+});
+export const BLOCK_TYPE: Dict = dict({
+  VACATION: 'Vacaciones',
+  HOLIDAY: 'Feriado',
+  TRAINING: 'Capacitación',
+  MAINTENANCE: 'Mantenimiento',
+  EMERGENCY: 'Emergencia',
+  CONFERENCE: 'Congreso',
+  OTHER: 'Otro motivo',
+});
+export const RESOURCE_TYPE: Dict = dict({
+  OFFICE: 'Consultorio',
+  OPERATING_ROOM: 'Quirófano',
+  PROCEDURE_ROOM: 'Sala de procedimientos',
+  RECOVERY_ROOM: 'Sala de recuperación',
+  IMAGING_EQUIPMENT: 'Equipo de imagen',
+  LABORATORY: 'Laboratorio',
+  WAITING_ROOM: 'Sala de espera',
+});
+export const RESOURCE_STATUS: Dict = dict({
+  AVAILABLE: 'Disponible',
+  OCCUPIED: 'Ocupado',
+  UNDER_MAINTENANCE: 'En mantenimiento',
+  OUT_OF_SERVICE: 'Fuera de servicio',
+});
+export const RESERVATION_STATUS: Dict = dict({
+  RESERVED: 'Reservado',
+  IN_USE: 'En uso',
+  RELEASED: 'Liberado',
+  CANCELLED: 'Cancelada',
+});
+/** Los días de la semana viajan como 1..7 (ISO-8601), lunes primero. */
+export const WEEKDAY: Dict = dict({
+  '1': 'Lunes',
+  '2': 'Martes',
+  '3': 'Miércoles',
+  '4': 'Jueves',
+  '5': 'Viernes',
+  '6': 'Sábado',
+  '7': 'Domingo',
+});
+export const WEEKDAY_SHORT: Dict = dict({
+  '1': 'Lun',
+  '2': 'Mar',
+  '3': 'Mié',
+  '4': 'Jue',
+  '5': 'Vie',
+  '6': 'Sáb',
+  '7': 'Dom',
+});
+
 /** Traduce un valor de enum; si el backend añade uno nuevo, se muestra tal cual
  *  en vez de dejar la celda vacía. Un valor sin traducir es visible, no invisible. */
 export function label(dictionary: Dict, value?: string | null, fallback = '—') {

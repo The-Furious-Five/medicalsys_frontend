@@ -1,0 +1,130 @@
+<medsys-page-header
+  heading="Citas"
+  description="Todas las citas del centro, con el estado en el que quedó cada una."
+>
+  <button headerActions type="button" class="btn btn-primary" (click)="newAppointment()">
+    <medsys-icon name="plus" [size]="15" /> Nueva cita
+  </button>
+</medsys-page-header>
+
+<div class="card">
+  <div class="filters">
+    <medsys-select
+      ariaLabel="Filtrar por estado"
+      [options]="statusOptions"
+      [value]="status() ?? ''"
+      (valueChange)="status.set($event || null); page.set(0)"
+      placeholder="Todos los estados"
+    />
+    <medsys-select
+      ariaLabel="Filtrar por profesional"
+      [options]="professionalOptions()"
+      [value]="professional() ?? ''"
+      (valueChange)="professional.set($event || null); page.set(0)"
+      placeholder="Todos los profesionales"
+    />
+    <label class="field-label" for="appointments-from">Desde</label>
+    <medsys-date-field
+      [controlId]="'appointments-from'"
+      [value]="from()"
+      (valueChange)="from.set($event); page.set(0)"
+    />
+    <label class="field-label" for="appointments-to">Hasta</label>
+    <medsys-date-field
+      [controlId]="'appointments-to'"
+      [value]="to()"
+      (valueChange)="to.set($event); page.set(0)"
+    />
+    @if (hasFilters()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="resetFilters()">
+        <medsys-icon name="x" [size]="14" /> Quitar filtros
+      </button>
+    }
+    <span class="grow"></span>
+    @if (list.value(); as result) {
+      <span class="t-sec t-num">{{ result.totalElements }} citas</span>
+    }
+  </div>
+
+  @if (list.isLoading()) {
+    <medsys-table-skeleton [rows]="6" [columns]="6" />
+  } @else if (list.error()) {
+    <medsys-error-state [failure]="list.error()" [compact]="true" (retry)="list.reload()" />
+  } @else if (list.value()!.content.length === 0) {
+    <medsys-empty-state
+      icon="calendar"
+      [heading]="
+        hasFilters() ? 'Ninguna cita con estos filtros' : 'Todavía no hay citas en este periodo'
+      "
+      description="Agenda una cita o amplía el rango de fechas para ver las que ya existen."
+    >
+      <div class="row gap-2 wrap">
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary" (click)="resetFilters()">
+            <medsys-icon name="x" [size]="14" /> Quitar filtros
+          </button>
+        }
+        <button type="button" class="btn btn-primary" (click)="newAppointment()">
+          <medsys-icon name="plus" [size]="15" /> Nueva cita
+        </button>
+      </div>
+    </medsys-empty-state>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Paciente</th>
+            <th scope="col">Profesional</th>
+            <th scope="col">Fecha y hora</th>
+            <th scope="col">Duración</th>
+            <th scope="col">Modalidad</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cita of list.value()!.content; track cita.publicId) {
+            <tr
+              data-clickable="true"
+              tabindex="0"
+              (click)="open(cita.publicId)"
+              (keydown)="onRowKey($event, cita.publicId)"
+            >
+              <td>
+                <medsys-patient-name [patientId]="cita.patientPublicId" [withDocument]="true" />
+              </td>
+              <td>{{ professionalName(cita.healthProfessionalPublicId) }}</td>
+              <td class="t-num t-sec">{{ cita.startsAt | msDateTime }}</td>
+              <td class="t-sec">{{ duration(cita.startsAt, cita.endsAt) }}</td>
+              <td class="t-sec">{{ modalities[cita.modality] ?? cita.modality }}</td>
+              <td>
+                <medsys-status-chip
+                  [value]="cita.status"
+                  [dictionary]="appointmentStatuses"
+                  [tones]="appointmentTones"
+                  [strike]="cita.status === 'CANCELLED'"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (list.value(); as result) {
+    <medsys-pager
+      [page]="result.page"
+      [totalPages]="result.totalPages"
+      (pageChange)="page.set($event)"
+    />
+  }
+</div>
+
+<medsys-appointment-sheet
+  [appointmentId]="detailId()"
+  (closed)="detailId.set(null)"
+  (changed)="list.reload()"
+/>
+
+<medsys-new-appointment-sheet [seed]="seed()" (closed)="seed.set(null)" (saved)="onSaved()" />

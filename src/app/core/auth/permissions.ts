@@ -27,6 +27,18 @@ export const can = {
   manageStudyOrders: (r: Roles) =>
     has(r, 'PHYSICIAN', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
 
+  /* ms-agenda.
+     El servicio no anota roles —el gateway lo publica abierto—, así que aquí la
+     regla es la del mostrador real: recepción y profesionales trabajan con la
+     agenda del día; la disponibilidad y los consultorios los define quien
+     organiza el centro, no quien atiende. */
+  viewSchedule: (r: Roles) =>
+    has(r, 'RECEPTIONIST', 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  manageAppointments: (r: Roles) =>
+    has(r, 'RECEPTIONIST', 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  manageAvailability: (r: Roles) => has(r, 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  manageResources: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+
   /* ms-tenencia */
   viewOrganization: (r: Roles) =>
     has(r, 'ADMINISTRATOR', 'RECEPTIONIST', 'BILLING_CLERK', 'PHYSICIAN', 'PLATFORM_ADMIN'),
