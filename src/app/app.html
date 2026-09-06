@@ -1,18 +1,73 @@
-<header class="app-header">
-  <a class="brand" routerLink="/" aria-label="MedicalSys, ir al inicio">
-    <span class="brand__mark" aria-hidden="true">M</span>
-    <span>
-      <strong>MedicalSys</strong>
-      <small>Plataforma clínica</small>
-    </span>
-  </a>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Navegación principal">
+    <div class="sidebar__brand">
+      <a class="brand" routerLink="/catalogos" aria-label="MedicalSys">
+        <span class="brand__mark" aria-hidden="true">✚</span>
+        <span>
+          <strong>MedicalSys</strong>
+          <small>PLATAFORMA CLÍNICA</small>
+        </span>
+      </a>
+    </div>
 
-  <span class="environment-badge">Entorno local</span>
-</header>
+    <nav class="navigation" aria-label="Módulos">
+      <span class="nav-item nav-item--muted">Dashboard</span>
 
-<router-outlet />
+      <p class="nav-group">Clínico</p>
+      <span class="nav-item nav-item--muted">Pacientes</span>
+      <span class="nav-item nav-item--muted">Historial médico</span>
 
-<footer class="app-footer">
-  <span>MedicalSys · {{ currentYear }}</span>
-  <span>Los datos utilizados en desarrollo deben ser ficticios.</span>
-</footer>
+      <p class="nav-group">Agenda</p>
+      <span class="nav-item nav-item--muted">Calendario</span>
+
+      <p class="nav-group">Gestión</p>
+      <span class="nav-item nav-item--muted">Profesionales</span>
+      <span class="nav-item nav-item--muted">Organizaciones</span>
+      <span class="nav-item nav-item--muted">Usuarios</span>
+
+      <p class="nav-group">Documental</p>
+      <span class="nav-item nav-item--muted">Documentos</span>
+
+      <p class="nav-group">Facturación</p>
+      <span class="nav-item nav-item--muted">Facturación</span>
+
+      <p class="nav-group">Sistema</p>
+      <a class="nav-item nav-item--active" routerLink="/catalogos">
+        Catálogos
+        <span class="nav-item__dot" aria-hidden="true"></span>
+      </a>
+      <span class="nav-item nav-item--muted">Configuración</span>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="connection">
+        <span class="connection__dot" [class.connection__dot--offline]="gatewayOffline()"></span>
+        <span>{{ gatewayOffline() ? 'Sin Gateway' : 'Conectado' }}</span>
+      </div>
+      <div class="user-chip">
+        <span class="user-chip__avatar" aria-hidden="true">M</span>
+        <span>
+          <strong>Consulta local</strong>
+          <small>Administrador</small>
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="content">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Catálogos</h1>
+        <span class="pill">Consulta</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="org-chip">Clínica Demo</span>
+        <span>vía Gateway · /api/v1/catalogs</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <router-outlet />
+    </main>
+  </div>
+</div>

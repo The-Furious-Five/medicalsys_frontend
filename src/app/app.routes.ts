@@ -2,12 +2,18 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: 'catalogos',
+    title: 'MedicalSys · Catálogos clínicos',
+    loadComponent: () =>
+      import('./features/catalogs/catalogs-page').then((module) => module.CatalogsPage),
+  },
+  {
     path: '',
-    title: 'MedicalSys · Inicio',
-    loadComponent: () => import('./features/home/home-page').then((module) => module.HomePage),
+    pathMatch: 'full',
+    redirectTo: 'catalogos',
   },
   {
     path: '**',
-    redirectTo: '',
+    redirectTo: 'catalogos',
   },
 ];

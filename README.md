@@ -14,9 +14,9 @@ La base incluye:
 - `HttpClient` configurado con Bearer token y `X-Correlation-Id`.
 - Sesión temporal en `sessionStorage` para el MVP.
 - Modelo común del error HTTP acordado.
-- Página inicial responsive y estructura orientada a funcionalidades.
+- Recorte funcional de **Catálogos** (`/catalogos`): consulta de especialidades, CIE-10, medicamentos y tipos de estudio a través del Gateway.
 
-Todavía no implementa login ni los casos de negocio. Cada funcionalidad debe agregarse mediante su
+Todavía no implementa login ni el resto de casos de negocio. Cada funcionalidad debe agregarse mediante su
 historia de usuario y contrato aprobado.
 
 ## Requisitos
@@ -53,6 +53,8 @@ docker compose up -d
 docker compose ps
 curl http://localhost:8080/actuator/health
 ```
+
+Si el Gateway no arranca, `JWT_SECRET` en el `.env` del backend debe tener **al menos 32 caracteres**. El valor documentado está en `.env.example`.
 
 En otra terminal, desde este repositorio:
 
