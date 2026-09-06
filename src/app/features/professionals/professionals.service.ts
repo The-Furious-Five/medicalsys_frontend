@@ -68,7 +68,6 @@ export class ProfessionalsService {
       }),
     );
   }
-
   /* ------------------------------------------------------- ficha y alta -- */
 
   /**

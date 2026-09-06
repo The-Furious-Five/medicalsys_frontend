@@ -1,0 +1,342 @@
+<medsys-page-header
+  heading="Disponibilidad"
+  description="El horario semanal de cada profesional y las ausencias que lo interrumpen. De aquí salen los huecos que la agenda ofrece al citar."
+/>
+
+<div class="card">
+  <div class="filters">
+    <label class="field-label" for="availability-professional">Profesional</label>
+    <medsys-select
+      [controlId]="'availability-professional'"
+      [options]="professionalOptions()"
+      [value]="professionalId() ?? ''"
+      (valueChange)="professionalId.set($event || null)"
+      placeholder="Elige un profesional"
+    />
+    <span class="grow"></span>
+    @if (professionalOrganizationId()) {
+      <button type="button" class="btn btn-primary btn-sm" (click)="formOpen.set(!formOpen())">
+        <medsys-icon name="plus" [size]="14" /> Añadir horario
+      </button>
+    }
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div style="padding: var(--s-4) var(--s-4) 0">
+      <medsys-notice tone="err" heading="No se pudo guardar el cambio">{{ message }}</medsys-notice>
+    </div>
+  }
+
+  @if (professionalId() === null) {
+    <medsys-empty-state
+      icon="clock"
+      heading="Elige un profesional"
+      description="El horario es de cada persona: dice qué días atiende, entre qué horas y en franjas de cuánto tiempo."
+    />
+  } @else if (professionalOrganizationId() === null) {
+    <medsys-notice tone="warn" heading="Sin vínculo activo con este centro">
+      Este profesional no tiene un vínculo activo con la organización, así que no se le puede
+      definir horario. Revísalo en su ficha antes de continuar.
+    </medsys-notice>
+  } @else {
+    @if (formOpen()) {
+      <div
+        class="stack gap-4"
+        style="padding: var(--s-4); border-bottom: 1px solid var(--border-subtle)"
+      >
+        <div class="grid-3">
+          <div class="field">
+            <label class="field-label" for="rule-day">Día</label>
+            <medsys-select
+              [controlId]="'rule-day'"
+              [options]="weekdayOptions"
+              [value]="dayOfWeek()"
+              (valueChange)="dayOfWeek.set($event)"
+              [allowEmpty]="false"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="rule-start">Desde</label>
+            <input
+              id="rule-start"
+              type="time"
+              class="input input-num"
+              [value]="startTime()"
+              (change)="startTime.set($any($event.target).value)"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="rule-end">Hasta</label>
+            <input
+              id="rule-end"
+              type="time"
+              class="input input-num"
+              [value]="endTime()"
+              (change)="endTime.set($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label class="field-label" for="rule-slot">Duración de cada cita (minutos)</label>
+            <input
+              id="rule-slot"
+              type="number"
+              min="5"
+              max="240"
+              step="5"
+              class="input input-num"
+              [value]="slotDuration()"
+              (change)="slotDuration.set(+$any($event.target).value || 30)"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="rule-capacity">Personas por franja</label>
+            <input
+              id="rule-capacity"
+              type="number"
+              min="1"
+              class="input input-num"
+              [value]="capacity()"
+              (change)="capacity.set(+$any($event.target).value || 1)"
+            />
+            <span class="field-hint">Más de una solo si se atiende en paralelo.</span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="rule-modality">Modalidad</label>
+            <medsys-select
+              [controlId]="'rule-modality'"
+              [options]="modalityOptions"
+              [value]="modality()"
+              (valueChange)="setModality($event)"
+              [allowEmpty]="false"
+            />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label" for="rule-from">Vigente desde</label>
+            <medsys-date-field
+              [controlId]="'rule-from'"
+              [value]="validFrom()"
+              (valueChange)="validFrom.set($event)"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="rule-until">
+              Vigente hasta <span class="field-optional">(opcional)</span>
+            </label>
+            <medsys-date-field
+              [controlId]="'rule-until'"
+              [value]="validUntil()"
+              (valueChange)="validUntil.set($event)"
+            />
+          </div>
+        </div>
+
+        <div class="row gap-2">
+          <button type="button" class="btn btn-secondary btn-sm" (click)="formOpen.set(false)">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="pending()"
+            (click)="createRule()"
+          >
+            Guardar horario
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (rules.isLoading() && !rules.hasValue()) {
+      <div class="stack gap-2" style="padding: var(--s-4)">
+        <medsys-skeleton height="40px" />
+        <medsys-skeleton height="40px" />
+      </div>
+    } @else if (rules.error()) {
+      <medsys-error-state [failure]="rules.error()" [compact]="true" (retry)="rules.reload()" />
+    } @else {
+      <ul class="week-list">
+        @for (day of rulesByDay(); track day.day) {
+          <li class="week-day">
+            <span class="week-day-name">{{ day.name }}</span>
+            @if (day.rules.length === 0) {
+              <span class="t-sec">No atiende</span>
+            } @else {
+              <div class="row gap-2 wrap grow">
+                @for (rule of day.rules; track rule.id) {
+                  <span class="week-slot">
+                    <span class="t-num">{{ time(rule.startTime) }}–{{ time(rule.endTime) }}</span>
+                    <span class="t-micro">
+                      {{ slotLabel(rule.slotDurationMinutes) }} ·
+                      {{ modalities[rule.modality] ?? rule.modality }}
+                      @if (rule.simultaneousCapacity > 1) {
+                        · {{ rule.simultaneousCapacity }} en paralelo
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm btn-icon"
+                      aria-label="Desactivar este horario"
+                      [disabled]="pending()"
+                      (click)="deactivate(rule.id)"
+                    >
+                      <medsys-icon name="x" [size]="14" />
+                    </button>
+                  </span>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>
+
+@if (professionalId() !== null) {
+  <div class="card" style="margin-top: var(--s-6)">
+    <div class="filters">
+      <span class="t-strong">Ausencias y bloqueos</span>
+      <span class="grow"></span>
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        (click)="blockFormOpen.set(!blockFormOpen())"
+      >
+        <medsys-icon name="plus" [size]="14" /> Registrar bloqueo
+      </button>
+    </div>
+
+    @if (blockFormOpen()) {
+      <div
+        class="stack gap-4"
+        style="padding: var(--s-4); border-bottom: 1px solid var(--border-subtle)"
+      >
+        <div class="grid-3">
+          <div class="field">
+            <label class="field-label" for="block-type">Motivo</label>
+            <medsys-select
+              [controlId]="'block-type'"
+              [options]="blockTypeOptions"
+              [value]="blockType()"
+              (valueChange)="setBlockType($event)"
+              [allowEmpty]="false"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="block-from">Desde</label>
+            <medsys-date-field
+              [controlId]="'block-from'"
+              [value]="blockFrom()"
+              (valueChange)="blockFrom.set($event)"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="block-from-time">Hora de inicio</label>
+            <input
+              id="block-from-time"
+              type="time"
+              class="input input-num"
+              [value]="blockFromTime()"
+              (change)="blockFromTime.set($any($event.target).value)"
+            />
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label class="field-label" for="block-to">Hasta</label>
+            <medsys-date-field
+              [controlId]="'block-to'"
+              [value]="blockTo()"
+              (valueChange)="blockTo.set($event)"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="block-to-time">Hora de fin</label>
+            <input
+              id="block-to-time"
+              type="time"
+              class="input input-num"
+              [value]="blockToTime()"
+              (change)="blockToTime.set($any($event.target).value)"
+            />
+          </div>
+          <div class="field">
+            <label class="field-label" for="block-reason">
+              Detalle <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+              id="block-reason"
+              class="input"
+              maxlength="250"
+              [value]="blockReason()"
+              (input)="blockReason.set($any($event.target).value)"
+            />
+          </div>
+        </div>
+        <div class="row gap-2">
+          <button type="button" class="btn btn-secondary btn-sm" (click)="blockFormOpen.set(false)">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="pending()"
+            (click)="createBlock()"
+          >
+            Registrar bloqueo
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (blocks.error()) {
+      <medsys-error-state [failure]="blocks.error()" [compact]="true" (retry)="blocks.reload()" />
+    } @else if ((blocks.value() ?? []).length === 0) {
+      <medsys-empty-state
+        icon="calendar"
+        heading="Sin ausencias registradas"
+        description="Vacaciones, feriados o mantenimientos: mientras dure un bloqueo la agenda no ofrece esa franja."
+      />
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Motivo</th>
+              <th scope="col">Desde</th>
+              <th scope="col">Hasta</th>
+              <th scope="col">Detalle</th>
+              <th scope="col" class="th-num">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (block of blocks.value() ?? []; track block.id) {
+              <tr>
+                <td>{{ blockTypes[block.type] ?? block.type }}</td>
+                <td class="t-num t-sec">{{ block.startsAt | msDateTime }}</td>
+                <td class="t-num t-sec">{{ block.endsAt | msDateTime }}</td>
+                <td class="t-sec">{{ block.reason ?? '—' }}</td>
+                <td class="td-num">
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    [disabled]="pending()"
+                    (click)="removeBlock(block.id)"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}

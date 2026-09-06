@@ -1,0 +1,218 @@
+<medsys-page-header
+  heading="Agenda"
+  [crumbs]="[{ label: 'MedicalSys', link: '/' }, { label: 'Agenda' }]"
+>
+  <span headerMeta class="t-sec">{{ heading() }}</span>
+
+  <ng-container headerActions>
+    <medsys-select
+      ariaLabel="Filtrar por estado de la cita"
+      [options]="statusOptions"
+      [value]="status() ?? ''"
+      (valueChange)="status.set($event || null)"
+      placeholder="Todos los estados"
+    />
+    <medsys-select
+      ariaLabel="Filtrar por especialidad"
+      [options]="specialtyOptions()"
+      [value]="specialty() ?? ''"
+      (valueChange)="specialty.set($event || null); professional.set(null)"
+      placeholder="Todas las especialidades"
+    />
+    @if (view() === 'week') {
+      <medsys-select
+        ariaLabel="Filtrar por profesional"
+        [options]="professionalOptions()"
+        [value]="professional() ?? ''"
+        (valueChange)="professional.set($event || null)"
+        placeholder="Todos los profesionales"
+      />
+    }
+
+    <div class="agenda-switch" role="group" aria-label="Alcance de la vista">
+      <button
+        type="button"
+        class="agenda-switch-option"
+        [class.is-active]="view() === 'day'"
+        [attr.aria-pressed]="view() === 'day'"
+        (click)="setView('day')"
+      >
+        Día
+      </button>
+      <button
+        type="button"
+        class="agenda-switch-option"
+        [class.is-active]="view() === 'week'"
+        [attr.aria-pressed]="view() === 'week'"
+        (click)="setView('week')"
+      >
+        Semana
+      </button>
+    </div>
+
+    <div class="agenda-stepper">
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm btn-icon"
+        [attr.aria-label]="view() === 'day' ? 'Día anterior' : 'Semana anterior'"
+        (click)="step(-1)"
+      >
+        <medsys-icon name="chevron-left" [size]="16" />
+      </button>
+      <span class="agenda-stepper-date t-num">{{ stepperLabel() }}</span>
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm btn-icon"
+        [attr.aria-label]="view() === 'day' ? 'Día siguiente' : 'Semana siguiente'"
+        (click)="step(1)"
+      >
+        <medsys-icon name="chevron-right" [size]="16" />
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-secondary btn-sm"
+      [disabled]="days().includes(today) && view() === 'day' && date() === today"
+      (click)="goToday()"
+    >
+      Hoy
+    </button>
+
+    <button type="button" class="btn btn-primary" (click)="newAppointment()">
+      <medsys-icon name="plus" [size]="15" /> Nueva cita
+    </button>
+  </ng-container>
+</medsys-page-header>
+
+<div class="card agenda">
+  @if (list.error()) {
+    <medsys-error-state [failure]="list.error()" [compact]="true" (retry)="list.reload()" />
+  } @else if (staff.error()) {
+    <medsys-error-state [failure]="staff.error()" [compact]="true" (retry)="staff.reload()" />
+  } @else if (staff.isLoading() && !staff.hasValue()) {
+    <div class="stack gap-3" style="padding: var(--s-4)">
+      <medsys-skeleton height="56px" />
+      <medsys-skeleton height="320px" />
+    </div>
+  } @else if (columns().length === 0) {
+    <medsys-empty-state
+      icon="users"
+      heading="Todavía no hay agendas que mostrar"
+      [description]="
+        specialty()
+          ? 'Ningún profesional de esta especialidad atiende en el centro. Prueba con otra o quita el filtro.'
+          : 'La agenda se organiza por profesional. Registra al equipo que atiende en este centro para poder citar.'
+      "
+    >
+      @if (specialty()) {
+        <button type="button" class="btn btn-secondary" (click)="specialty.set(null)">
+          <medsys-icon name="x" [size]="14" /> Quitar filtro
+        </button>
+      }
+    </medsys-empty-state>
+  } @else {
+    <div class="agenda-scroll">
+      <div
+        class="agenda-head"
+        [style.grid-template-columns]="gridColumns()"
+        [style.min-width]="gridMinWidth()"
+      >
+        <div class="agenda-head-gutter"></div>
+        @for (column of columns(); track column.key) {
+          <div class="agenda-col-head">
+            @if (column.initials) {
+              <span class="avatar" aria-hidden="true">{{ column.initials }}</span>
+            }
+            <span class="pair">
+              <span class="t-strong truncate">{{ column.title }}</span>
+              @if (column.subtitle) {
+                <span class="t-micro truncate">{{ column.subtitle }}</span>
+              }
+            </span>
+          </div>
+        }
+      </div>
+
+      <div
+        class="agenda-body"
+        [style.grid-template-columns]="gridColumns()"
+        [style.min-width]="gridMinWidth()"
+        [style.height.px]="boardHeight()"
+      >
+        <div class="agenda-gutter">
+          @for (hour of hours(); track hour) {
+            <span class="agenda-hour-label t-num" [style.top.px]="hourTop(hour)">
+              {{ hourLabel(hour) }}
+            </span>
+          }
+        </div>
+
+        @for (column of columns(); track column.key) {
+          <div
+            class="agenda-col"
+            [style.background-size]="hourBandSize"
+            (click)="onEmptySlot($event, column)"
+          >
+            @if (nowOffset() !== null) {
+              <div class="agenda-now" [style.top.px]="nowOffset()" aria-hidden="true"></div>
+            }
+
+            @for (event of column.events; track event.appointment.publicId) {
+              <button
+                type="button"
+                class="agenda-event"
+                [class]="'agenda-event ag-' + event.tone"
+                [class.is-compact]="event.compact"
+                [style.top.px]="event.top"
+                [style.height.px]="event.height"
+                [style.left]="event.left"
+                [style.width]="event.width"
+                [attr.aria-label]="event.time + ', ' + event.statusLabel"
+                (click)="$event.stopPropagation(); open(event.appointment.publicId)"
+              >
+                <span class="agenda-event-time t-num">{{ event.time }}</span>
+                <span class="agenda-event-patient">
+                  <medsys-patient-name [patientId]="event.appointment.patientPublicId" />
+                </span>
+                @if (!event.compact) {
+                  <span class="agenda-event-meta">
+                    <span class="agenda-event-status">{{ event.statusLabel }}</span>
+                    @if (event.appointment.modality === 'TELECONSULTATION') {
+                      <medsys-icon name="monitor" [size]="12" />
+                    }
+                  </span>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="agenda-legend">
+      <div class="row gap-4 wrap grow">
+        @for (item of legend; track item.status) {
+          <span class="agenda-legend-item">
+            <span
+              class="chip-dot agenda-legend-dot"
+              [class]="'agenda-legend-dot ag-dot-' + item.tone"
+            ></span>
+            {{ item.text }}
+          </span>
+        }
+      </div>
+      <span class="t-sec t-num">
+        {{ total() }} {{ total() === 1 ? 'cita' : 'citas' }} · {{ stepperLabel() }}
+      </span>
+    </div>
+  }
+</div>
+
+<medsys-appointment-sheet
+  [appointmentId]="detailId()"
+  (closed)="detailId.set(null)"
+  (changed)="onChanged()"
+/>
+
+<medsys-new-appointment-sheet [seed]="seed()" (closed)="seed.set(null)" (saved)="onSaved()" />

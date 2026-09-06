@@ -38,7 +38,6 @@ export interface Specialty {
   readonly name: string;
   readonly active: boolean;
 }
-
 /* ---------------------------------------------------------------------------
    Extensión del módulo de profesionales: directorio, alta y ficha.
 
