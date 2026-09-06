@@ -1,0 +1,177 @@
+<medsys-dialog
+  [open]="open()"
+  variant="sheet"
+  [width]="520"
+  heading="Nuevo cupón"
+  description="Un descuento que el paciente presenta al cobrar. Caja lo valida contra este servicio antes de aplicarlo."
+  (closed)="closed.emit()"
+>
+  <form class="stack gap-4" [formGroup]="form" novalidate (ngSubmit)="submit()">
+    @if (conflict(); as message) {
+      <medsys-notice tone="warn" heading="Ese código ya existe">
+        {{ message }} Cada cupón necesita un código distinto dentro del centro.
+      </medsys-notice>
+    }
+    @if (otherError(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="promotion-code">Código</label>
+        <input
+          id="promotion-code"
+          class="input"
+          placeholder="VERANO25"
+          style="text-transform: uppercase"
+          formControlName="couponCode"
+          [attr.aria-invalid]="errorFor('couponCode') !== null"
+        />
+        @if (errorFor('couponCode'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        } @else {
+          <span class="field-hint">Se dicta por teléfono: sin espacios ni acentos.</span>
+        }
+      </div>
+      <div class="field">
+        <label class="field-label" for="promotion-type">Tipo de descuento</label>
+        <medsys-select
+          formControlName="discountType"
+          [options]="discountTypes"
+          [controlId]="'promotion-type'"
+          [allowEmpty]="false"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="promotion-name">Nombre</label>
+      <input
+        id="promotion-name"
+        class="input"
+        placeholder="Descuento de verano"
+        formControlName="name"
+        [attr.aria-invalid]="errorFor('name') !== null"
+      />
+      @if (errorFor('name'); as message) {
+        <span class="field-error" role="alert">{{ message }}</span>
+      }
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="promotion-description">
+        Descripción <span class="field-optional">(opcional)</span>
+      </label>
+      <textarea
+        id="promotion-description"
+        class="textarea"
+        rows="2"
+        formControlName="description"
+      ></textarea>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="promotion-value">
+          {{ isPercentage() ? 'Porcentaje' : isFreeService() ? 'Valor (no se usa)' : 'Monto' }}
+        </label>
+        <input
+          id="promotion-value"
+          class="input input-num"
+          type="number"
+          min="0"
+          [attr.max]="isPercentage() ? 100 : null"
+          step="0.01"
+          [placeholder]="isPercentage() ? '25' : '30.00'"
+          formControlName="value"
+          [attr.aria-invalid]="errorFor('value') !== null"
+        />
+        @if (errorFor('value'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        } @else if (isFreeService()) {
+          <span class="field-hint">
+            Con «prestación gratis» el importe se calcula desde la propia prestación.
+          </span>
+        }
+      </div>
+      <div class="field">
+        <label class="field-label" for="promotion-offering">
+          Prestación
+          @if (!isFreeService()) {
+            <span class="field-optional">(opcional)</span>
+          }
+        </label>
+        <medsys-select
+          formControlName="serviceOfferingId"
+          [options]="offeringOptions()"
+          [controlId]="'promotion-offering'"
+          placeholder="Cualquier prestación"
+        />
+        <span class="field-hint">Sin elegir ninguna, el cupón aplica a todo.</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="promotion-max">
+          Usos totales <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="promotion-max"
+          class="input input-num"
+          type="number"
+          min="1"
+          placeholder="Sin límite"
+          formControlName="maxRedemptions"
+        />
+      </div>
+      <div class="field">
+        <label class="field-label" for="promotion-per-patient">Usos por paciente</label>
+        <input
+          id="promotion-per-patient"
+          class="input input-num"
+          type="number"
+          min="1"
+          max="255"
+          formControlName="redemptionsPerPatient"
+        />
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="promotion-from">Vigente desde</label>
+        <medsys-date-field
+          formControlName="validFrom"
+          [controlId]="'promotion-from'"
+          ariaLabel="Vigente desde"
+        />
+      </div>
+      <div class="field">
+        <label class="field-label" for="promotion-until">Vigente hasta</label>
+        <medsys-date-field
+          formControlName="validUntil"
+          [controlId]="'promotion-until'"
+          ariaLabel="Vigente hasta"
+          [invalid]="errorFor('validUntil') !== null"
+        />
+        @if (errorFor('validUntil'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        } @else {
+          <span class="field-hint">Inclusive: el último día el cupón todavía sirve.</span>
+        }
+      </div>
+    </div>
+
+    @if (ruleError(); as message) {
+      <medsys-notice tone="warn" heading="Revisa el cupón">{{ message }}</medsys-notice>
+    }
+  </form>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Cancelar</button>
+    <button type="button" class="btn btn-primary" [disabled]="pending()" (click)="submit()">
+      Crear cupón
+    </button>
+  </ng-container>
+</medsys-dialog>

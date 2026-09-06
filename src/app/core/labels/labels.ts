@@ -25,6 +25,7 @@ export const DEPARTMENT: Dict = dict({
 export const ROLE: Dict = dict({
   PLATFORM_ADMIN: 'Administrador de plataforma',
   ADMINISTRATOR: 'Administración',
+  MARKETING_MANAGER: 'Marketing',
   PHYSICIAN: 'Profesional de salud',
   RECEPTIONIST: 'Recepción',
   BILLING_CLERK: 'Facturación',
@@ -251,6 +252,78 @@ export const PAYMENT_METHOD: Dict = dict({
   '2': 'Tarjeta',
   '7': 'Transferencia bancaria',
   '8': 'Cheque',
+});
+
+/* --------------------------------------------------------------- marketing */
+/* Copiados de `ms-marketing/domain/enums/*.java`. */
+export const CAMPAIGN_TYPE: Dict = dict({
+  PROMOTION: 'Promoción',
+  PREVENTIVE: 'Salud preventiva',
+  CONTROL_REMINDER: 'Recordatorio de control',
+  BIRTHDAY: 'Cumpleaños',
+  REACTIVATION: 'Reactivación',
+  SURVEY: 'Encuesta',
+});
+export const CAMPAIGN_STATUS: Dict = dict({
+  DRAFT: 'Borrador',
+  SCHEDULED: 'Programada',
+  RUNNING: 'En ejecución',
+  PAUSED: 'Pausada',
+  FINISHED: 'Finalizada',
+  CANCELLED: 'Cancelada',
+});
+export const CAMPAIGN_CHANNEL: Dict = dict({
+  WHATSAPP: 'WhatsApp',
+  SMS: 'SMS',
+  EMAIL: 'Correo',
+  PORTAL: 'Portal del paciente',
+});
+export const RECIPIENT_STATUS: Dict = dict({
+  SELECTED: 'Seleccionado',
+  EXCLUDED_OPT_OUT: 'Excluido por opt-out',
+  SENT: 'Enviado',
+  READ: 'Leído',
+  CONVERTED: 'Convertido',
+  FAILED: 'Fallido',
+});
+export const DISCOUNT_TYPE: Dict = dict({
+  PERCENTAGE: 'Porcentaje',
+  FIXED_AMOUNT: 'Monto fijo',
+  FREE_SERVICE: 'Prestación gratis',
+});
+export const ADVERTISEMENT_PLACEMENT: Dict = dict({
+  PATIENT_PORTAL: 'Portal del paciente',
+  APP_HOME: 'Inicio de la app',
+  WAITING_ROOM: 'Sala de espera',
+  EMAIL_FOOTER: 'Pie de correo',
+});
+export const ADVERTISEMENT_STATUS: Dict = dict({
+  DRAFT: 'Borrador',
+  PUBLISHED: 'Publicado',
+  PAUSED: 'Pausado',
+  FINISHED: 'Finalizado',
+});
+export const LOYALTY_MOVEMENT_TYPE: Dict = dict({
+  ACCRUAL: 'Acumulación',
+  REDEMPTION: 'Canje',
+  EXPIRATION: 'Expiración',
+  MANUAL_ADJUSTMENT: 'Ajuste manual',
+  REFERRAL_BONUS: 'Bonificación por referido',
+});
+/** Meses para el eje de cumpleaños de la segmentación. */
+export const MONTH: Dict = dict({
+  '1': 'Enero',
+  '2': 'Febrero',
+  '3': 'Marzo',
+  '4': 'Abril',
+  '5': 'Mayo',
+  '6': 'Junio',
+  '7': 'Julio',
+  '8': 'Agosto',
+  '9': 'Septiembre',
+  '10': 'Octubre',
+  '11': 'Noviembre',
+  '12': 'Diciembre',
 });
 
 /* ---------------------------------------------------------- profesionales */

@@ -2977,3 +2977,88 @@ medsys-toast-host {
   font-size: 12px;
   color: var(--text-body);
 }
+
+/* ============================================================ marketing ==== */
+/* Campaña: el trabajo a la izquierda, el rendimiento siempre visible a la
+   derecha. Es la misma división que usa la emisión de factura, porque el
+   problema es el mismo: hay que decidir mirando una cifra. */
+.campaign-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--s-5);
+  align-items: start;
+}
+.campaign-side {
+  position: sticky;
+  top: calc(var(--h-topbar) + var(--s-5));
+}
+@media (max-width: 1080px) {
+  .campaign-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .campaign-side {
+    position: static;
+  }
+}
+
+.campaign-steps {
+  margin: 0;
+  padding-left: var(--s-5);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 20px;
+}
+.campaign-steps li + li {
+  margin-top: 2px;
+}
+
+/* Fila de métrica: etiqueta a la izquierda, número a la derecha, alineados por
+   la base para que la columna de cifras se lea en vertical. */
+.metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+.metric-row.is-grand {
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border);
+}
+
+/* Constructor de criterios. Cada grupo se enmarca para que se lea de dónde sale
+   el dato: demografía por un lado, actividad comercial por otro. */
+.criteria-group {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-card);
+  padding: var(--s-4);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.criteria-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* Alcance: el número que evita lanzar una campaña sobre la audiencia equivocada. */
+.criteria-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--bg-sunken);
+}
+.criteria-sample {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}

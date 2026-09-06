@@ -1,0 +1,300 @@
+@if (campaign.isLoading()) {
+  <div class="stack gap-4">
+    <medsys-skeleton width="40%" height="28px" />
+    <medsys-skeleton width="100%" height="120px" />
+  </div>
+} @else if (campaign.error()) {
+  <medsys-error-state [failure]="campaign.error()" (retry)="campaign.reload()" />
+} @else if (campaign.value(); as current) {
+  <medsys-page-header
+    [heading]="current.name"
+    [crumbs]="[{ label: 'Campañas', link: '/campanas' }, { label: current.name }]"
+    [description]="current.objective"
+  >
+    <ng-container headerMeta>
+      <medsys-status-chip
+        [value]="current.status"
+        [dictionary]="campaignStatuses"
+        [tones]="campaignTones"
+      />
+      <medsys-status-chip [value]="current.type" [dictionary]="campaignTypes" />
+    </ng-container>
+
+    <ng-container headerActions>
+      @for (action of actions(); track action.status) {
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="action.primary"
+          [class.btn-secondary]="!action.primary"
+          [disabled]="pending() || (action.status === 'RUNNING' && launchBlocked())"
+          (click)="requestAction(action)"
+        >
+          <medsys-icon [name]="action.icon" [size]="15" /> {{ action.label }}
+        </button>
+      }
+    </ng-container>
+  </medsys-page-header>
+
+  @if (failureMessage(); as detail) {
+    <div class="section">
+      <medsys-notice
+        [tone]="detail.status >= 500 || detail.status === 0 ? 'err' : 'warn'"
+        [heading]="detail.title"
+      >
+        {{ detail.message }}
+      </medsys-notice>
+    </div>
+  }
+
+  <div class="campaign-layout">
+    <div class="stack gap-4">
+      <!-- Paso 1: la audiencia. Va primero porque sin ella no se puede lanzar. -->
+      <section class="card">
+        <div class="card-head">
+          <div class="row gap-2">
+            <medsys-icon name="target" [size]="15" class="icon-muted" />
+            <h2 class="t-section">Audiencia</h2>
+          </div>
+          @if (canMaterialize()) {
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="pending() || current.segmentId === null"
+              (click)="materialize()"
+            >
+              <medsys-icon name="refresh" [size]="13" />
+              {{ current.totalRecipients === 0 ? 'Congelar audiencia' : 'Recalcular' }}
+            </button>
+          }
+        </div>
+
+        <div class="card-body stack gap-3">
+          @if (current.segmentId === null) {
+            <medsys-notice tone="warn" heading="Esta campaña no tiene segmento">
+              Sin un segmento no hay criterio con el que elegir destinatarios, así que no se puede
+              congelar la audiencia ni lanzarla.
+            </medsys-notice>
+          } @else {
+            <div class="deflist">
+              <span class="def-term">Segmento</span>
+              <span class="def-value">
+                <a routerLink="/segmentos">{{ current.segmentName ?? 'Segmento' }}</a>
+              </span>
+              <span class="def-term">Destinatarios</span>
+              <span class="def-value t-num t-strong">{{ current.totalRecipients }}</span>
+            </div>
+
+            @if (lastAudience(); as audience) {
+              <medsys-notice
+                [tone]="audience.truncated ? 'warn' : 'ok'"
+                [heading]="'Audiencia congelada'"
+              >
+                {{ audience.matched }} paciente(s) cumplen el criterio;
+                {{ audience.reachable }} recibirán el mensaje y
+                {{ audience.excludedOptOut }} quedaron excluidos por haber pedido no recibir
+                publicidad, registrados con su motivo.
+                @if (audience.truncated) {
+                  La audiencia se cortó en el tope configurado del servicio.
+                }
+              </medsys-notice>
+            }
+
+            @if (current.totalRecipients === 0) {
+              <p class="t-sec">
+                Todavía no se congeló la audiencia. Al congelarla se guarda quién la recibirá y
+                quién queda fuera, y esa lista ya no cambia: es lo que permite responder meses
+                después a quién se le mandó y por qué alguien quedó excluido.
+              </p>
+            } @else if (!canMaterialize()) {
+              <p class="t-micro">
+                La campaña ya salió, así que su audiencia queda congelada por auditoría.
+              </p>
+            }
+          }
+        </div>
+      </section>
+
+      <!-- Paso 2: quién la recibió y con qué resultado. -->
+      <section class="card">
+        <div class="card-head">
+          <div class="row gap-2">
+            <medsys-icon name="users" [size]="15" class="icon-muted" />
+            <h2 class="t-section">Destinatarios</h2>
+            @if (recipients.value(); as result) {
+              <span class="t-sec t-num">{{ result.totalElements }}</span>
+            }
+          </div>
+          <medsys-select
+            [options]="recipientStatusOptions"
+            [value]="recipientStatus() ?? ''"
+            placeholder="Todos"
+            ariaLabel="Filtrar destinatarios por resultado"
+            (valueChange)="onRecipientStatusChange($event)"
+          />
+        </div>
+
+        @if (recipients.isLoading()) {
+          <medsys-table-skeleton [rows]="5" [columns]="3" />
+        } @else if (recipients.error()) {
+          <medsys-error-state
+            [failure]="recipients.error()"
+            [compact]="true"
+            (retry)="recipients.reload()"
+          />
+        } @else if (recipients.value()!.content.length === 0) {
+          <medsys-empty-state
+            icon="users"
+            heading="Sin destinatarios que mostrar"
+            [description]="
+              recipientStatus() !== null
+                ? 'Ningún destinatario está en ese resultado. Prueba a quitar el filtro.'
+                : 'La audiencia todavía no se congeló. Hazlo desde el panel de arriba para ver a quién alcanzará la campaña.'
+            "
+          />
+        } @else {
+          <div class="table-wrap">
+            <table class="table is-compact">
+              <thead>
+                <tr>
+                  <th scope="col">Paciente</th>
+                  <th scope="col">Resultado</th>
+                  <th scope="col">Detalle</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (recipient of recipients.value()!.content; track recipient.patientId) {
+                  <tr>
+                    <td class="t-strong">{{ recipient.fullName ?? 'Paciente' }}</td>
+                    <td>
+                      <medsys-status-chip
+                        [value]="recipient.status"
+                        [dictionary]="recipientStatuses"
+                        [tones]="recipientTones"
+                      />
+                    </td>
+                    <td class="t-sec">
+                      @if (recipient.exclusionReason) {
+                        {{ recipient.exclusionReason }}
+                      } @else if (recipient.generatedAppointmentId) {
+                        Generó una cita
+                      } @else {
+                        <span class="t-sec">—</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (recipients.value(); as result) {
+          <medsys-pager
+            [page]="result.page"
+            [totalPages]="result.totalPages"
+            (pageChange)="recipientPage.set($event)"
+          />
+        }
+      </section>
+    </div>
+
+    <aside class="campaign-side stack gap-4">
+      <!-- Rendimiento: las tasas las calcula una vista de la base, no esta pantalla. -->
+      <section class="card">
+        <div class="card-head"><h2 class="t-card">Rendimiento</h2></div>
+        @if (performance.isLoading()) {
+          <div class="card-body stack gap-2">
+            <medsys-skeleton width="100%" height="18px" />
+            <medsys-skeleton width="80%" height="18px" />
+          </div>
+        } @else if (performance.value(); as result) {
+          <div class="card-body stack gap-3">
+            <div class="metric-row">
+              <span class="t-sec">Destinatarios</span>
+              <span class="t-num t-strong">{{ result.totalRecipients }}</span>
+            </div>
+            <div class="metric-row">
+              <span class="t-sec">Enviados</span>
+              <span class="t-num">
+                {{ result.totalSent }} <span class="t-micro">{{ rate(result.sendRatePct) }}</span>
+              </span>
+            </div>
+            <div class="metric-row">
+              <span class="t-sec">Leídos</span>
+              <span class="t-num">
+                {{ result.totalRead }} <span class="t-micro">{{ rate(result.readRatePct) }}</span>
+              </span>
+            </div>
+            <div class="metric-row is-grand">
+              <span class="t-card">Conversiones</span>
+              <span class="t-section t-num">
+                {{ result.totalConverted }}
+                <span class="t-micro">{{ rate(result.conversionRatePct) }}</span>
+              </span>
+            </div>
+            @if (result.excludedOptOut > 0) {
+              <p class="t-micro">
+                {{ result.excludedOptOut }} paciente(s) quedaron fuera por haber pedido no recibir
+                comunicaciones comerciales.
+              </p>
+            }
+            <p class="t-micro">
+              Una conversión es una cita que ms-agenda atribuyó a esta campaña. El evento trae el
+              identificador de la cita, nunca su motivo.
+            </p>
+          </div>
+        } @else {
+          <div class="card-body">
+            <p class="t-sec">Todavía no hay métricas: la campaña no salió.</p>
+          </div>
+        }
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2 class="t-card">Ficha</h2></div>
+        <div class="card-body">
+          <div class="deflist">
+            <span class="def-term">Canal</span>
+            <span class="def-value">{{ channelLabel() }}</span>
+            <span class="def-term">Inicio</span>
+            <span class="def-value t-num">{{ current.startsAt | msDateTime }}</span>
+            <span class="def-term">Fin</span>
+            <span class="def-value t-num">{{ current.endsAt | msDateTime }}</span>
+            @if (current.couponCode) {
+              <span class="def-term">Cupón</span>
+              <span class="def-value"
+                ><span class="clin-code">{{ current.couponCode }}</span></span
+              >
+            }
+            @if (current.budgetBob !== null) {
+              <span class="def-term">Presupuesto</span>
+              <span class="def-value t-num">{{ current.budgetBob | msBob }}</span>
+            }
+            <span class="def-term">Creada</span>
+            <span class="def-value t-num">{{ current.createdAt | msDateTime }}</span>
+          </div>
+        </div>
+        <div class="card-foot">
+          <p class="t-micro">
+            Este servicio no entrega mensajes: publica el evento y ms-notificaciones se encarga del
+            envío, con sus propias reglas de opt-in y de ventana de 24 horas.
+          </p>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  @if (confirming(); as action) {
+    <medsys-confirm-dialog
+      [open]="true"
+      [heading]="action.label"
+      [description]="action.confirm!"
+      [confirmLabel]="action.label"
+      [danger]="action.status === 'CANCELLED'"
+      [pending]="pending()"
+      (confirmed)="runAction(action)"
+      (cancelled)="confirming.set(null)"
+    />
+  }
+}
