@@ -80,6 +80,24 @@ export const routes: Routes = [
           ),
       },
 
+      /* ---------------------------------------------------- profesionales -- */
+      {
+        path: 'profesionales',
+        title: 'MSYS · Profesionales',
+        canActivate: [permissionGuard('viewProfessionals')],
+        loadComponent: () =>
+          import('./features/professionals/professionals-page').then((m) => m.ProfessionalsPage),
+      },
+      {
+        path: 'profesionales/:professionalId',
+        title: 'MSYS · Ficha del profesional',
+        canActivate: [permissionGuard('viewProfessionals')],
+        loadComponent: () =>
+          import('./features/professionals/professional-detail-page').then(
+            (m) => m.ProfessionalDetailPage,
+          ),
+      },
+
       /* ----------------------------------------------------- facturación -- */
       {
         path: 'facturas',

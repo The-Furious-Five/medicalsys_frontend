@@ -52,6 +52,18 @@ const NAV: readonly NavGroup[] = [
     ],
   },
   {
+    id: 'profesionales',
+    label: 'Profesionales',
+    items: [
+      {
+        link: '/profesionales',
+        label: 'Directorio',
+        icon: 'stethoscope',
+        permission: 'viewProfessionals',
+      },
+    ],
+  },
+  {
     id: 'facturacion',
     label: 'Facturación',
     items: [{ link: '/facturas', label: 'Facturas', icon: 'receipt', permission: 'viewInvoices' }],
