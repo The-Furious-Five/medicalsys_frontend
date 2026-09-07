@@ -12,6 +12,7 @@ agrupar sus páginas, componentes, modelos, acceso HTTP, rutas y pruebas relacio
 - `medical-records`
 - `documents`
 - `billing`
+- `audit`
 
 No se deben crear carpetas globales como `all-components` o `all-services`. Un elemento pasa a
 `shared` únicamente cuando es realmente reutilizable por más de una funcionalidad.

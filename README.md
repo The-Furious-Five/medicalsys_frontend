@@ -105,7 +105,8 @@ src/app/
 │   ├── scheduling/
 │   ├── medical-records/
 │   ├── documents/
-│   └── billing/
+│   ├── billing/
+│   └── audit/
 ├── shared/                     # UI reutilizable y sin reglas de negocio
 ├── app.config.ts
 └── app.routes.ts
@@ -175,6 +176,7 @@ Prefijos públicos actuales:
 | Historial     | `/api/v1/encuentros/**`, `/api/v1/expedientes/**`, `/api/v1/ordenes-estudio/**` |
 | Documental    | `/api/v1/documents/**`                                                          |
 | Facturación   | `/api/v1/facturas/**`                                                           |
+| Auditoría     | `/api/v1/audit/**`                                                              |
 
 Criptografía no tiene funcionalidad pública de frontend. Debe ser consumida internamente por los
 servicios autorizados.
