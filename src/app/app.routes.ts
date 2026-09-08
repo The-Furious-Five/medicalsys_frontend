@@ -150,6 +150,64 @@ export const routes: Routes = [
           import('./features/billing/invoice-detail-page').then((m) => m.InvoiceDetailPage),
       },
 
+      /* ------------------------------------------------------- marketing -- */
+      {
+        path: 'campanas',
+        pathMatch: 'full',
+        title: 'MSYS · Campañas',
+        canActivate: [permissionGuard('viewMarketing')],
+        loadComponent: () =>
+          import('./features/marketing/campaigns-page').then((m) => m.CampaignsPage),
+      },
+      {
+        path: 'campanas/nueva',
+        title: 'MSYS · Nueva campaña',
+        canActivate: [permissionGuard('manageMarketing')],
+        loadComponent: () =>
+          import('./features/marketing/new-campaign-page').then((m) => m.NewCampaignPage),
+      },
+      {
+        path: 'campanas/:campaignId',
+        title: 'MSYS · Campaña',
+        canActivate: [permissionGuard('viewMarketing')],
+        loadComponent: () =>
+          import('./features/marketing/campaign-detail-page').then((m) => m.CampaignDetailPage),
+      },
+      {
+        path: 'segmentos',
+        title: 'MSYS · Segmentos',
+        canActivate: [permissionGuard('viewMarketing')],
+        loadComponent: () =>
+          import('./features/marketing/segments-page').then((m) => m.SegmentsPage),
+      },
+      {
+        path: 'promociones',
+        title: 'MSYS · Cupones',
+        canActivate: [permissionGuard('viewCoupons')],
+        loadComponent: () =>
+          import('./features/marketing/promotions-page').then((m) => m.PromotionsPage),
+      },
+      {
+        path: 'anuncios',
+        title: 'MSYS · Anuncios',
+        canActivate: [permissionGuard('viewMarketing')],
+        loadComponent: () =>
+          import('./features/marketing/advertisements-page').then((m) => m.AdvertisementsPage),
+      },
+      {
+        path: 'fidelidad',
+        title: 'MSYS · Fidelización',
+        canActivate: [permissionGuard('viewLoyalty')],
+        loadComponent: () => import('./features/marketing/loyalty-page').then((m) => m.LoyaltyPage),
+      },
+      {
+        path: 'actividad-comercial',
+        title: 'MSYS · Actividad comercial',
+        canActivate: [permissionGuard('viewMarketing')],
+        loadComponent: () =>
+          import('./features/marketing/activity-page').then((m) => m.ActivityPage),
+      },
+
       /* -------------------------------------------------------- tenencia -- */
       {
         path: 'organizacion',

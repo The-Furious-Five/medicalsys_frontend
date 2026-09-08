@@ -25,6 +25,9 @@ export type AppointmentStatus =
   | 'NO_SHOW'
   | 'RESCHEDULED';
 export type RecordStatus = 'ACTIVE' | 'ARCHIVED' | 'CLOSED';
+export type CampaignStatus =
+  'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'PAUSED' | 'FINISHED' | 'CANCELLED';
+export type AdvertisementStatus = 'DRAFT' | 'PUBLISHED' | 'PAUSED' | 'FINISHED';
 
 /**
  * Fuente: ms-agenda · domain/AppointmentStatus.java · mapa TRANSITIONS.
@@ -40,6 +43,30 @@ const APPOINTMENT: Record<AppointmentStatus, AppointmentStatus[]> = {
   CANCELLED: [],
   NO_SHOW: [],
   RESCHEDULED: [],
+};
+
+/**
+ * Fuente: ms-marketing · domain/enums/CampaignStatus.java y los métodos de
+ * `Campaign` (schedule, launch, pause, finish, cancel).
+ *
+ * Lanzar exige además audiencia materializada; eso no es una transición sino una
+ * precondición, y la vista la comprueba aparte con `canLaunch`.
+ */
+const CAMPAIGN: Record<CampaignStatus, CampaignStatus[]> = {
+  DRAFT: ['SCHEDULED', 'RUNNING', 'FINISHED', 'CANCELLED'],
+  SCHEDULED: ['RUNNING', 'FINISHED', 'CANCELLED'],
+  RUNNING: ['PAUSED', 'FINISHED', 'CANCELLED'],
+  PAUSED: ['RUNNING', 'FINISHED', 'CANCELLED'],
+  FINISHED: [],
+  CANCELLED: [],
+};
+
+/** Fuente: ms-marketing · `Advertisement`. Un anuncio finalizado no vuelve. */
+const ADVERTISEMENT: Record<AdvertisementStatus, AdvertisementStatus[]> = {
+  DRAFT: ['PUBLISHED'],
+  PUBLISHED: ['PAUSED', 'FINISHED'],
+  PAUSED: ['PUBLISHED', 'FINISHED'],
+  FINISHED: [],
 };
 
 const ENCOUNTER: Record<EncounterStatus, EncounterStatus[]> = {
@@ -79,6 +106,20 @@ export const APPOINTMENT_TIMELINE: AppointmentStatus[] = [
   'IN_PROGRESS',
   'ATTENDED',
 ];
+
+export const campaignTransitions = (from: CampaignStatus) => CAMPAIGN[from] ?? [];
+export const advertisementTransitions = (from: AdvertisementStatus) => ADVERTISEMENT[from] ?? [];
+
+/**
+ * La audiencia solo se puede recalcular antes de que la campaña salga.
+ * Fuente: `CampaignStatus#allowsAudienceRefresh`.
+ */
+export const allowsAudienceRefresh = (status: CampaignStatus) =>
+  status === 'DRAFT' || status === 'SCHEDULED';
+
+/** Una campaña terminada o cancelada ya no admite ninguna acción. */
+export const isCampaignClosed = (status: CampaignStatus) =>
+  campaignTransitions(status).length === 0;
 
 export const encounterTransitions = (from: EncounterStatus) => ENCOUNTER[from] ?? [];
 export const studyOrderTransitions = (from: StudyOrderStatus) => STUDY_ORDER[from] ?? [];
@@ -142,6 +183,49 @@ export const invoiceTone: Record<string, Tone> = {
   VALIDATED: 'ok',
   REJECTED: 'err',
   VOIDED: 'muted',
+};
+
+/**
+ * Marketing. Neutro = todavía se está preparando; azul de marca = programada,
+ * lista para salir; verde intenso = saliendo ahora mismo; naranja = detenida a
+ * mano; apagado = fuera de juego.
+ */
+export const campaignTone: Record<CampaignStatus, Tone> = {
+  DRAFT: 'neutral',
+  SCHEDULED: 'brand',
+  RUNNING: 'solid',
+  PAUSED: 'warn',
+  FINISHED: 'ok',
+  CANCELLED: 'muted',
+};
+
+export const advertisementTone: Record<AdvertisementStatus, Tone> = {
+  DRAFT: 'neutral',
+  PUBLISHED: 'ok',
+  PAUSED: 'warn',
+  FINISHED: 'muted',
+};
+
+/**
+ * Destinatarios. El excluido por opt-out no es un fallo del sistema —es una
+ * decisión del paciente que se respetó— así que va en neutro apagado y no en
+ * rojo: rojo se reserva para la entrega que falló de verdad.
+ */
+export const recipientTone: Record<string, Tone> = {
+  SELECTED: 'neutral',
+  EXCLUDED_OPT_OUT: 'muted',
+  SENT: 'brand',
+  READ: 'warn',
+  CONVERTED: 'ok',
+  FAILED: 'err',
+};
+
+export const loyaltyMovementTone: Record<string, Tone> = {
+  ACCRUAL: 'ok',
+  REFERRAL_BONUS: 'ok',
+  REDEMPTION: 'brand',
+  MANUAL_ADJUSTMENT: 'warn',
+  EXPIRATION: 'muted',
 };
 
 export const genericTone: Record<string, Tone> = {

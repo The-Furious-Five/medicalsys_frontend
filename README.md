@@ -5,20 +5,26 @@ Angular que consume exclusivamente el API Gateway de la plataforma de microservi
 
 ## Qué implementa
 
-Cubre tres microservicios del MVP:
+Cubre ocho microservicios del MVP:
 
-| Módulo en la interfaz | Microservicio    | Prefijos que consume                                                                                                |
-| --------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Historial clínico     | `ms-historial`   | `/api/v1/expedientes`, `/encuentros`, `/ordenes-estudio`, `/recetas`, `/diagnosticos`, `/alergias`, `/antecedentes` |
-| Organización          | `ms-tenencia`    | `/api/v1/tenancy/**`                                                                                                |
-| Facturación           | `ms-facturacion` | `/api/v1/facturas`                                                                                                  |
+| Módulo en la interfaz | Microservicio      | Prefijos que consume                                                                                                |
+| --------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Historial clínico     | `ms-historial`     | `/api/v1/expedientes`, `/encuentros`, `/ordenes-estudio`, `/recetas`, `/diagnosticos`, `/alergias`, `/antecedentes` |
+| Organización          | `ms-tenencia`      | `/api/v1/tenancy/**`                                                                                                |
+| Facturación           | `ms-facturacion`   | `/api/v1/facturas`                                                                                                  |
+| Agenda                | `ms-agenda`        | `/api/v1/scheduling/**`                                                                                             |
+| Profesionales         | `ms-profesionales` | `/api/v1/professionals/**`                                                                                          |
+| Pacientes             | `ms-pacientes`     | `/api/v1/patients/**`                                                                                               |
+| Marketing             | `ms-marketing`     | `/api/v1/campanas`, `/segmentos`, `/promociones`, `/anuncios`, `/fidelidad`, `/pacientes/**`                        |
+| Acceso                | `ms-identidad`     | `/api/v1/identity/**`                                                                                               |
 
-Consume además `ms-identidad` para el acceso y `ms-pacientes` en solo lectura,
-porque los tres módulos anteriores referencian al paciente únicamente por UUID
-y sin ese servicio no habría un nombre que mostrar. Si `ms-pacientes` no
-responde, cada vista degrada por su cuenta y muestra el resto de la información.
+Consume además el catálogo de especialidades de `ms-catalogos`. Si `ms-pacientes`
+no responde, cada vista degrada por su cuenta y muestra el resto de la
+información: los demás módulos referencian al paciente solo por UUID.
 
-**No se modificó ningún servicio del backend.**
+Nota sobre `/api/v1/pacientes/**`: es de `ms-marketing` (actividad comercial y
+opt-out), no de `ms-pacientes`, que vive en `/api/v1/patients/**`. Los dos
+prefijos coexisten en el gateway y no colisionan.
 
 La base técnica:
 
@@ -385,11 +391,18 @@ documentos ficticios. No registrar JWT, contraseñas, contenido clínico ni dato
 
 ## Cuentas de demostración
 
-| Cuenta                      | Rol             | Qué ve                                                                                     |
-| --------------------------- | --------------- | ------------------------------------------------------------------------------------------ |
-| `admin@medicalsys.demo`     | `ADMINISTRATOR` | Organización, sucursales, prestaciones, plan y consumo, facturación, lectura del historial |
-| `doctor@medicalsys.demo`    | `PHYSICIAN`     | Historial clínico completo: escribir, firmar, recetar, pedir estudios                      |
-| `recepcion@medicalsys.demo` | `RECEPTIONIST`  | Pacientes, expedientes en lectura, órdenes de estudio, facturación                         |
+| Cuenta                          | Rol             | Qué ve                                                                                    |
+| ------------------------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `admin@medicalsys.demo`         | `ADMINISTRATOR` | Organización, sucursales, prestaciones, plan y consumo, facturación, marketing, historial |
+| `doctor@medicalsys.demo`        | `PHYSICIAN`     | Historial clínico completo: escribir, firmar, recetar, pedir estudios                     |
+| `recepcion@medicalsys.demo`     | `RECEPTIONIST`  | Pacientes, agenda, expedientes en lectura, órdenes de estudio, facturación, cupones       |
+| `caja@medicalsys.demo`          | `BILLING_CLERK` | Facturación, cupones y fidelización                                                       |
+| `pediatria@medicalsys.demo`     | `PHYSICIAN`     | Lo mismo que `doctor`, con su propia agenda de pediatría                                  |
+| `ginecologia@medicalsys.demo`   | `PHYSICIAN`     | Lo mismo, con la agenda de ginecología                                                    |
+| `cardiologia@medicalsys.demo`   | `PHYSICIAN`     | Lo mismo, con la agenda de cardiología                                                    |
+| `traumatologia@medicalsys.demo` | `PHYSICIAN`     | Profesional de licencia: su ficha se abre, pero no admite citas                           |
+| `nutricion@medicalsys.demo`     | `PHYSICIAN`     | Nutrición                                                                                 |
+| `odontologia@medicalsys.demo`   | `PHYSICIAN`     | Odontología                                                                               |
 
 Contraseña: `Demo1234!`
 
@@ -412,8 +425,10 @@ nadie a hacer su trabajo.
    contexto del paciente; la derecha es donde se escribe. La nota se guarda sola
    dos segundos después de dejar de escribir, con un indicador textual discreto.
 6. **Signos vitales, diagnósticos, recetas y órdenes** — cada panel del
-   encuentro. Los códigos se validan contra el catálogo: en modo local,
-   `J00`, `M54.5`, `R51`, `S52.50` y `X_RAY`, `LAB_HEMOGRAM`.
+   encuentro. Los códigos se validan contra `ms-catalogos` por HTTP
+   (`CATALOGS_VALIDATION_MODE=REMOTE`), así que vale cualquier código del
+   catálogo vigente: 18 códigos CIE-10, 10 tipos de estudio y 14 medicamentos.
+   Un código inexistente se rechaza con `ICD10_CODE_NOT_ALLOWED`.
 7. **Firma** — la confirmación explica en texto claro que el contenido queda
    inmutable. Tras firmar, la pantalla pasa a solo lectura y aparece
    _Agregar addendum_.

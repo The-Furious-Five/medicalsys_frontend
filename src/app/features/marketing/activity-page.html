@@ -1,0 +1,117 @@
+<medsys-page-header
+  heading="Actividad comercial"
+  description="Cuándo vino cada paciente y cuánto gastó. Es la proyección con la que se arman las audiencias; se alimenta de eventos de agenda y de facturación."
+/>
+
+<div class="section">
+  <medsys-notice tone="neutral" icon="shield-alert" heading="Lo que esta tabla no tiene">
+    Hay fechas, contadores e importes. No hay ninguna columna que diga por qué el paciente vino. La
+    fecha de «próximo control» llega desde el expediente sin su motivo clínico: marketing sabe
+    cuándo volver a llamar, no de qué padece la persona.
+  </medsys-notice>
+</div>
+
+<div class="card">
+  @if (activity.isLoading()) {
+    <medsys-table-skeleton [rows]="6" [columns]="6" />
+  } @else if (activity.error()) {
+    <medsys-error-state [failure]="activity.error()" [compact]="true" (retry)="activity.reload()" />
+  } @else if (activity.value()!.content.length === 0) {
+    <medsys-empty-state
+      icon="activity"
+      heading="Todavía no hay actividad registrada"
+      description="La proyección se llena sola a medida que llegan las citas atendidas y las facturas emitidas. Un paciente aparece aquí en cuanto el centro lo atiende por primera vez."
+    />
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Paciente</th>
+            <th scope="col">Última visita</th>
+            <th scope="col" class="th-num">Citas</th>
+            <th scope="col" class="th-num">Inasistencias</th>
+            <th scope="col" class="th-num">Gasto acumulado</th>
+            <th scope="col">Próximo control</th>
+            <th scope="col">Comunicaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (patient of activity.value()!.content; track patient.patientId) {
+            <tr>
+              <td>
+                <div class="pair">
+                  <span class="t-strong">{{ patient.fullName ?? 'Paciente' }}</span>
+                  @if (patient.lastServiceOfferingName) {
+                    <span class="t-micro"
+                      >Última compra: {{ patient.lastServiceOfferingName }}</span
+                    >
+                  }
+                </div>
+              </td>
+              <td class="t-sec t-num">{{ patient.lastVisitOn | msDate }}</td>
+              <td class="td-num t-num">{{ patient.totalAppointments }}</td>
+              <td class="td-num t-num">{{ patient.totalNoShows }}</td>
+              <td class="td-num t-num t-strong">{{ patient.totalBilledBob | msBob }}</td>
+              <td class="t-sec t-num">{{ patient.suggestedNextVisitOn | msDate }}</td>
+              <td>
+                <div class="row gap-2 wrap">
+                  @if (patient.marketingOptOut) {
+                    <span class="chip chip-muted">
+                      <span class="chip-dot" aria-hidden="true"></span> Excluido
+                    </span>
+                  } @else {
+                    <span class="chip chip-ok">
+                      <span class="chip-dot" aria-hidden="true"></span> Acepta
+                    </span>
+                  }
+                  @if (canManageOptOut()) {
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm"
+                      [attr.aria-label]="
+                        (patient.marketingOptOut ? 'Reactivar a ' : 'Excluir a ') +
+                        (patient.fullName ?? 'este paciente')
+                      "
+                      (click)="request(patient)"
+                    >
+                      <medsys-icon
+                        [name]="patient.marketingOptOut ? 'refresh' : 'bell-off'"
+                        [size]="13"
+                      />
+                      {{ patient.marketingOptOut ? 'Reactivar' : 'Excluir' }}
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (activity.value(); as result) {
+    <medsys-pager
+      [page]="result.page"
+      [totalPages]="result.totalPages"
+      (pageChange)="page.set($event)"
+    />
+  }
+</div>
+
+@if (confirming(); as patient) {
+  <medsys-confirm-dialog
+    [open]="true"
+    heading="Excluir de comunicaciones comerciales"
+    [description]="
+      (patient.fullName ?? 'Este paciente') +
+      ' dejará de entrar en las audiencias de nuevas campañas. Las ya congeladas conservan lo que se evaluó entonces: reescribir el pasado haría imposible auditar qué se envió y con qué base.'
+    "
+    confirmLabel="Excluir paciente"
+    [danger]="false"
+    [pending]="pending()"
+    (confirmed)="confirmOptOut()"
+    (cancelled)="confirming.set(null)"
+  />
+}
