@@ -91,6 +91,17 @@ export const can = {
   manageOptOut: (r: Roles) =>
     has(r, 'RECEPTIONIST', 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
 
+  /* ms-auditoria.
+     La bitácora registra quién leyó y quién modificó cada expediente, así que
+     es material de control interno y no de consulta general: la ve quien
+     responde por el centro, no quien atiende en él.
+
+     El servicio todavía no existe —`/api/v1/audit/**` responde 404— y por eso
+     la entrada no está en `nav.ts`. El permiso se declara igual para que la
+     ruta nazca con la misma guarda que el resto y no haya que recordar
+     añadirla el día que el backend aparezca. */
+  viewAudit: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+
   /* ms-catalogos.
      El catálogo es material de referencia de solo lectura —CIE-10, vademécum,
      tipos de estudio, especialidades— y lo consulta cualquiera que ya haya

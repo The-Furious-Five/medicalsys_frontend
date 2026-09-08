@@ -20,6 +20,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/home/home-page').then((m) => m.HomePage),
       },
 
+      /* ----------------------------------------------------- auditoría -- */
+      /* Sin entrada en el menú: ms-auditoria no existe todavía y sus tres
+         endpoints responden 404. La ruta queda registrada para no perder el
+         módulo y para que el día que el servicio exista solo haya que añadir
+         la entrada en layout/nav.ts. */
+      {
+        path: 'auditoria',
+        title: 'MSYS · Auditoría',
+        canActivate: [permissionGuard('viewAudit')],
+        loadComponent: () => import('./features/audit/audit-page').then((m) => m.AuditPage),
+      },
+
       /* ----------------------------------------------------- catálogos -- */
       {
         path: 'catalogos',

@@ -128,12 +128,17 @@ src/app/
 │   └── http/                   # Interceptors y contratos transversales
 ├── features/                   # Organización por funcionalidad
 │   ├── auth/
+│   ├── home/
 │   ├── patients/
 │   ├── professionals/
 │   ├── scheduling/
 │   ├── medical-records/
-│   ├── documents/
-│   └── billing/
+│   ├── billing/
+│   ├── marketing/
+│   ├── tenancy/
+│   ├── catalogs/
+│   ├── audit/
+│   └── settings/
 ├── shared/                     # UI reutilizable y sin reglas de negocio
 ├── app.config.ts
 └── app.routes.ts
@@ -203,9 +208,15 @@ Prefijos públicos actuales:
 | Historial     | `/api/v1/encuentros/**`, `/api/v1/expedientes/**`, `/api/v1/ordenes-estudio/**` |
 | Documental    | `/api/v1/documents/**`                                                          |
 | Facturación   | `/api/v1/facturas/**`                                                           |
+| Auditoría     | `/api/v1/audit/**` — **aún no publicado**, ver nota                             |
 
 Criptografía no tiene funcionalidad pública de frontend. Debe ser consumida internamente por los
 servicios autorizados.
+
+`/api/v1/audit/**` figura en la tabla porque es el prefijo acordado, pero hoy responde 404: no
+existe `ms-auditoria` en la plataforma ni ruta hacia él en el gateway. El módulo `audit/` está
+fusionado y su ruta registrada, pero **no aparece en el menú lateral** hasta que el servicio
+exista, para que nadie llegue por accidente a una pantalla que solo puede mostrar errores.
 
 Esta tabla orienta la navegación, pero no reemplaza el contrato de cada endpoint. Antes de crear
 una pantalla se deben confirmar método, ruta exacta, rol, request, response y errores con el
