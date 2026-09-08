@@ -21,10 +21,10 @@ export const routes: Routes = [
       },
 
       /* ----------------------------------------------------- auditoría -- */
-      /* Sin entrada en el menú: ms-auditoria no existe todavía y sus tres
-         endpoints responden 404. La ruta queda registrada para no perder el
-         módulo y para que el día que el servicio exista solo haya que añadir
-         la entrada en layout/nav.ts. */
+      /* La bitácora la sirve ms-auditoria en `/api/v1/audit/**`. Solo la ven
+         administración y la plataforma: registra quién leyó y quién modificó
+         cada expediente, así que es material de control interno y no de
+         consulta general. */
       {
         path: 'auditoria',
         title: 'MSYS · Auditoría',

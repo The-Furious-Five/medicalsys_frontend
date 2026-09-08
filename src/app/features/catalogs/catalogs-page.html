@@ -89,7 +89,9 @@
         }
         <span class="grow"></span>
         @if (specialties().length > 0) {
-          <span class="t-sec t-num">{{ filteredSpecialties().length }} de {{ specialties().length }}</span>
+          <span class="t-sec t-num"
+            >{{ filteredSpecialties().length }} de {{ specialties().length }}</span
+          >
         }
       </div>
 
@@ -114,7 +116,11 @@
             <tbody>
               @for (item of filteredSpecialties(); track item.id) {
                 <tr>
-                  <td><span class="t-mono t-strong" style="color: var(--brand-text)">{{ item.code }}</span></td>
+                  <td>
+                    <span class="t-mono t-strong" style="color: var(--brand-text)">{{
+                      item.code
+                    }}</span>
+                  </td>
                   <td class="t-strong">{{ item.name }}</td>
                   <td>
                     <medsys-status-chip
@@ -147,7 +153,11 @@
           />
         </div>
         @if (cie10Query()) {
-          <button type="button" class="btn btn-ghost btn-sm" (click)="clearSearch(); cieSearch.value = ''">
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            (click)="clearSearch(); cieSearch.value = ''"
+          >
             <medsys-icon name="x" [size]="14" /> Limpiar
           </button>
         }
@@ -183,7 +193,11 @@
             <tbody>
               @for (item of cie10Results(); track item.code) {
                 <tr>
-                  <td><span class="t-mono t-strong" style="color: var(--accent-text)">{{ item.code }}</span></td>
+                  <td>
+                    <span class="t-mono t-strong" style="color: var(--accent-text)">{{
+                      item.code
+                    }}</span>
+                  </td>
                   <td class="t-strong">{{ item.description }}</td>
                   <td class="t-sec">{{ item.chapter || '—' }}</td>
                   <td class="t-sec">{{ item.category || '—' }}</td>
@@ -230,7 +244,9 @@
         }
         <span class="grow"></span>
         @if (medications().length > 0) {
-          <span class="t-sec t-num">{{ filteredMedications().length }} de {{ medications().length }}</span>
+          <span class="t-sec t-num"
+            >{{ filteredMedications().length }} de {{ medications().length }}</span
+          >
         }
       </div>
 
@@ -268,7 +284,11 @@
                   </td>
                   <td class="t-sec">{{ item.genericName }}</td>
                   <td class="t-sec">{{ formLabel(item.pharmaceuticalForm) }}</td>
-                  <td><span class="t-mono t-strong" style="color: var(--brand-text)">{{ item.concentration || '—' }}</span></td>
+                  <td>
+                    <span class="t-mono t-strong" style="color: var(--brand-text)">{{
+                      item.concentration || '—'
+                    }}</span>
+                  </td>
                   <td>
                     <div class="row gap-1 wrap">
                       @if (item.controlled) {
@@ -319,7 +339,9 @@
         }
         <span class="grow"></span>
         @if (studyTypes().length > 0) {
-          <span class="t-sec t-num">{{ filteredStudyTypes().length }} de {{ studyTypes().length }}</span>
+          <span class="t-sec t-num"
+            >{{ filteredStudyTypes().length }} de {{ studyTypes().length }}</span
+          >
         }
       </div>
 
@@ -346,7 +368,11 @@
             <tbody>
               @for (item of filteredStudyTypes(); track item.id) {
                 <tr>
-                  <td><span class="t-mono t-strong" style="color: var(--brand-text)">{{ item.code }}</span></td>
+                  <td>
+                    <span class="t-mono t-strong" style="color: var(--brand-text)">{{
+                      item.code
+                    }}</span>
+                  </td>
                   <td class="t-strong">{{ item.name }}</td>
                   <td class="t-sec">{{ categoryLabel(item.category) }}</td>
                   <td>
@@ -355,7 +381,9 @@
                         <span class="chip chip-neutral"><span class="chip-dot"></span>Ayuno</span>
                       }
                       @if (item.generatesImage) {
-                        <span class="chip chip-ok"><span class="chip-dot"></span>Genera imagen</span>
+                        <span class="chip chip-ok"
+                          ><span class="chip-dot"></span>Genera imagen</span
+                        >
                       }
                       @if (!item.requiresFasting && !item.generatesImage) {
                         <span class="t-sec">—</span>

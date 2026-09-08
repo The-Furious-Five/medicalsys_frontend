@@ -5,7 +5,7 @@ Angular que consume exclusivamente el API Gateway de la plataforma de microservi
 
 ## Qué implementa
 
-Cubre nueve microservicios del MVP:
+Cubre diez microservicios del MVP:
 
 | Módulo en la interfaz | Microservicio      | Prefijos que consume                                                                                                |
 | --------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
@@ -18,6 +18,7 @@ Cubre nueve microservicios del MVP:
 | Marketing             | `ms-marketing`     | `/api/v1/campanas`, `/segmentos`, `/promociones`, `/anuncios`, `/fidelidad`, `/pacientes/**`                        |
 | Acceso                | `ms-identidad`     | `/api/v1/identity/**`                                                                                               |
 | Catálogos clínicos    | `ms-catalogos`     | `/api/v1/catalogs/specialties`, `/cie10`, `/medications`, `/study-types`                                            |
+| Auditoría             | `ms-auditoria`     | `/api/v1/audit/events`, `/summary`, `/integrity`, `/events/export`                                                  |
 
 Si `ms-pacientes` no responde, cada vista degrada por su cuenta y muestra el resto de la
 información: los demás módulos referencian al paciente solo por UUID.
@@ -216,15 +217,14 @@ Prefijos públicos actuales:
 | Historial     | `/api/v1/encuentros/**`, `/api/v1/expedientes/**`, `/api/v1/ordenes-estudio/**` |
 | Documental    | `/api/v1/documents/**`                                                          |
 | Facturación   | `/api/v1/facturas/**`                                                           |
-| Auditoría     | `/api/v1/audit/**` — **aún no publicado**, ver nota                             |
+| Auditoría     | `/api/v1/audit/**`                                                              |
 
 Criptografía no tiene funcionalidad pública de frontend. Debe ser consumida internamente por los
 servicios autorizados.
 
-`/api/v1/audit/**` figura en la tabla porque es el prefijo acordado, pero hoy responde 404: no
-existe `ms-auditoria` en la plataforma ni ruta hacia él en el gateway. El módulo `audit/` está
-fusionado y su ruta registrada, pero **no aparece en el menú lateral** hasta que el servicio
-exista, para que nadie llegue por accidente a una pantalla que solo puede mostrar errores.
+La escritura de la bitácora, `/internal/v1/audit-events`, queda deliberadamente fuera del
+gateway: se asienta entre servicios y nunca desde el navegador, o cualquiera podría fabricar la
+prueba de lo que no hizo.
 
 Esta tabla orienta la navegación, pero no reemplaza el contrato de cada endpoint. Antes de crear
 una pantalla se deben confirmar método, ruta exacta, rol, request, response y errores con el
