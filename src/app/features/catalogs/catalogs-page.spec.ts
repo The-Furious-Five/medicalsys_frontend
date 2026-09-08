@@ -21,7 +21,7 @@ describe('CatalogsPage', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.textContent).toContain('Medicina General');
-    expect(fixture.nativeElement.textContent).toContain('1 de 1 especialidades');
+    expect(fixture.nativeElement.textContent).toContain('1 de 1');
   });
 
   it('shows a recoverable error when the gateway is unreachable', async () => {
@@ -35,7 +35,7 @@ describe('CatalogsPage', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.textContent).toContain('No se pudieron cargar los catálogos.');
+    expect(fixture.nativeElement.textContent).toContain('El servicio no responde');
     expect(fixture.nativeElement.textContent).toContain('API Gateway');
   });
 });

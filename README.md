@@ -38,6 +38,14 @@ La base técnica:
 - Formularios reactivos con las mismas restricciones que el backend.
 - Carga diferida por ruta.
 - Vitest para pruebas unitarias.
+- Proxy local hacia `ms-gateway`.
+- `HttpClient` configurado con Bearer token y `X-Correlation-Id`.
+- Sesión temporal en `sessionStorage` para el MVP.
+- Modelo común del error HTTP acordado.
+- Recorte funcional de **Catálogos** (`/catalogos`): consulta de especialidades, CIE-10, medicamentos y tipos de estudio a través del Gateway.
+
+Todavía no implementa login ni el resto de casos de negocio. Cada funcionalidad debe agregarse mediante su
+historia de usuario y contrato aprobado.
 
 ## Requisitos
 

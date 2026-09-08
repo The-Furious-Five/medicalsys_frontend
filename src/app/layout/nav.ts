@@ -138,6 +138,18 @@ const NAV: readonly NavGroup[] = [
       },
     ],
   },
+  {
+    id: 'sistema',
+    label: 'Sistema',
+    items: [
+      {
+        link: '/catalogos',
+        label: 'Catálogos',
+        icon: 'clipboard-list',
+        permission: 'viewCatalogs',
+      },
+    ],
+  },
 ];
 
 export function visibleNav(roles: Roles): readonly NavGroup[] {

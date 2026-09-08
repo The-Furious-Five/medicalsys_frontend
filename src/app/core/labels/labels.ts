@@ -228,6 +228,38 @@ export const ADDENDUM_REASON: Dict = dict({
   OTHER: 'Otro motivo',
 });
 
+/* --------------------------------------------------------------- catálogos */
+export const CATALOG_STATUS: Dict = dict({
+  ACTIVE: 'Activo',
+  INACTIVE: 'Inactivo',
+});
+export const PHARMACEUTICAL_FORM: Dict = dict({
+  TABLET: 'Comprimido',
+  CAPSULE: 'Cápsula',
+  SYRUP: 'Jarabe',
+  SUSPENSION: 'Suspensión',
+  INJECTABLE: 'Inyectable',
+  CREAM: 'Crema',
+  OINTMENT: 'Ungüento',
+  DROPS: 'Gotas',
+  SUPPOSITORY: 'Supositorio',
+  PATCH: 'Parche',
+  AEROSOL: 'Aerosol',
+});
+export const STUDY_CATEGORY: Dict = dict({
+  LABORATORY: 'Laboratorio',
+  IMAGING: 'Imagen',
+  PATHOLOGY: 'Patología',
+  CARDIOLOGY: 'Cardiología',
+  ENDOSCOPY: 'Endoscopía',
+});
+export const APPLICABLE_SEX: Dict = dict({
+  BOTH: 'Todos',
+  M: 'Masculino',
+  F: 'Femenino',
+  OTHER: 'Otro',
+});
+
 /* ------------------------------------------------------------- facturación */
 export const INVOICE_STATUS: Dict = dict({
   ISSUED: 'Emitida',

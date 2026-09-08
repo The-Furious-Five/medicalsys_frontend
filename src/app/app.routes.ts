@@ -32,7 +32,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/audit/audit-page').then((m) => m.AuditPage),
       },
 
-      /* ----------------------------------------------------- catálogos -- */
+      /* -------------------------------------------------------- catálogos -- */
       {
         path: 'catalogos',
         title: 'MSYS · Catálogos clínicos',
