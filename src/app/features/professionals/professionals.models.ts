@@ -77,15 +77,14 @@ export type ProfessionalDocumentType = 'CI' | 'FOREIGN_ID_CARD' | 'PASSPORT';
 /**
  * Vínculo tal como lo necesita la ficha.
  *
- * TODO(ms-profesionales): `ProfessionalResponse.OrganizationResponse` todavía no
- * devuelve la comisión ni la fecha de inicio, aunque el alta sí las acepta y la
- * entidad las guarda. Los dos campos se declaran opcionales para que la ficha
- * los pinte en cuanto el backend los exponga y muestre «—» mientras tanto, en
- * vez de dejar dos columnas que nunca se llenan.
+ * `ProfessionalResponse.OrganizationResponse` ya devuelve comisión y fechas.
+ * Siguen declaradas opcionales porque la comisión es nula para las modalidades
+ * que no la usan y `endDate` solo existe en un vínculo terminado.
  */
 export interface ProfessionalOrganizationLinkDetail extends ProfessionalOrganizationLink {
   readonly commissionPercentage?: number | null;
   readonly startDate?: string | null;
+  readonly endDate?: string | null;
 }
 
 /** Una especialidad tal como la envía el alta. */
@@ -125,7 +124,7 @@ export interface RegisterProfessionalInput {
   readonly startDate: string;
 }
 
-/** Campos editables del profesional. El endpoint todavía no existe. */
+/** Campos editables del profesional (`PATCH /api/v1/professionals/{id}`). */
 export type UpdateProfessionalInput = Partial<
   Pick<
     RegisterProfessionalInput,

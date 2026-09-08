@@ -5,20 +5,26 @@ Angular que consume exclusivamente el API Gateway de la plataforma de microservi
 
 ## Qué implementa
 
-Cubre tres microservicios del MVP:
+Cubre nueve microservicios del MVP:
 
-| Módulo en la interfaz | Microservicio    | Prefijos que consume                                                                                                |
-| --------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Historial clínico     | `ms-historial`   | `/api/v1/expedientes`, `/encuentros`, `/ordenes-estudio`, `/recetas`, `/diagnosticos`, `/alergias`, `/antecedentes` |
-| Organización          | `ms-tenencia`    | `/api/v1/tenancy/**`                                                                                                |
-| Facturación           | `ms-facturacion` | `/api/v1/facturas`                                                                                                  |
+| Módulo en la interfaz | Microservicio      | Prefijos que consume                                                                                                |
+| --------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Historial clínico     | `ms-historial`     | `/api/v1/expedientes`, `/encuentros`, `/ordenes-estudio`, `/recetas`, `/diagnosticos`, `/alergias`, `/antecedentes` |
+| Organización          | `ms-tenencia`      | `/api/v1/tenancy/**`                                                                                                |
+| Facturación           | `ms-facturacion`   | `/api/v1/facturas`                                                                                                  |
+| Agenda                | `ms-agenda`        | `/api/v1/scheduling/**`                                                                                             |
+| Profesionales         | `ms-profesionales` | `/api/v1/professionals/**`                                                                                          |
+| Pacientes             | `ms-pacientes`     | `/api/v1/patients/**`                                                                                               |
+| Marketing             | `ms-marketing`     | `/api/v1/campanas`, `/segmentos`, `/promociones`, `/anuncios`, `/fidelidad`, `/pacientes/**`                        |
+| Acceso                | `ms-identidad`     | `/api/v1/identity/**`                                                                                               |
+| Catálogos clínicos    | `ms-catalogos`     | `/api/v1/catalogs/specialties`, `/cie10`, `/medications`, `/study-types`                                            |
 
-Consume además `ms-identidad` para el acceso y `ms-pacientes` en solo lectura,
-porque los tres módulos anteriores referencian al paciente únicamente por UUID
-y sin ese servicio no habría un nombre que mostrar. Si `ms-pacientes` no
-responde, cada vista degrada por su cuenta y muestra el resto de la información.
+Si `ms-pacientes` no responde, cada vista degrada por su cuenta y muestra el resto de la
+información: los demás módulos referencian al paciente solo por UUID.
 
-**No se modificó ningún servicio del backend.**
+Nota sobre `/api/v1/pacientes/**`: es de `ms-marketing` (actividad comercial y
+opt-out), no de `ms-pacientes`, que vive en `/api/v1/patients/**`. Los dos
+prefijos coexisten en el gateway y no colisionan.
 
 La base técnica:
 
@@ -32,7 +38,6 @@ La base técnica:
 - Formularios reactivos con las mismas restricciones que el backend.
 - Carga diferida por ruta.
 - Vitest para pruebas unitarias.
-<<<<<<< HEAD
 - Proxy local hacia `ms-gateway`.
 - `HttpClient` configurado con Bearer token y `X-Correlation-Id`.
 - Sesión temporal en `sessionStorage` para el MVP.
@@ -41,8 +46,6 @@ La base técnica:
 
 Todavía no implementa login ni el resto de casos de negocio. Cada funcionalidad debe agregarse mediante su
 historia de usuario y contrato aprobado.
-=======
->>>>>>> 17e2a210bc51fd387bd68b611e8cfd62c51257c1
 
 ## Requisitos
 
@@ -78,8 +81,6 @@ docker compose up -d
 docker compose ps
 curl http://localhost:8080/actuator/health
 ```
-
-Si el Gateway no arranca, `JWT_SECRET` en el `.env` del backend debe tener **al menos 32 caracteres**. El valor documentado está en `.env.example`.
 
 En otra terminal, desde este repositorio:
 
@@ -135,12 +136,17 @@ src/app/
 │   └── http/                   # Interceptors y contratos transversales
 ├── features/                   # Organización por funcionalidad
 │   ├── auth/
+│   ├── home/
 │   ├── patients/
 │   ├── professionals/
 │   ├── scheduling/
 │   ├── medical-records/
-│   ├── documents/
-│   └── billing/
+│   ├── billing/
+│   ├── marketing/
+│   ├── tenancy/
+│   ├── catalogs/
+│   ├── audit/
+│   └── settings/
 ├── shared/                     # UI reutilizable y sin reglas de negocio
 ├── app.config.ts
 └── app.routes.ts
@@ -210,9 +216,15 @@ Prefijos públicos actuales:
 | Historial     | `/api/v1/encuentros/**`, `/api/v1/expedientes/**`, `/api/v1/ordenes-estudio/**` |
 | Documental    | `/api/v1/documents/**`                                                          |
 | Facturación   | `/api/v1/facturas/**`                                                           |
+| Auditoría     | `/api/v1/audit/**` — **aún no publicado**, ver nota                             |
 
 Criptografía no tiene funcionalidad pública de frontend. Debe ser consumida internamente por los
 servicios autorizados.
+
+`/api/v1/audit/**` figura en la tabla porque es el prefijo acordado, pero hoy responde 404: no
+existe `ms-auditoria` en la plataforma ni ruta hacia él en el gateway. El módulo `audit/` está
+fusionado y su ruta registrada, pero **no aparece en el menú lateral** hasta que el servicio
+exista, para que nadie llegue por accidente a una pantalla que solo puede mostrar errores.
 
 Esta tabla orienta la navegación, pero no reemplaza el contrato de cada endpoint. Antes de crear
 una pantalla se deben confirmar método, ruta exacta, rol, request, response y errores con el
@@ -398,11 +410,18 @@ documentos ficticios. No registrar JWT, contraseñas, contenido clínico ni dato
 
 ## Cuentas de demostración
 
-| Cuenta                      | Rol             | Qué ve                                                                                     |
-| --------------------------- | --------------- | ------------------------------------------------------------------------------------------ |
-| `admin@medicalsys.demo`     | `ADMINISTRATOR` | Organización, sucursales, prestaciones, plan y consumo, facturación, lectura del historial |
-| `doctor@medicalsys.demo`    | `PHYSICIAN`     | Historial clínico completo: escribir, firmar, recetar, pedir estudios                      |
-| `recepcion@medicalsys.demo` | `RECEPTIONIST`  | Pacientes, expedientes en lectura, órdenes de estudio, facturación                         |
+| Cuenta                          | Rol             | Qué ve                                                                                    |
+| ------------------------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `admin@medicalsys.demo`         | `ADMINISTRATOR` | Organización, sucursales, prestaciones, plan y consumo, facturación, marketing, historial |
+| `doctor@medicalsys.demo`        | `PHYSICIAN`     | Historial clínico completo: escribir, firmar, recetar, pedir estudios                     |
+| `recepcion@medicalsys.demo`     | `RECEPTIONIST`  | Pacientes, agenda, expedientes en lectura, órdenes de estudio, facturación, cupones       |
+| `caja@medicalsys.demo`          | `BILLING_CLERK` | Facturación, cupones y fidelización                                                       |
+| `pediatria@medicalsys.demo`     | `PHYSICIAN`     | Lo mismo que `doctor`, con su propia agenda de pediatría                                  |
+| `ginecologia@medicalsys.demo`   | `PHYSICIAN`     | Lo mismo, con la agenda de ginecología                                                    |
+| `cardiologia@medicalsys.demo`   | `PHYSICIAN`     | Lo mismo, con la agenda de cardiología                                                    |
+| `traumatologia@medicalsys.demo` | `PHYSICIAN`     | Profesional de licencia: su ficha se abre, pero no admite citas                           |
+| `nutricion@medicalsys.demo`     | `PHYSICIAN`     | Nutrición                                                                                 |
+| `odontologia@medicalsys.demo`   | `PHYSICIAN`     | Odontología                                                                               |
 
 Contraseña: `Demo1234!`
 
@@ -425,8 +444,10 @@ nadie a hacer su trabajo.
    contexto del paciente; la derecha es donde se escribe. La nota se guarda sola
    dos segundos después de dejar de escribir, con un indicador textual discreto.
 6. **Signos vitales, diagnósticos, recetas y órdenes** — cada panel del
-   encuentro. Los códigos se validan contra el catálogo: en modo local,
-   `J00`, `M54.5`, `R51`, `S52.50` y `X_RAY`, `LAB_HEMOGRAM`.
+   encuentro. Los códigos se validan contra `ms-catalogos` por HTTP
+   (`CATALOGS_VALIDATION_MODE=REMOTE`), así que vale cualquier código del
+   catálogo vigente: 18 códigos CIE-10, 10 tipos de estudio y 14 medicamentos.
+   Un código inexistente se rechaza con `ICD10_CODE_NOT_ALLOWED`.
 7. **Firma** — la confirmación explica en texto claro que el contenido queda
    inmutable. Tras firmar, la pantalla pasa a solo lectura y aparece
    _Agregar addendum_.
