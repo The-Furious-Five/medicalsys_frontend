@@ -1,0 +1,175 @@
+<medsys-dialog
+  [open]="open()"
+  variant="sheet"
+  [width]="520"
+  [heading]="isEdit() ? 'Editar ' + offering()!.name : 'Nueva prestación'"
+  [description]="
+    isEdit()
+      ? 'Cambiar el precio no altera ninguna factura ya emitida: cada una conserva el precio con el que se emitió.'
+      : 'Un servicio que el centro presta y puede facturar.'
+  "
+  (closed)="closed.emit()"
+>
+  <form class="stack gap-4" [formGroup]="form" novalidate (ngSubmit)="submit()">
+    @if (conflict(); as message) {
+      <medsys-notice tone="warn" heading="Ese código ya existe">
+        {{ message }} Cada prestación necesita un código distinto dentro del centro.
+      </medsys-notice>
+    }
+    @if (otherError(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="offering-code">Código</label>
+        <input
+          id="offering-code"
+          class="input"
+          placeholder="CONSULTATION"
+          formControlName="code"
+          [attr.aria-invalid]="errorFor('code') !== null"
+        />
+        @if (errorFor('code'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        }
+      </div>
+      <div class="field">
+        <label class="field-label" for="offering-type">Tipo</label>
+        <medsys-select
+          formControlName="type"
+          [options]="types"
+          [controlId]="'offering-type'"
+          [allowEmpty]="false"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="offering-name">Nombre</label>
+      <input
+        id="offering-name"
+        class="input"
+        formControlName="name"
+        [attr.aria-invalid]="errorFor('name') !== null"
+      />
+      @if (errorFor('name'); as message) {
+        <span class="field-error" role="alert">{{ message }}</span>
+      } @else {
+        <span class="field-hint">Es el texto que se imprime en el detalle de la factura.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="offering-description">
+        Descripción <span class="field-optional">(opcional)</span>
+      </label>
+      <textarea
+        id="offering-description"
+        class="textarea"
+        rows="3"
+        formControlName="description"
+      ></textarea>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="offering-price">Precio en bolivianos</label>
+        <input
+          id="offering-price"
+          class="input input-num"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="150.00"
+          formControlName="basePriceBob"
+          [attr.aria-invalid]="errorFor('basePriceBob') !== null"
+        />
+        @if (errorFor('basePriceBob'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        }
+      </div>
+      <div class="field">
+        <label class="field-label" for="offering-duration">
+          Duración en minutos <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="offering-duration"
+          class="input input-num"
+          type="number"
+          min="5"
+          max="720"
+          formControlName="durationMinutes"
+          [attr.aria-invalid]="errorFor('durationMinutes') !== null"
+        />
+        @if (errorFor('durationMinutes'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        } @else {
+          <span class="field-hint">Entre 5 y 720.</span>
+        }
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="offering-specialty">
+          Especialidad <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="offering-specialty"
+          class="input"
+          placeholder="MEDICINA_GENERAL"
+          formControlName="specialtyCode"
+        />
+        <span class="field-hint">Código de la especialidad en el catálogo general.</span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="offering-resource">
+          Recurso necesario <span class="field-optional">(opcional)</span>
+        </label>
+        <medsys-select
+          formControlName="requiredResourceType"
+          [options]="resources"
+          [controlId]="'offering-resource'"
+          [allowEmpty]="false"
+        />
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="offering-tax-product">
+          Código de producto tributario <span class="field-optional">(opcional)</span>
+        </label>
+        <input id="offering-tax-product" class="input input-num" formControlName="taxProductCode" />
+      </div>
+      <div class="field">
+        <label class="field-label" for="offering-tax-unit">
+          Unidad de medida <span class="field-optional">(opcional)</span>
+        </label>
+        <input id="offering-tax-unit" class="input input-num" formControlName="taxUnitCode" />
+        <span class="field-hint">58 corresponde a «unidad».</span>
+      </div>
+    </div>
+
+    <label class="check-row">
+      <input type="checkbox" class="checkbox" formControlName="requiresConsent" />
+      <span class="check-box" aria-hidden="true"
+        ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+      /></span>
+      <span class="pair">
+        <span class="t-strong">Requiere consentimiento informado</span>
+        <span class="field-hint"
+          >El personal deberá registrar el consentimiento antes de realizarla.</span
+        >
+      </span>
+    </label>
+  </form>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Cancelar</button>
+    <button type="button" class="btn btn-primary" [disabled]="pending()" (click)="submit()">
+      {{ isEdit() ? 'Guardar cambios' : 'Crear prestación' }}
+    </button>
+  </ng-container>
+</medsys-dialog>

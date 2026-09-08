@@ -1,0 +1,128 @@
+<medsys-page-header
+  heading="Pacientes"
+  description="Registro de las personas atendidas en el centro. Desde aquí se abre su expediente y se consulta su historia."
+>
+  <ng-container headerActions>
+    @if (canRegister()) {
+      <button type="button" class="btn btn-primary" (click)="registering.set(true)">
+        <medsys-icon name="user-plus" [size]="15" /> Registrar paciente
+      </button>
+    }
+  </ng-container>
+</medsys-page-header>
+
+<div class="card">
+  <div class="filters">
+    <div class="search-field">
+      <medsys-icon name="search" [size]="15" />
+      <input
+        id="patients-search"
+        class="input"
+        type="search"
+        autofocus
+        aria-label="Buscar paciente"
+        placeholder="Buscar por nombre o documento"
+        [value]="term()"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+    @if (term()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="clearSearch()">
+        <medsys-icon name="x" [size]="14" /> Limpiar
+      </button>
+    }
+    <span class="grow"></span>
+    @if (results.value(); as result) {
+      <span class="t-sec t-num">{{ result.totalElements }} pacientes</span>
+    }
+  </div>
+
+  @if (results.isLoading()) {
+    <medsys-table-skeleton [rows]="7" [columns]="5" />
+  } @else if (results.error()) {
+    <medsys-error-state [failure]="results.error()" [compact]="true" (retry)="results.reload()" />
+  } @else if (results.value()!.content.length === 0 && debounced()) {
+    <medsys-empty-state
+      icon="search"
+      [heading]="'Nadie coincide con «' + debounced() + '»'"
+      description="Prueba con el apellido, con el número de documento sin el complemento, o registra a la persona si es su primera visita."
+    >
+      <div class="row gap-2">
+        <button type="button" class="btn btn-secondary" (click)="clearSearch()">
+          <medsys-icon name="x" [size]="14" /> Limpiar búsqueda
+        </button>
+        @if (canRegister()) {
+          <button type="button" class="btn btn-primary" (click)="registering.set(true)">
+            <medsys-icon name="user-plus" [size]="15" /> Registrar paciente
+          </button>
+        }
+      </div>
+    </medsys-empty-state>
+  } @else if (results.value()!.content.length === 0) {
+    <medsys-empty-state
+      icon="users"
+      heading="Todavía no hay pacientes"
+      description="Registrar a la persona es el primer paso: a partir de ahí se le puede abrir un expediente, atenderla y facturarle."
+    >
+      @if (canRegister()) {
+        <button type="button" class="btn btn-primary" (click)="registering.set(true)">
+          <medsys-icon name="user-plus" [size]="15" /> Registrar el primer paciente
+        </button>
+      }
+    </medsys-empty-state>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Documento</th>
+            <th scope="col" class="th-num">Edad</th>
+            <th scope="col">Teléfono</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (patient of results.value()!.content; track patient.patientId) {
+            <tr
+              data-clickable="true"
+              tabindex="0"
+              (click)="open(patient.patientId)"
+              (keydown)="onRowKey($event, patient.patientId)"
+            >
+              <td>
+                <div class="pair">
+                  <span class="t-strong">{{ patient.fullName }}</span>
+                  <span class="t-micro t-num">Nacido el {{ patient.birthDate | msDate }}</span>
+                </div>
+              </td>
+              <td class="t-num">
+                <span class="t-sec">{{ documentLabel(patient) }}</span>
+                {{ patient.documentNumber | msDocument: patient.documentComplement }}
+              </td>
+              <td class="td-num">{{ patient.birthDate | msAge }}</td>
+              <td class="t-num t-sec">{{ patient.phoneE164 ?? '—' }}</td>
+              <td>
+                <medsys-status-chip [value]="patient.status" [dictionary]="patientStatuses" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (results.value(); as result) {
+    <medsys-pager
+      [page]="result.page"
+      [totalPages]="result.totalPages"
+      (pageChange)="page.set($event)"
+    />
+  }
+</div>
+
+<medsys-register-patient-sheet
+  [open]="registering()"
+  (closed)="registering.set(false)"
+  (saved)="results.reload()"
+/>

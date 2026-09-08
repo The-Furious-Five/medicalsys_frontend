@@ -1,317 +1,379 @@
-<section class="catalogs" aria-labelledby="tabs-title">
-  <div class="intro">
-    <p class="eyebrow">Referencias del sistema</p>
-    <h2 id="tabs-title">Consulta de catálogos clínicos</h2>
-    <p>
-      Especialidades, CIE-10, medicamentos y tipos de estudio se leen desde
-      <code>ms-catalogos</code> a través del Gateway. Esta pantalla es de solo lectura.
-    </p>
-  </div>
-
-  <div class="toolbar">
-    <div class="tabs" role="tablist" aria-label="Tipos de catálogo">
-      <button
-        type="button"
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'specialties'"
-        [class.active]="activeTab() === 'specialties'"
-        (click)="selectTab('specialties')"
-      >
-        Especialidades <span>{{ specialties().length }}</span>
-      </button>
-      <button
-        type="button"
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'cie10'"
-        [class.active]="activeTab() === 'cie10'"
-        (click)="selectTab('cie10')"
-      >
-        CIE-10
-      </button>
-      <button
-        type="button"
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'medications'"
-        [class.active]="activeTab() === 'medications'"
-        (click)="selectTab('medications')"
-      >
-        Medicamentos <span>{{ medications().length }}</span>
-      </button>
-      <button
-        type="button"
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'studies'"
-        [class.active]="activeTab() === 'studies'"
-        (click)="selectTab('studies')"
-      >
-        Tipos de estudio <span>{{ studyTypes().length }}</span>
-      </button>
-    </div>
-    <button class="refresh" type="button" (click)="reload()" [disabled]="loading()">
+<medsys-page-header
+  heading="Catálogos clínicos"
+  description="Especialidades, CIE-10, medicamentos y tipos de estudio se leen desde ms-catalogos a través del Gateway. Esta pantalla es de solo lectura."
+>
+  <ng-container headerActions>
+    <button type="button" class="btn btn-secondary" (click)="reload()" [disabled]="loading()">
+      <medsys-icon name="refresh" [size]="14" />
       {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </ng-container>
+</medsys-page-header>
+
+<div class="card">
+  <div class="tabs-list" role="tablist" aria-label="Tipos de catálogo">
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.is-active]="activeTab() === 'specialties'"
+      [attr.aria-selected]="activeTab() === 'specialties'"
+      (click)="selectTab('specialties')"
+    >
+      Especialidades
+      @if (specialties().length > 0) {
+        <span class="t-micro t-num">{{ specialties().length }}</span>
+      }
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.is-active]="activeTab() === 'cie10'"
+      [attr.aria-selected]="activeTab() === 'cie10'"
+      (click)="selectTab('cie10')"
+    >
+      CIE-10
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.is-active]="activeTab() === 'medications'"
+      [attr.aria-selected]="activeTab() === 'medications'"
+      (click)="selectTab('medications')"
+    >
+      Medicamentos
+      @if (medications().length > 0) {
+        <span class="t-micro t-num">{{ medications().length }}</span>
+      }
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.is-active]="activeTab() === 'studies'"
+      [attr.aria-selected]="activeTab() === 'studies'"
+      (click)="selectTab('studies')"
+    >
+      Tipos de estudio
+      @if (studyTypes().length > 0) {
+        <span class="t-micro t-num">{{ studyTypes().length }}</span>
+      }
     </button>
   </div>
 
   @if (error(); as apiError) {
-    <div class="error" role="alert">
-      <strong>No se pudieron cargar los catálogos.</strong>
-      <span>{{ apiError.message }}</span>
-      @if (apiError.correlationId) {
-        <small>
-          ID de seguimiento: <code>{{ apiError.correlationId }}</code>
-          <button type="button" (click)="copyCorrelationId(apiError.correlationId)">
-            {{ copiedCorrelationId() ? 'Copiado' : 'Copiar' }}
-          </button>
-        </small>
-      }
-      <button type="button" (click)="reload()">Reintentar</button>
-    </div>
+    <medsys-error-state [failure]="apiError" [compact]="true" (retry)="reload()" />
   }
 
   @if (activeTab() === 'specialties') {
     <section role="tabpanel">
-      <label class="search">
-        <span aria-hidden="true">⌕</span>
-        <input
-          #specialtySearch
-          type="search"
-          [value]="specialtyFilter()"
-          (input)="specialtyFilter.set(specialtySearch.value)"
-          placeholder="Buscar especialidad..."
-          aria-label="Buscar especialidad"
-        />
-      </label>
+      <div class="filters">
+        <div class="search-field">
+          <medsys-icon name="search" [size]="15" />
+          <input
+            #specialtySearch
+            class="input"
+            type="search"
+            [value]="specialtyFilter()"
+            (input)="specialtyFilter.set(specialtySearch.value)"
+            placeholder="Buscar especialidad..."
+            aria-label="Buscar especialidad"
+          />
+        </div>
+        @if (specialtyFilter()) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="specialtyFilter.set('')">
+            <medsys-icon name="x" [size]="14" /> Limpiar
+          </button>
+        }
+        <span class="grow"></span>
+        @if (specialties().length > 0) {
+          <span class="t-sec t-num">{{ filteredSpecialties().length }} de {{ specialties().length }}</span>
+        }
+      </div>
+
       @if (loading()) {
-        <div class="state">Cargando especialidades…</div>
+        <medsys-table-skeleton [rows]="6" [columns]="3" />
       } @else if (filteredSpecialties().length === 0) {
-        <div class="state">No hay especialidades que coincidan con la búsqueda.</div>
+        <medsys-empty-state
+          icon="clipboard-list"
+          heading="No hay especialidades"
+          description="No hay especialidades que coincidan con la búsqueda."
+        />
       } @else {
         <div class="table-wrap">
-          <table>
+          <table class="table">
             <thead>
               <tr>
-                <th>Código</th>
-                <th>Especialidad</th>
-                <th>Estado</th>
+                <th scope="col">Código</th>
+                <th scope="col">Especialidad</th>
+                <th scope="col">Estado</th>
               </tr>
             </thead>
             <tbody>
               @for (item of filteredSpecialties(); track item.id) {
                 <tr>
+                  <td><span class="t-mono t-strong" style="color: var(--brand-text)">{{ item.code }}</span></td>
+                  <td class="t-strong">{{ item.name }}</td>
                   <td>
-                    <code>{{ item.code }}</code>
-                  </td>
-                  <td>{{ item.name }}</td>
-                  <td>
-                    <span class="badge badge--ok">{{ item.active ? 'Activa' : 'Inactiva' }}</span>
+                    <medsys-status-chip
+                      [value]="item.active ? 'ACTIVE' : 'INACTIVE'"
+                      [dictionary]="catalogStatuses"
+                    />
                   </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <p class="count">
-          {{ filteredSpecialties().length }} de {{ specialties().length }} especialidades
-        </p>
       }
     </section>
   }
 
   @if (activeTab() === 'cie10') {
     <section role="tabpanel">
-      <label class="search">
-        <span aria-hidden="true">⌕</span>
-        <input
-          #cieSearch
-          type="search"
-          [value]="cie10Query()"
-          (input)="searchIcd10(cieSearch.value)"
-          placeholder="Buscar código o diagnóstico..."
-          aria-label="Buscar diagnóstico CIE-10"
-        />
+      <div class="filters">
+        <div class="search-field">
+          <medsys-icon name="search" [size]="15" />
+          <input
+            #cieSearch
+            class="input"
+            type="search"
+            [value]="cie10Query()"
+            (input)="searchIcd10(cieSearch.value)"
+            placeholder="Buscar código o diagnóstico..."
+            aria-label="Buscar diagnóstico CIE-10"
+          />
+        </div>
         @if (cie10Query()) {
-          <button
-            type="button"
-            (click)="clearSearch(); cieSearch.value = ''"
-            aria-label="Limpiar búsqueda"
-          >
-            ×
+          <button type="button" class="btn btn-ghost btn-sm" (click)="clearSearch(); cieSearch.value = ''">
+            <medsys-icon name="x" [size]="14" /> Limpiar
           </button>
         }
-      </label>
+      </div>
+
       @if (cie10Loading()) {
-        <div class="state">Buscando diagnósticos…</div>
+        <medsys-table-skeleton [rows]="5" [columns]="6" />
       } @else if (!cie10Query().trim()) {
-        <div class="state">
-          Escribe un código o diagnóstico. El backend devuelve hasta 20 coincidencias.
-        </div>
+        <medsys-empty-state
+          icon="search"
+          heading="Busca un diagnóstico"
+          description="Escribe un código o diagnóstico. El backend devuelve hasta 20 coincidencias."
+        />
       } @else if (cie10Results().length === 0) {
-        <div class="state">No se encontraron diagnósticos para “{{ cie10Query() }}”.</div>
+        <medsys-empty-state
+          icon="search-x"
+          [heading]="'Nadie coincide con «' + cie10Query() + '»'"
+          description="Prueba con otro código o término de diagnóstico."
+        />
       } @else {
         <div class="table-wrap">
-          <table>
+          <table class="table">
             <thead>
               <tr>
-                <th>Código</th>
-                <th>Diagnóstico</th>
-                <th>Capítulo</th>
-                <th>Categoría</th>
-                <th>Aplicable a</th>
-                <th>Estado</th>
+                <th scope="col">Código</th>
+                <th scope="col">Diagnóstico</th>
+                <th scope="col">Capítulo</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Aplicable a</th>
+                <th scope="col">Estado</th>
               </tr>
             </thead>
             <tbody>
               @for (item of cie10Results(); track item.code) {
                 <tr>
+                  <td><span class="t-mono t-strong" style="color: var(--accent-text)">{{ item.code }}</span></td>
+                  <td class="t-strong">{{ item.description }}</td>
+                  <td class="t-sec">{{ item.chapter || '—' }}</td>
+                  <td class="t-sec">{{ item.category || '—' }}</td>
+                  <td class="t-sec">{{ sexLabel(item.applicableSex) }}</td>
                   <td>
-                    <code class="warm">{{ item.code }}</code>
-                  </td>
-                  <td>{{ item.description }}</td>
-                  <td>{{ item.chapter || '—' }}</td>
-                  <td>{{ item.category || '—' }}</td>
-                  <td>{{ label(item.applicableSex, 'Todos') }}</td>
-                  <td>
-                    <span class="badge badge--ok">{{ item.active ? 'Activo' : 'Inactivo' }}</span>
+                    <medsys-status-chip
+                      [value]="item.active ? 'ACTIVE' : 'INACTIVE'"
+                      [dictionary]="catalogStatuses"
+                    />
                   </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <p class="count">
-          {{ cie10Results().length }} coincidencia{{ cie10Results().length === 1 ? '' : 's' }}
-        </p>
+        <div class="pager">
+          <span class="t-sec t-num">
+            {{ cie10Results().length }} coincidencia{{ cie10Results().length === 1 ? '' : 's' }}
+          </span>
+        </div>
       }
     </section>
   }
 
   @if (activeTab() === 'medications') {
     <section role="tabpanel">
-      <label class="search">
-        <span aria-hidden="true">⌕</span>
-        <input
-          #medicationSearch
-          type="search"
-          [value]="medicationFilter()"
-          (input)="medicationFilter.set(medicationSearch.value)"
-          placeholder="Buscar medicamento o principio activo..."
-          aria-label="Buscar medicamento"
-        />
-      </label>
+      <div class="filters">
+        <div class="search-field">
+          <medsys-icon name="search" [size]="15" />
+          <input
+            #medicationSearch
+            class="input"
+            type="search"
+            [value]="medicationFilter()"
+            (input)="medicationFilter.set(medicationSearch.value)"
+            placeholder="Buscar medicamento o principio activo..."
+            aria-label="Buscar medicamento"
+          />
+        </div>
+        @if (medicationFilter()) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="medicationFilter.set('')">
+            <medsys-icon name="x" [size]="14" /> Limpiar
+          </button>
+        }
+        <span class="grow"></span>
+        @if (medications().length > 0) {
+          <span class="t-sec t-num">{{ filteredMedications().length }} de {{ medications().length }}</span>
+        }
+      </div>
+
       @if (loading()) {
-        <div class="state">Cargando medicamentos…</div>
+        <medsys-table-skeleton [rows]="6" [columns]="6" />
       } @else if (filteredMedications().length === 0) {
-        <div class="state">No hay medicamentos que coincidan con la búsqueda.</div>
+        <medsys-empty-state
+          icon="pill"
+          heading="No hay medicamentos"
+          description="No hay medicamentos que coincidan con la búsqueda."
+        />
       } @else {
         <div class="table-wrap">
-          <table>
+          <table class="table">
             <thead>
               <tr>
-                <th>Medicamento</th>
-                <th>Principio activo</th>
-                <th>Forma</th>
-                <th>Concentración</th>
-                <th>Tipo</th>
-                <th>Estado</th>
+                <th scope="col">Medicamento</th>
+                <th scope="col">Principio activo</th>
+                <th scope="col">Forma</th>
+                <th scope="col">Concentración</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Estado</th>
               </tr>
             </thead>
             <tbody>
               @for (item of filteredMedications(); track item.id) {
                 <tr>
                   <td>
-                    <strong>{{ item.tradeName || item.genericName }}</strong>
-                    @if (item.tradeName) {
-                      <small>{{ item.code }}</small>
-                    }
+                    <div class="pair">
+                      <span class="t-strong">{{ item.tradeName || item.genericName }}</span>
+                      @if (item.tradeName) {
+                        <span class="t-micro t-mono">{{ item.code }}</span>
+                      }
+                    </div>
                   </td>
-                  <td>{{ item.genericName }}</td>
-                  <td>{{ label(item.pharmaceuticalForm) }}</td>
+                  <td class="t-sec">{{ item.genericName }}</td>
+                  <td class="t-sec">{{ formLabel(item.pharmaceuticalForm) }}</td>
+                  <td><span class="t-mono t-strong" style="color: var(--brand-text)">{{ item.concentration || '—' }}</span></td>
                   <td>
-                    <code>{{ item.concentration || '—' }}</code>
+                    <div class="row gap-1 wrap">
+                      @if (item.controlled) {
+                        <span class="chip chip-warn"><span class="chip-dot"></span>Controlado</span>
+                      }
+                      @if (item.requiresPrescription) {
+                        <span class="chip chip-neutral"><span class="chip-dot"></span>Receta</span>
+                      }
+                      @if (!item.controlled && !item.requiresPrescription) {
+                        <span class="t-sec">—</span>
+                      }
+                    </div>
                   </td>
                   <td>
-                    @if (item.controlled) {
-                      <span class="badge badge--warn">Controlado</span>
-                    }
-                    @if (item.requiresPrescription) {
-                      <span class="badge">Receta</span>
-                    }
-                  </td>
-                  <td>
-                    <span class="badge badge--ok">{{ item.active ? 'Activo' : 'Inactivo' }}</span>
+                    <medsys-status-chip
+                      [value]="item.active ? 'ACTIVE' : 'INACTIVE'"
+                      [dictionary]="catalogStatuses"
+                    />
                   </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <p class="count">
-          {{ filteredMedications().length }} de {{ medications().length }} medicamentos
-        </p>
       }
     </section>
   }
 
   @if (activeTab() === 'studies') {
     <section role="tabpanel">
-      <label class="search">
-        <span aria-hidden="true">⌕</span>
-        <input
-          #studySearch
-          type="search"
-          [value]="studyFilter()"
-          (input)="studyFilter.set(studySearch.value)"
-          placeholder="Buscar tipo de estudio..."
-          aria-label="Buscar tipo de estudio"
-        />
-      </label>
+      <div class="filters">
+        <div class="search-field">
+          <medsys-icon name="search" [size]="15" />
+          <input
+            #studySearch
+            class="input"
+            type="search"
+            [value]="studyFilter()"
+            (input)="studyFilter.set(studySearch.value)"
+            placeholder="Buscar tipo de estudio..."
+            aria-label="Buscar tipo de estudio"
+          />
+        </div>
+        @if (studyFilter()) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="studyFilter.set('')">
+            <medsys-icon name="x" [size]="14" /> Limpiar
+          </button>
+        }
+        <span class="grow"></span>
+        @if (studyTypes().length > 0) {
+          <span class="t-sec t-num">{{ filteredStudyTypes().length }} de {{ studyTypes().length }}</span>
+        }
+      </div>
+
       @if (loading()) {
-        <div class="state">Cargando tipos de estudio…</div>
+        <medsys-table-skeleton [rows]="6" [columns]="5" />
       } @else if (filteredStudyTypes().length === 0) {
-        <div class="state">No hay tipos de estudio que coincidan con la búsqueda.</div>
+        <medsys-empty-state
+          icon="flask"
+          heading="No hay tipos de estudio"
+          description="No hay tipos de estudio que coincidan con la búsqueda."
+        />
       } @else {
         <div class="table-wrap">
-          <table>
+          <table class="table">
             <thead>
               <tr>
-                <th>Código</th>
-                <th>Estudio</th>
-                <th>Categoría</th>
-                <th>Características</th>
-                <th>Estado</th>
+                <th scope="col">Código</th>
+                <th scope="col">Estudio</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Características</th>
+                <th scope="col">Estado</th>
               </tr>
             </thead>
             <tbody>
               @for (item of filteredStudyTypes(); track item.id) {
                 <tr>
+                  <td><span class="t-mono t-strong" style="color: var(--brand-text)">{{ item.code }}</span></td>
+                  <td class="t-strong">{{ item.name }}</td>
+                  <td class="t-sec">{{ categoryLabel(item.category) }}</td>
                   <td>
-                    <code>{{ item.code }}</code>
+                    <div class="row gap-1 wrap">
+                      @if (item.requiresFasting) {
+                        <span class="chip chip-neutral"><span class="chip-dot"></span>Ayuno</span>
+                      }
+                      @if (item.generatesImage) {
+                        <span class="chip chip-ok"><span class="chip-dot"></span>Genera imagen</span>
+                      }
+                      @if (!item.requiresFasting && !item.generatesImage) {
+                        <span class="t-sec">—</span>
+                      }
+                    </div>
                   </td>
-                  <td>{{ item.name }}</td>
-                  <td>{{ label(item.category) }}</td>
                   <td>
-                    @if (item.requiresFasting) {
-                      <span class="badge">Ayuno</span>
-                    }
-                    @if (item.generatesImage) {
-                      <span class="badge badge--ok">Genera imagen</span>
-                    }
-                    @if (!item.requiresFasting && !item.generatesImage) {
-                      <span>—</span>
-                    }
-                  </td>
-                  <td>
-                    <span class="badge badge--ok">{{ item.active ? 'Activo' : 'Inactivo' }}</span>
+                    <medsys-status-chip
+                      [value]="item.active ? 'ACTIVE' : 'INACTIVE'"
+                      [dictionary]="catalogStatuses"
+                    />
                   </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <p class="count">
-          {{ filteredStudyTypes().length }} de {{ studyTypes().length }} tipos de estudio
-        </p>
       }
     </section>
   }
-</section>
+</div>

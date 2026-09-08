@@ -1,15 +1,15 @@
-import { Component, computed } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
-import { CatalogsConnection } from './features/catalogs/catalogs-connection';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
+/**
+ * Raíz de la aplicación. El armazón con barra lateral y cabecera es una ruta
+ * más (`AppShell`), de modo que la pantalla de acceso pueda ocupar el alto
+ * completo sin la navegación de alguien que todavía no ha entrado.
+ */
 @Component({
-  imports: [RouterLink, RouterOutlet],
   selector: 'medsys-root',
-  styleUrl: './app.scss',
-  templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
 })
-export class App {
-  protected readonly gatewayOffline = computed(() => this.connection.offline());
-
-  constructor(private readonly connection: CatalogsConnection) {}
-}
+export class App {}

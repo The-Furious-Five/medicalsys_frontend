@@ -1,0 +1,178 @@
+<medsys-page-header
+  heading="Plan y consumo"
+  description="Contrato vigente del centro con la plataforma y cuánto se ha consumido de cada cuota."
+>
+  <ng-container headerMeta>
+    @if (subscription.value(); as current) {
+      <medsys-status-chip [value]="current.status" [dictionary]="subscriptionStatuses" />
+    }
+  </ng-container>
+</medsys-page-header>
+
+@if (exceeded().length > 0) {
+  <div class="section">
+    <medsys-notice tone="warn" heading="Hay cuotas superadas">
+      {{ exceededNames() }} superan el límite del plan contratado. Contacta con la administración de
+      la plataforma para ampliarlo.
+    </medsys-notice>
+  </div>
+}
+
+@if (showsUsage()) {
+  <section class="section">
+    <div class="card">
+      <div class="card-head"><h2 class="t-section">Consumo del plan</h2></div>
+      <div class="card-body">
+        @if (usage.isLoading()) {
+          <div class="grid-3">
+            @for (slot of [1, 2, 3]; track slot) {
+              <div class="stack gap-2">
+                <medsys-skeleton width="90px" height="11px" />
+                <medsys-skeleton width="100%" height="28px" />
+                <medsys-skeleton width="100%" height="4px" />
+              </div>
+            }
+          </div>
+        } @else if (usage.error()) {
+          <medsys-error-state [failure]="usage.error()" [compact]="true" (retry)="usage.reload()" />
+        } @else {
+          <div class="grid-3">
+            @for (metric of usage.value(); track metric.metric) {
+              <div class="stack gap-2">
+                <div class="row gap-2">
+                  <span class="t-label grow">{{ metricLabel(metric) }}</span>
+                  @if (metric.limit === null) {
+                    <span class="row gap-1 t-micro">
+                      <medsys-icon name="infinity" [size]="12" /> Sin límite
+                    </span>
+                  }
+                </div>
+                <div class="row gap-2" style="align-items: baseline">
+                  <span class="t-page t-num">{{ currentValue(metric) }}</span>
+                  @if (limitValue(metric); as cap) {
+                    <span class="t-sec t-num">de {{ cap }}</span>
+                  }
+                </div>
+                <div
+                  class="meter"
+                  role="img"
+                  [attr.aria-label]="
+                    metric.limit === null
+                      ? currentValue(metric) + ' sin límite'
+                      : currentValue(metric) +
+                        ' de ' +
+                        limitValue(metric) +
+                        ', ' +
+                        percent(metric) +
+                        ' por ciento'
+                  "
+                >
+                  <span
+                    class="meter-fill"
+                    [class]="'meter-fill meter-' + meterTone(metric)"
+                    [style.width.%]="metric.limit === null ? 100 : percent(metric)"
+                  ></span>
+                </div>
+                <span class="t-micro">
+                  @if (metric.limit === null) {
+                    El plan no impone un límite para esta métrica.
+                  } @else if (metric.exceeded) {
+                    El consumo supera el límite contratado.
+                  } @else {
+                    Quedan {{ remainingValue(metric) }} disponibles.
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<section class="section">
+  @if (subscription.isLoading()) {
+    <div class="card">
+      <div class="card-body"><medsys-skeleton width="60%" height="24px" /></div>
+    </div>
+  } @else if (subscription.error()) {
+    <div class="card">
+      <medsys-error-state
+        [failure]="subscription.error()"
+        [compact]="true"
+        (retry)="subscription.reload()"
+      />
+    </div>
+  } @else if (subscription.value(); as current) {
+    <div class="card">
+      <div class="card-head">
+        <div class="pair">
+          <h2 class="t-section">{{ current.plan.name }}</h2>
+          <span class="t-sec">Contrato {{ cycleLabel(current.billingCycle) }}</span>
+        </div>
+        @if (current.effective) {
+          <span class="chip chip-ok"><span class="chip-dot"></span>Habilita el uso hoy</span>
+        } @else {
+          <span class="chip chip-warn"><span class="chip-dot"></span>No habilita el uso hoy</span>
+        }
+      </div>
+
+      <div class="card-body stack gap-5">
+        <dl class="deflist">
+          <div>
+            <dt class="def-term">Precio pactado</dt>
+            <dd class="def-value t-num">{{ current.agreedPriceBob | msBob }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Precio de lista</dt>
+            <dd class="def-value t-num">{{ current.plan.monthlyPriceBob | msBob }} al mes</dd>
+          </div>
+          <div>
+            <dt class="def-term">Inicio de vigencia</dt>
+            <dd class="def-value t-num">{{ current.startDate | msDate }}</dd>
+          </div>
+          <div>
+            <dt class="def-term">Fin de vigencia</dt>
+            <dd class="def-value t-num">
+              {{ current.endDate ? (current.endDate | msDate) : 'Sin fecha de fin' }}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="stack gap-3">
+          <div class="row gap-2">
+            <medsys-icon name="gauge" [size]="15" class="icon-muted" />
+            <span class="t-card">Lo que incluye el plan</span>
+          </div>
+          <dl class="deflist">
+            <div>
+              <dt class="def-term">Usuarios</dt>
+              <dd class="def-value t-num">{{ planLimit(current.plan.maxUsers) }}</dd>
+            </div>
+            <div>
+              <dt class="def-term">Sucursales</dt>
+              <dd class="def-value t-num">{{ planLimit(current.plan.maxBranches) }}</dd>
+            </div>
+            <div>
+              <dt class="def-term">Almacenamiento</dt>
+              <dd class="def-value t-num">{{ planLimit(current.plan.maxStorageGb, ' GB') }}</dd>
+            </div>
+          </dl>
+          <div class="row gap-2 wrap">
+            @if (current.plan.includesBilling) {
+              <span class="chip chip-ok"
+                ><medsys-icon name="check-circle" [size]="11" /> Facturación incluida</span
+              >
+            }
+            @if (current.plan.includesWhatsapp) {
+              <span class="chip chip-ok"
+                ><medsys-icon name="check-circle" [size]="11" /> Avisos por WhatsApp</span
+              >
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</section>

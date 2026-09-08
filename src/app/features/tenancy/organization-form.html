@@ -1,0 +1,115 @@
+<medsys-dialog
+  [open]="open()"
+  variant="sheet"
+  [width]="520"
+  heading="Editar la organización"
+  description="El código y el NIT no se editan: identifican al centro ante el resto de la plataforma y ante el SIN."
+  (closed)="closed.emit()"
+>
+  <form class="stack gap-4" [formGroup]="form" novalidate (ngSubmit)="submit()">
+    @if (errorMessage(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    <div class="field">
+      <label class="field-label" for="org-trade">Nombre comercial</label>
+      <input
+        id="org-trade"
+        class="input"
+        formControlName="tradeName"
+        [attr.aria-invalid]="errorFor('tradeName') !== null"
+      />
+      @if (errorFor('tradeName'); as message) {
+        <span class="field-error" role="alert">{{ message }}</span>
+      } @else {
+        <span class="field-hint">Es el nombre que se muestra en toda la interfaz.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="org-legal">Razón social</label>
+      <input
+        id="org-legal"
+        class="input"
+        formControlName="legalName"
+        [attr.aria-invalid]="errorFor('legalName') !== null"
+      />
+      @if (errorFor('legalName'); as message) {
+        <span class="field-error" role="alert">{{ message }}</span>
+      } @else {
+        <span class="field-hint">Se imprime en las facturas emitidas por el centro.</span>
+      }
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="org-email">Correo de contacto</label>
+        <input
+          id="org-email"
+          class="input"
+          type="email"
+          formControlName="contactEmail"
+          [attr.aria-invalid]="errorFor('contactEmail') !== null"
+        />
+        @if (errorFor('contactEmail'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        }
+      </div>
+      <div class="field">
+        <label class="field-label" for="org-phone">
+          Teléfono <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="org-phone"
+          class="input input-num"
+          inputmode="tel"
+          formControlName="phoneE164"
+          [attr.aria-invalid]="errorFor('phoneE164') !== null"
+        />
+        @if (errorFor('phoneE164'); as message) {
+          <span class="field-error" role="alert">{{ message }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="org-city">
+          Ciudad <span class="field-optional">(opcional)</span>
+        </label>
+        <input id="org-city" class="input" formControlName="city" />
+      </div>
+      <div class="field">
+        <label class="field-label" for="org-department">
+          Departamento <span class="field-optional">(opcional)</span>
+        </label>
+        <medsys-select
+          formControlName="department"
+          [options]="departments"
+          [controlId]="'org-department'"
+          placeholder="Sin especificar"
+        />
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="org-tz">Zona horaria</label>
+        <input id="org-tz" class="input" formControlName="timeZone" />
+      </div>
+      <div class="field">
+        <label class="field-label" for="org-registry">
+          Matrícula de comercio <span class="field-optional">(opcional)</span>
+        </label>
+        <input id="org-registry" class="input input-num" formControlName="tradeRegistryNumber" />
+      </div>
+    </div>
+  </form>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Cancelar</button>
+    <button type="button" class="btn btn-primary" [disabled]="pending()" (click)="submit()">
+      Guardar cambios
+    </button>
+  </ng-container>
+</medsys-dialog>

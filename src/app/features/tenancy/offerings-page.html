@@ -1,0 +1,176 @@
+<medsys-page-header
+  heading="Prestaciones"
+  description="Catálogo de servicios que el centro ofrece y factura. El precio que se guarda aquí es el que la factura congela en el momento de emitirla."
+>
+  <ng-container headerActions>
+    @if (editable()) {
+      <button type="button" class="btn btn-primary" (click)="openNew()">
+        <medsys-icon name="plus" [size]="15" /> Nueva prestación
+      </button>
+    }
+  </ng-container>
+</medsys-page-header>
+
+<div class="card">
+  <div class="filters">
+    <div class="search-field">
+      <medsys-icon name="search" [size]="15" />
+      <input
+        class="input"
+        type="search"
+        aria-label="Buscar prestación"
+        placeholder="Buscar por código, nombre o especialidad"
+        [value]="term()"
+        (input)="term.set($any($event.target).value)"
+      />
+    </div>
+
+    <medsys-select
+      ariaLabel="Filtrar por vigencia"
+      [options]="vigencyOptions"
+      [allowEmpty]="false"
+      [value]="activeFilter()"
+      (valueChange)="activeFilter.set($any($event))"
+    />
+
+    @if (filtersActive()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="clearFilters()">
+        <medsys-icon name="x" [size]="14" /> Limpiar filtros
+      </button>
+    }
+
+    <span class="grow"></span>
+    <span class="t-sec t-num">{{ rows().length }} prestaciones</span>
+  </div>
+
+  @if (offerings.isLoading()) {
+    <medsys-table-skeleton [rows]="5" [columns]="5" />
+  } @else if (offerings.error()) {
+    <medsys-error-state
+      [failure]="offerings.error()"
+      [compact]="true"
+      (retry)="offerings.reload()"
+    />
+  } @else if (rows().length === 0 && filtersActive() && hasAnyOffering()) {
+    <medsys-empty-state
+      icon="search"
+      heading="Ningún resultado con esos filtros"
+      [description]="filterDescription()"
+    >
+      <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+        <medsys-icon name="x" [size]="14" /> Limpiar filtros
+      </button>
+    </medsys-empty-state>
+  } @else if (rows().length === 0) {
+    <medsys-empty-state
+      icon="wallet"
+      heading="El catálogo está vacío"
+      description="Una prestación es cada servicio que el centro presta y cobra: una consulta, un estudio, un procedimiento. Sin prestaciones no se puede emitir una factura."
+    >
+      @if (editable()) {
+        <button type="button" class="btn btn-primary" (click)="openNew()">
+          <medsys-icon name="plus" [size]="15" /> Crear la primera prestación
+        </button>
+      }
+    </medsys-empty-state>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Prestación</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Especialidad</th>
+            <th scope="col" class="th-num">Duración</th>
+            <th scope="col" class="th-num">Precio</th>
+            <th scope="col">Vigencia</th>
+            @if (editable()) {
+              <th scope="col" class="td-tight"><span class="sr-only">Acciones</span></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (offering of rows(); track offering.id) {
+            <tr>
+              <td>
+                <div class="pair">
+                  <span class="t-strong">{{ offering.name }}</span>
+                  <span class="t-micro row gap-2">
+                    {{ offering.code }}
+                    @if (offering.requiresConsent) {
+                      <span>· requiere consentimiento</span>
+                    }
+                    @if (
+                      offering.requiredResourceType && offering.requiredResourceType !== 'NONE'
+                    ) {
+                      <span>· {{ resourceLabel(offering) }}</span>
+                    }
+                  </span>
+                </div>
+              </td>
+              <td>{{ typeLabel(offering) }}</td>
+              <td class="t-sec">{{ offering.specialtyCode ?? '—' }}</td>
+              <td class="td-num">
+                {{ offering.durationMinutes ? offering.durationMinutes + ' min' : '—' }}
+              </td>
+              <td class="td-num t-strong">{{ offering.basePriceBob | msBob }}</td>
+              <td>
+                @if (offering.active) {
+                  <span class="chip chip-ok"><span class="chip-dot"></span>Vigente</span>
+                } @else {
+                  <span class="chip chip-muted"><span class="chip-dot"></span>No vigente</span>
+                }
+              </td>
+              @if (editable()) {
+                <td class="td-tight">
+                  <div class="row gap-1">
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm btn-icon"
+                      [attr.aria-label]="'Editar ' + offering.name"
+                      (click)="openEdit(offering)"
+                    >
+                      <medsys-icon name="pencil" [size]="14" />
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm btn-icon"
+                      [attr.aria-label]="
+                        offering.active ? 'Retirar ' + offering.name : 'Reactivar ' + offering.name
+                      "
+                      (click)="
+                        offering.active ? deactivating.set(offering) : changeActive(offering, true)
+                      "
+                    >
+                      <medsys-icon name="power" [size]="14" />
+                    </button>
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<medsys-offering-form
+  [open]="formOpen()"
+  [offering]="editing()"
+  (closed)="formOpen.set(false)"
+  (saved)="offerings.reload()"
+/>
+
+<medsys-confirm-dialog
+  [open]="deactivating() !== null"
+  heading="Retirar la prestación del catálogo"
+  [description]="
+    (deactivating()?.name ?? '') +
+    ' dejará de poder facturarse y de ofrecerse en nuevas atenciones. Las facturas ya emitidas conservan su detalle y su precio. Puedes volver a activarla cuando quieras.'
+  "
+  confirmLabel="Retirar del catálogo"
+  [pending]="statusPending()"
+  (cancelled)="deactivating.set(null)"
+  (confirmed)="changeActive(deactivating()!, false)"
+/>

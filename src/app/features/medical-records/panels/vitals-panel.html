@@ -1,0 +1,159 @@
+<section class="card">
+  <div class="card-head">
+    <div class="row gap-2">
+      <medsys-icon name="activity" [size]="15" class="icon-muted" />
+      <h2 class="t-section">Signos vitales</h2>
+    </div>
+    @if (editable()) {
+      <button type="button" class="btn btn-secondary btn-sm" (click)="openForm()">
+        <medsys-icon name="plus" [size]="14" /> Registrar toma
+      </button>
+    }
+  </div>
+
+  <div class="card-body">
+    @if (vitals.isLoading()) {
+      <div class="vitals-grid">
+        @for (slot of [1, 2, 3, 4, 5]; track slot) {
+          <div class="stack gap-1">
+            <medsys-skeleton width="70px" height="10px" />
+            <medsys-skeleton width="60px" height="22px" />
+          </div>
+        }
+      </div>
+    } @else if (vitals.error()) {
+      <p class="t-sec">No se pudieron cargar los signos vitales de este encuentro.</p>
+    } @else if (latest() === null) {
+      <p class="t-sec">
+        @if (editable()) {
+          Aún no se registró ninguna toma. Usa «Registrar toma» para añadir la primera.
+        } @else {
+          No se registraron signos vitales en este encuentro.
+        }
+      </p>
+    } @else {
+      <div class="stack gap-4">
+        <div class="vitals-grid">
+          @if (pressure(); as bp) {
+            <div class="vital">
+              <span class="t-label">Presión arterial</span>
+              <span class="vital-value" [class.vital-out]="bp.high">
+                {{ bp.text }}<span class="vital-unit">mmHg</span>
+              </span>
+              @if (bp.high) {
+                <span class="t-micro" style="color: var(--err-700)">Fuera de rango</span>
+              }
+            </div>
+          }
+          @for (metric of shownMetrics(); track metric.key) {
+            <div class="vital">
+              <span class="t-label">{{ metric.label }}</span>
+              <span class="vital-value" [class.vital-out]="metric.out">
+                {{ metric.value }}<span class="vital-unit">{{ metric.unit }}</span>
+              </span>
+              @if (metric.out) {
+                <span class="t-micro" style="color: var(--err-700)">Fuera de rango</span>
+              }
+            </div>
+          }
+          @if (latest()!.bmi; as bmi) {
+            <div class="vital">
+              <span class="t-label"
+                >IMC<span class="sr-only"> (índice de masa corporal)</span></span
+              >
+              <span class="vital-value">{{ bmi | msNumber: 1 }}</span>
+              <span class="t-micro">Calculado por el sistema</span>
+            </div>
+          }
+        </div>
+        <span class="t-micro">
+          Última toma {{ latest()!.measuredAt | msDateTime }}
+          @if (takeCount() > 1) {
+            · {{ takeCount() }} tomas en este encuentro
+          }
+        </span>
+      </div>
+    }
+  </div>
+</section>
+
+<medsys-dialog
+  [open]="adding()"
+  [width]="620"
+  heading="Registrar signos vitales"
+  description="Rellena solo lo que se midió. Los campos vacíos no se guardan."
+  (closed)="adding.set(false)"
+>
+  <div class="stack gap-4">
+    @if (errorMessage(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="vital-systolic">
+          Presión sistólica <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="vital-systolic"
+          class="input input-num"
+          type="number"
+          min="0"
+          max="400"
+          autofocus
+          [value]="draftValue('systolicPressure')"
+          (input)="setDraft('systolicPressure', $any($event.target).value)"
+        />
+        <span class="field-hint">mmHg</span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="vital-diastolic">
+          Presión diastólica <span class="field-optional">(opcional)</span>
+        </label>
+        <input
+          id="vital-diastolic"
+          class="input input-num"
+          type="number"
+          min="0"
+          max="400"
+          [value]="draftValue('diastolicPressure')"
+          (input)="setDraft('diastolicPressure', $any($event.target).value)"
+        />
+        <span class="field-hint">mmHg</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      @for (metric of metrics; track metric.key) {
+        <div class="field">
+          <label class="field-label" [attr.for]="'vital-' + metric.key">
+            {{ metric.label }} <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            [id]="'vital-' + metric.key"
+            class="input input-num"
+            type="number"
+            [min]="metric.min"
+            [max]="metric.max"
+            [step]="metric.step"
+            [value]="draftValue(metric.key)"
+            (input)="setDraft(metric.key, $any($event.target).value)"
+          />
+          <span class="field-hint">{{ metric.unit }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="adding.set(false)">Cancelar</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="!anyValue() || pending()"
+      (click)="save()"
+    >
+      Guardar toma
+    </button>
+  </ng-container>
+</medsys-dialog>

@@ -10,7 +10,19 @@ import {
   Subject,
   switchMap,
 } from 'rxjs';
-import { ApiError } from '../../core/http/api-error';
+import {
+  APPLICABLE_SEX,
+  CATALOG_STATUS,
+  PHARMACEUTICAL_FORM,
+  STUDY_CATEGORY,
+  label,
+} from '../../core/labels/labels';
+import { Icon } from '../../core/ui/icon';
+import { EmptyState } from '../../shared/empty-state';
+import { ErrorState } from '../../shared/error-state';
+import { PageHeader } from '../../shared/page-header';
+import { StatusChip } from '../../shared/status-chip';
+import { TableSkeleton } from '../../shared/table-skeleton';
 import { CatalogsApiService } from './catalogs-api.service';
 import { CatalogsConnection } from './catalogs-connection';
 import { toCatalogsError } from './catalogs-error';
@@ -18,42 +30,10 @@ import { Icd10Entry, Medication, Specialty, StudyType } from './catalogs.models'
 
 type CatalogTab = 'specialties' | 'cie10' | 'medications' | 'studies';
 
-const ENUM_LABELS: Record<string, string> = {
-  TABLET: 'Comprimido',
-  CAPSULE: 'Cápsula',
-  SYRUP: 'Jarabe',
-  SUSPENSION: 'Suspensión',
-  INJECTABLE: 'Inyectable',
-  CREAM: 'Crema',
-  OINTMENT: 'Ungüento',
-  DROPS: 'Gotas',
-  SUPPOSITORY: 'Supositorio',
-  PATCH: 'Parche',
-  AEROSOL: 'Aerosol',
-  ORAL: 'Oral',
-  INTRAVENOUS: 'Intravenosa',
-  INTRAMUSCULAR: 'Intramuscular',
-  SUBCUTANEOUS: 'Subcutánea',
-  TOPICAL: 'Tópica',
-  OPHTHALMIC: 'Oftálmica',
-  OTIC: 'Ótica',
-  NASAL: 'Nasal',
-  RECTAL: 'Rectal',
-  INHALATION: 'Inhalación',
-  LABORATORY: 'Laboratorio',
-  IMAGING: 'Imagen',
-  PATHOLOGY: 'Patología',
-  CARDIOLOGY: 'Cardiología',
-  ENDOSCOPY: 'Endoscopía',
-  BOTH: 'Todos',
-  M: 'Masculino',
-  F: 'Femenino',
-  OTHER: 'Otro',
-};
-
 @Component({
   selector: 'medsys-catalogs-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PageHeader, StatusChip, ErrorState, EmptyState, TableSkeleton, Icon],
   templateUrl: './catalogs-page.html',
   styleUrl: './catalogs-page.scss',
 })
@@ -61,6 +41,11 @@ export class CatalogsPage {
   private readonly catalogsApi = inject(CatalogsApiService);
   private readonly connection = inject(CatalogsConnection);
   private readonly cie10Query$ = new Subject<string>();
+
+  protected readonly catalogStatuses = CATALOG_STATUS;
+  protected readonly pharmaceuticalForms = PHARMACEUTICAL_FORM;
+  protected readonly studyCategories = STUDY_CATEGORY;
+  protected readonly applicableSexes = APPLICABLE_SEX;
 
   protected readonly activeTab = signal<CatalogTab>('specialties');
   protected readonly specialties = signal<readonly Specialty[]>([]);
@@ -73,8 +58,7 @@ export class CatalogsPage {
   protected readonly cie10Query = signal('');
   protected readonly loading = signal(true);
   protected readonly cie10Loading = signal(false);
-  protected readonly error = signal<ApiError | null>(null);
-  protected readonly copiedCorrelationId = signal(false);
+  protected readonly error = signal<unknown>(null);
 
   protected readonly filteredSpecialties = computed(() =>
     filterBy(this.specialties(), this.specialtyFilter(), (item) => [item.code, item.name]),
@@ -172,18 +156,16 @@ export class CatalogsPage {
     this.cie10Query$.next('');
   }
 
-  protected label(value: string | null | undefined, fallback = '—'): string {
-    if (!value) {
-      return fallback;
-    }
-    return ENUM_LABELS[value] ?? value.replaceAll('_', ' ').toLowerCase();
+  protected formLabel(value: string | null | undefined): string {
+    return label(this.pharmaceuticalForms, value);
   }
 
-  protected copyCorrelationId(correlationId: string): void {
-    void navigator.clipboard.writeText(correlationId).then(() => {
-      this.copiedCorrelationId.set(true);
-      window.setTimeout(() => this.copiedCorrelationId.set(false), 2000);
-    });
+  protected categoryLabel(value: string | null | undefined): string {
+    return label(this.studyCategories, value);
+  }
+
+  protected sexLabel(value: string | null | undefined): string {
+    return label(this.applicableSexes, value, 'Todos');
   }
 
   private setError(error: HttpErrorResponse): void {

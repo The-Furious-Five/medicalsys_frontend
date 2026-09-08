@@ -1,0 +1,118 @@
+<div class="login">
+  <!-- El formulario va primero en el DOM: quien usa lector de pantalla o teclado
+       llega al campo de correo sin atravesar la presentación de la marca. La
+       rejilla lo coloca a la derecha, como en el diseño. -->
+  <main class="login-panel">
+    <div class="login-card">
+      <img
+        src="/brand/msys-horizontal.svg"
+        alt="MSYS"
+        width="158"
+        height="40"
+        class="login-card-logo"
+      />
+
+      <div class="login-card-head">
+        <h1 class="login-title">Bienvenido de nuevo</h1>
+        <p class="login-subtitle">Accede con la cuenta que te asignó tu centro médico.</p>
+      </div>
+
+      <form class="stack gap-4" novalidate (submit)="submit($event)">
+        <div class="field login-field">
+          <label class="field-label" for="login-email">Correo electrónico</label>
+          <div class="login-control">
+            <span class="login-control-icon"><medsys-icon name="user" [size]="16" /></span>
+            <input
+              id="login-email"
+              #emailField
+              class="input"
+              type="email"
+              name="email"
+              autocomplete="username"
+              required
+              placeholder="nombre@centro.med"
+              [value]="email()"
+              (input)="email.set($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        <div class="field login-field">
+          <label class="field-label" for="login-password">Contraseña</label>
+          <div class="login-control">
+            <span class="login-control-icon"><medsys-icon name="lock" [size]="16" /></span>
+            <input
+              id="login-password"
+              class="input"
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              required
+              placeholder="Tu contraseña"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        @if (error(); as message) {
+          <div role="alert">
+            <medsys-notice tone="err" icon="alert-triangle">{{ message }}</medsys-notice>
+          </div>
+        }
+
+        <!-- Naranja: es la única acción de la pantalla. Ningún otro control de
+             esta vista compite con ella. -->
+        <button
+          type="submit"
+          class="btn btn-lg btn-block login-submit"
+          [disabled]="pending()"
+          [attr.aria-busy]="pending() ? 'true' : null"
+        >
+          <medsys-icon name="log-in" [size]="16" />
+          {{ pending() ? 'Entrando…' : 'Entrar' }}
+        </button>
+      </form>
+
+      <div class="login-demo">
+        <p class="t-label">Cuentas de demostración</p>
+        <div class="stack gap-1">
+          @for (account of demoAccounts; track account.email) {
+            <button type="button" class="demo-account" (click)="useDemoAccount(account)">
+              <span class="demo-account-mail grow truncate">{{ account.email }}</span>
+              <span class="demo-account-role">{{ account.role }}</span>
+            </button>
+          }
+        </div>
+        <p class="t-micro">
+          Rellenan el formulario con la contraseña de demostración. No pulses «Entrar» por ellas.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <section class="login-brand">
+    <img src="/brand/msys-isotipo.svg" alt="" width="96" height="96" class="login-brand-mark" />
+
+    <div class="stack gap-3">
+      <p class="login-claim">La historia clínica de una persona, sostenida en un solo lugar.</p>
+      <p class="login-brand-lead">
+        MSYS reúne el expediente clínico, la organización del centro y la facturación de las
+        prestaciones en una misma plataforma.
+      </p>
+    </div>
+
+    <ul class="login-points">
+      @for (point of brandPoints; track point.label) {
+        <li class="login-point">
+          <span class="login-point-icon"><medsys-icon [name]="point.icon" [size]="16" /></span>
+          {{ point.label }}
+        </li>
+      }
+    </ul>
+
+    <p class="t-micro login-env">Entorno de demostración · datos ficticios</p>
+  </section>
+
+  <img src="/brand/msys-mark-green.svg" alt="" class="login-watermark" aria-hidden="true" />
+</div>
