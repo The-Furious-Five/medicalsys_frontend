@@ -15,10 +15,20 @@ export class PatientsService {
    *  debe provocar veinte peticiones idénticas. */
   private readonly cache = new Map<string, Promise<Patient>>();
 
+  /**
+   * Listado paginado del padrón.
+   *
+   * La ruta es `/patients/search` y no `/patients`: en ms-pacientes,
+   * `GET /api/v1/patients` es la búsqueda **exacta** por la terna del documento
+   * (`documentType` + `documentNumber` + `documentComplement`, la misma del
+   * UNIQUE de la tabla) y devuelve un paciente suelto. Sin esos tres parámetros
+   * responde 400, así que apuntar la tabla ahí dejaba la pantalla en error.
+   * La búsqueda parcial paginada vive en `/patients/search`.
+   */
   searchResource(term: Signal<string>, page: Signal<number> = signal(0)) {
     return dataResource(
       httpResource<Page<Patient>>(() => ({
-        url: `${this.baseUrl}/patients`,
+        url: `${this.baseUrl}/patients/search`,
         params: { size: 20, page: page(), ...(term().trim() ? { q: term().trim() } : {}) },
       })),
     );
@@ -46,7 +56,7 @@ export class PatientsService {
 
   search(term: string, size = 6): Promise<Page<Patient>> {
     return firstValueFrom(
-      this.http.get<Page<Patient>>(`${this.baseUrl}/patients`, {
+      this.http.get<Page<Patient>>(`${this.baseUrl}/patients/search`, {
         params: { size, ...(term.trim() ? { q: term.trim() } : {}) },
       }),
     );

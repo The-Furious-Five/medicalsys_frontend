@@ -73,15 +73,11 @@ export class ProfessionalsService {
   /**
    * Un profesional por identificador.
    *
-   * TODO(ms-profesionales): `GET /api/v1/professionals/{id}` **no existe**. El
-   * controlador solo publica el listado y el alta; el detalle vive en
+   * `GET /api/v1/professionals/{id}` devuelve la ficha en cualquier estado, a
+   * diferencia del listado —que filtra por vínculo activo— y de
    * `GET /internal/v1/professionals/{id}`, que es el contrato con la agenda y
-   * que el gateway no encamina (`application.yaml` solo expone
-   * `/api/v1/professionals/**`). Hasta que se publique, la ficha muestra su
-   * estado de error. Se deja escrita la ruta que corresponde en vez de
-   * inventar un rodeo por el listado, que devolvería datos distintos: el
-   * listado filtra por vínculo activo y ocultaría justo a quien se acaba de
-   * desactivar, que es a quien se entra a ver.
+   * responde 404 a un profesional suspendido. La ficha tiene que poder abrirse
+   * justo para revertir esa suspensión, así que usa la ruta pública.
    */
   professionalResource(professionalId: Signal<string | null>) {
     return dataResource(
@@ -124,9 +120,9 @@ export class ProfessionalsService {
   }
 
   /**
-   * TODO(ms-profesionales): `PATCH /api/v1/professionals/{id}` no existe
-   * todavía. El método queda escrito para que la hoja de edición, cuando se
-   * construya, no tenga que decidir de nuevo la forma de la petición.
+   * Edición parcial de la ficha. Solo viajan los campos descriptivos: documento,
+   * matrícula y cuenta de usuario son la identidad del profesional y el servicio
+   * no los acepta por PATCH.
    */
   update(professionalId: string, body: UpdateProfessionalInput): Promise<Professional> {
     return firstValueFrom(
@@ -135,15 +131,13 @@ export class ProfessionalsService {
   }
 
   /**
-   * Activa o desactiva el vínculo de un profesional con un centro.
-   *
-   * TODO(ms-profesionales): el endpoint está en desarrollo. Se asume
-   * `PATCH /api/v1/professionals/{id}/organizations/{linkId}` con `{ status }`,
-   * que es la forma que se acordó; conviene confirmarla antes de conectarla.
+   * Activa o desactiva el vínculo de un profesional con un centro:
+   * `PATCH /api/v1/professionals/{id}/organizations/{linkId}` con `{ status }`.
    *
    * Para desactivar se envía SUSPENDED y no ENDED: `OrganizationStatus` tiene
    * los dos, y solo el primero se entiende como reversible. ENDED describe un
-   * vínculo terminado, que es otra decisión y merecería su propia acción.
+   * vínculo terminado —el servicio le sella `endDate`— y es otra decisión, que
+   * merecería su propia acción.
    */
   setLinkStatus(
     professionalId: string,
