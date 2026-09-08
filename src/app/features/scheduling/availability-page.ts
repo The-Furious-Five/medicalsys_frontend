@@ -22,6 +22,8 @@ import { ProfessionalsService, activeLink } from '../professionals/professionals
 import { AvailabilityModality, BlockType } from './scheduling.models';
 import { SchedulingService } from './scheduling.service';
 import { addDays, clinicInstant, durationLabel } from './scheduling.time';
+import { NumberField } from '../../shared/number-field';
+import { TimeField } from '../../shared/time-field';
 
 /**
  * Disponibilidad y bloqueos.
@@ -47,6 +49,8 @@ import { addDays, clinicInstant, durationLabel } from './scheduling.time';
     EmptyState,
     Skeleton,
     ...FORMAT_PIPES,
+    NumberField,
+    TimeField,
   ],
   templateUrl: './availability-page.html',
 })

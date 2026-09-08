@@ -146,24 +146,20 @@
         <div class="grid-2" style="margin-top: var(--s-2)">
           <div class="field">
             <label class="field-label" for="appointment-time">Hora de inicio</label>
-            <input
-              id="appointment-time"
-              type="time"
-              class="input input-num"
+            <medsys-time-field
+              controlId="appointment-time"
               [value]="manualTime()"
-              (change)="manualTime.set($any($event.target).value)"
+              (valueChange)="manualTime.set($event)"
             />
           </div>
           <div class="field">
             <label class="field-label" for="appointment-duration">Duración (minutos)</label>
-            <input
-              id="appointment-duration"
-              type="number"
-              min="5"
-              step="5"
-              class="input input-num"
+            <medsys-number-field
+              controlId="appointment-duration"
+              [min]="5"
+              [step]="5"
               [value]="manualDuration()"
-              (change)="manualDuration.set(+$any($event.target).value || 30)"
+              (valueChange)="manualDuration.set(+$event || 30)"
             />
           </div>
         </div>

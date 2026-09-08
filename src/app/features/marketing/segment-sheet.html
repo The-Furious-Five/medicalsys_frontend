@@ -66,24 +66,20 @@
       <div class="grid-2">
         <div class="field">
           <label class="field-label" for="segment-min-age">Edad mínima</label>
-          <input
-            id="segment-min-age"
-            class="input input-num"
-            type="number"
-            min="0"
-            max="130"
+          <medsys-number-field
+            controlId="segment-min-age"
+            [min]="0"
+            [max]="130"
             placeholder="Sin mínimo"
             formControlName="minAge"
           />
         </div>
         <div class="field">
           <label class="field-label" for="segment-max-age">Edad máxima</label>
-          <input
-            id="segment-max-age"
-            class="input input-num"
-            type="number"
-            min="0"
-            max="130"
+          <medsys-number-field
+            controlId="segment-max-age"
+            [min]="0"
+            [max]="130"
             placeholder="Sin máximo"
             formControlName="maxAge"
           />
@@ -166,22 +162,18 @@
       <div class="grid-2">
         <div class="field">
           <label class="field-label" for="segment-min-appointments">Citas atendidas (mínimo)</label>
-          <input
-            id="segment-min-appointments"
-            class="input input-num"
-            type="number"
-            min="0"
+          <medsys-number-field
+            controlId="segment-min-appointments"
+            [min]="0"
             placeholder="Sin mínimo"
             formControlName="minAppointments"
           />
         </div>
         <div class="field">
           <label class="field-label" for="segment-max-noshows">Inasistencias (máximo)</label>
-          <input
-            id="segment-max-noshows"
-            class="input input-num"
-            type="number"
-            min="0"
+          <medsys-number-field
+            controlId="segment-max-noshows"
+            [min]="0"
             placeholder="Sin límite"
             formControlName="maxNoShows"
           />
@@ -191,12 +183,10 @@
       <div class="grid-2">
         <div class="field">
           <label class="field-label" for="segment-min-billed">Gasto acumulado mínimo</label>
-          <input
-            id="segment-min-billed"
-            class="input input-num"
-            type="number"
-            min="0"
-            step="0.01"
+          <medsys-number-field
+            controlId="segment-min-billed"
+            [min]="0"
+            [step]="0.01"
             placeholder="Sin mínimo"
             formControlName="minTotalBilledBob"
           />

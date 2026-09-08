@@ -75,12 +75,10 @@
     <div class="grid-2">
       <div class="field">
         <label class="field-label" for="offering-price">Precio en bolivianos</label>
-        <input
-          id="offering-price"
-          class="input input-num"
-          type="number"
-          min="0"
-          step="0.01"
+        <medsys-number-field
+          controlId="offering-price"
+          [min]="0"
+          [step]="0.01"
           placeholder="150.00"
           formControlName="basePriceBob"
           [attr.aria-invalid]="errorFor('basePriceBob') !== null"
@@ -93,12 +91,10 @@
         <label class="field-label" for="offering-duration">
           Duración en minutos <span class="field-optional">(opcional)</span>
         </label>
-        <input
-          id="offering-duration"
-          class="input input-num"
-          type="number"
-          min="5"
-          max="720"
+        <medsys-number-field
+          controlId="offering-duration"
+          [min]="5"
+          [max]="720"
           formControlName="durationMinutes"
           [attr.aria-invalid]="errorFor('durationMinutes') !== null"
         />

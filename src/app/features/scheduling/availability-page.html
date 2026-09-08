@@ -57,22 +57,18 @@
           </div>
           <div class="field">
             <label class="field-label" for="rule-start">Desde</label>
-            <input
-              id="rule-start"
-              type="time"
-              class="input input-num"
+            <medsys-time-field
+              controlId="rule-start"
               [value]="startTime()"
-              (change)="startTime.set($any($event.target).value)"
+              (valueChange)="startTime.set($event)"
             />
           </div>
           <div class="field">
             <label class="field-label" for="rule-end">Hasta</label>
-            <input
-              id="rule-end"
-              type="time"
-              class="input input-num"
+            <medsys-time-field
+              controlId="rule-end"
               [value]="endTime()"
-              (change)="endTime.set($any($event.target).value)"
+              (valueChange)="endTime.set($event)"
             />
           </div>
         </div>
@@ -80,26 +76,22 @@
         <div class="grid-3">
           <div class="field">
             <label class="field-label" for="rule-slot">Duración de cada cita (minutos)</label>
-            <input
-              id="rule-slot"
-              type="number"
-              min="5"
-              max="240"
-              step="5"
-              class="input input-num"
+            <medsys-number-field
+              controlId="rule-slot"
+              [min]="5"
+              [max]="240"
+              [step]="5"
               [value]="slotDuration()"
-              (change)="slotDuration.set(+$any($event.target).value || 30)"
+              (valueChange)="slotDuration.set(+$event || 30)"
             />
           </div>
           <div class="field">
             <label class="field-label" for="rule-capacity">Personas por franja</label>
-            <input
-              id="rule-capacity"
-              type="number"
-              min="1"
-              class="input input-num"
+            <medsys-number-field
+              controlId="rule-capacity"
+              [min]="1"
               [value]="capacity()"
-              (change)="capacity.set(+$any($event.target).value || 1)"
+              (valueChange)="capacity.set(+$event || 1)"
             />
             <span class="field-hint">Más de una solo si se atiende en paralelo.</span>
           </div>
@@ -238,12 +230,10 @@
           </div>
           <div class="field">
             <label class="field-label" for="block-from-time">Hora de inicio</label>
-            <input
-              id="block-from-time"
-              type="time"
-              class="input input-num"
+            <medsys-time-field
+              controlId="block-from-time"
               [value]="blockFromTime()"
-              (change)="blockFromTime.set($any($event.target).value)"
+              (valueChange)="blockFromTime.set($event)"
             />
           </div>
         </div>
@@ -258,12 +248,10 @@
           </div>
           <div class="field">
             <label class="field-label" for="block-to-time">Hora de fin</label>
-            <input
-              id="block-to-time"
-              type="time"
-              class="input input-num"
+            <medsys-time-field
+              controlId="block-to-time"
               [value]="blockToTime()"
-              (change)="blockToTime.set($any($event.target).value)"
+              (valueChange)="blockToTime.set($event)"
             />
           </div>
           <div class="field">

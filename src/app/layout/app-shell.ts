@@ -63,6 +63,7 @@ export class AppShell {
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       this.mobileOpen.set(false);
       this.accountMenuOpen.set(false);
+      this.mostrarElementoActivo();
     });
 
     document.addEventListener('keydown', (event) => {
@@ -88,5 +89,26 @@ export class AppShell {
 
   protected dismissExpiry(): void {
     this.session.dismissExpiryWarning();
+  }
+
+  /**
+   * Trae a la vista el elemento del menú que corresponde a la ruta actual.
+   *
+   * El menú tiene veintidós entradas y en un portátil no caben todas: al entrar
+   * en Catálogos o en Configuración, la entrada activa quedaba fuera de la parte
+   * visible y el menú aparentaba no haber cambiado. `block: 'nearest'` mueve lo
+   * mínimo, así que si ya se ve no se toca nada.
+   */
+  private mostrarElementoActivo(): void {
+    // Dos cuadros de espera, no un microtask: `routerLinkActive` marca el enlace
+    // durante el repintado que sigue a la navegación, así que en el microtask
+    // siguiente todavía no hay ningún `.is-active` que buscar.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        document
+          .querySelector('.sidebar-nav a.is-active')
+          ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }),
+    );
   }
 }

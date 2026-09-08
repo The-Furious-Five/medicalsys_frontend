@@ -132,10 +132,8 @@
       <div class="card-body grid-2">
         <div class="field">
           <label class="field-label" for="campaign-starts">Inicio</label>
-          <input
-            id="campaign-starts"
-            class="input"
-            type="datetime-local"
+          <medsys-datetime-field
+            controlId="campaign-starts"
             formControlName="startsAt"
             [attr.aria-invalid]="errorFor('startsAt') !== null"
           />
@@ -147,18 +145,16 @@
           <label class="field-label" for="campaign-ends">
             Fin <span class="field-optional">(opcional)</span>
           </label>
-          <input id="campaign-ends" class="input" type="datetime-local" formControlName="endsAt" />
+          <medsys-datetime-field controlId="campaign-ends" formControlName="endsAt" />
         </div>
         <div class="field">
           <label class="field-label" for="campaign-budget">
             Presupuesto <span class="field-optional">(opcional)</span>
           </label>
-          <input
-            id="campaign-budget"
-            class="input input-num"
-            type="number"
-            min="0"
-            step="0.01"
+          <medsys-number-field
+            controlId="campaign-budget"
+            [min]="0"
+            [step]="0.01"
             placeholder="0.00"
             formControlName="budgetBob"
           />

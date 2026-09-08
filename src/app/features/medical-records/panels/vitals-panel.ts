@@ -9,6 +9,7 @@ import { Notice } from '../../../shared/notice';
 import { Skeleton } from '../../../shared/skeleton';
 import { RecordsService } from '../records.service';
 import { VitalSign } from '../records.models';
+import { NumberField } from '../../../shared/number-field';
 
 interface Metric {
   readonly key: keyof VitalSign & string;
@@ -88,7 +89,7 @@ const METRICS: readonly Metric[] = [
 @Component({
   selector: 'medsys-vitals-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, Dialog, Notice, Skeleton, ...FORMAT_PIPES],
+  imports: [Icon, Dialog, Notice, Skeleton, ...FORMAT_PIPES, NumberField],
   templateUrl: './vitals-panel.html',
 })
 export class VitalsPanel {

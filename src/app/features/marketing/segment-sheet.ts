@@ -22,6 +22,7 @@ import { Skeleton } from '../../shared/skeleton';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { MarketingService } from './marketing.service';
 import { Segment, SegmentPreview } from './marketing.models';
+import { NumberField } from '../../shared/number-field';
 import {
   CriteriaForm,
   EMPTY_CRITERIA,
@@ -50,7 +51,7 @@ const PREVIEW_DEBOUNCE_MS = 600;
 @Component({
   selector: 'medsys-segment-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Notice, Select, DateField, Icon, Skeleton, ReactiveFormsModule],
+  imports: [Dialog, Notice, Select, DateField, Icon, Skeleton, ReactiveFormsModule, NumberField],
   templateUrl: './segment-sheet.html',
 })
 export class SegmentSheet {

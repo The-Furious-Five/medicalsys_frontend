@@ -27,6 +27,7 @@ import {
   WorkModality,
 } from './professionals.models';
 import { ProfessionalsService } from './professionals.service';
+import { NumberField } from '../../shared/number-field';
 
 /** ms-profesionales acepta tres documentos, no los cinco de ms-pacientes. */
 const DOCUMENT_TYPES = [
@@ -51,7 +52,7 @@ const DOCUMENT_TYPES = [
 @Component({
   selector: 'medsys-register-professional-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DateField, Select, ReactiveFormsModule, Dialog, Notice, Icon],
+  imports: [DateField, Select, ReactiveFormsModule, Dialog, Notice, Icon, NumberField],
   templateUrl: './register-professional-sheet.html',
 })
 export class RegisterProfessionalSheet {

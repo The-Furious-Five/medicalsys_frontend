@@ -21,6 +21,7 @@ import { StatusChip } from '../../../shared/status-chip';
 import { Select, SelectOption } from '../../../shared/select';
 import { RecordsService } from '../records.service';
 import { Prescription, PrescriptionItem } from '../records.models';
+import { NumberField } from '../../../shared/number-field';
 
 interface ItemDraft {
   key: string;
@@ -50,7 +51,7 @@ const newItem = (): ItemDraft => ({
 @Component({
   selector: 'medsys-prescriptions-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, Dialog, Notice, Skeleton, StatusChip, Select, ...FORMAT_PIPES],
+  imports: [Icon, Dialog, Notice, Skeleton, StatusChip, Select, ...FORMAT_PIPES, NumberField],
   templateUrl: './prescriptions-panel.html',
 })
 export class PrescriptionsPanel {

@@ -22,6 +22,7 @@ import { TableSkeleton } from '../../shared/table-skeleton';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { PhysicalResource, ResourceStatus, ResourceType } from './scheduling.models';
 import { SchedulingService } from './scheduling.service';
+import { NumberField } from '../../shared/number-field';
 
 /**
  * Consultorios, salas y equipos.
@@ -44,6 +45,7 @@ import { SchedulingService } from './scheduling.service';
     ErrorState,
     EmptyState,
     TableSkeleton,
+    NumberField,
   ],
   templateUrl: './resources-page.html',
 })

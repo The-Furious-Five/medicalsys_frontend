@@ -11,6 +11,8 @@ import { PageHeader } from '../../shared/page-header';
 import { Select, SelectOption } from '../../shared/select';
 import { Skeleton } from '../../shared/skeleton';
 import { MarketingService } from './marketing.service';
+import { NumberField } from '../../shared/number-field';
+import { DateTimeField } from '../../shared/datetime-field';
 
 /**
  * Jerarquía: crear una campaña son tres decisiones — qué se comunica, a quién y
@@ -30,6 +32,8 @@ import { MarketingService } from './marketing.service';
     RouterLink,
     ReactiveFormsModule,
     ...FORMAT_PIPES,
+    NumberField,
+    DateTimeField,
   ],
   templateUrl: './new-campaign-page.html',
 })

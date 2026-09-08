@@ -205,26 +205,22 @@
         <label class="field-label" for="resource-capacity">
           Aforo <span class="field-optional">(opcional)</span>
         </label>
-        <input
-          id="resource-capacity"
-          type="number"
-          min="1"
-          class="input input-num"
+        <medsys-number-field
+          controlId="resource-capacity"
+          [min]="1"
           [value]="peopleCapacity()"
-          (input)="peopleCapacity.set($any($event.target).value)"
+          (valueChange)="peopleCapacity.set($event)"
         />
       </div>
       <div class="field">
         <label class="field-label" for="resource-prep">
           Preparación entre usos (minutos) <span class="field-optional">(opcional)</span>
         </label>
-        <input
-          id="resource-prep"
-          type="number"
-          min="0"
-          class="input input-num"
+        <medsys-number-field
+          controlId="resource-prep"
+          [min]="0"
           [value]="preparationMinutes()"
-          (input)="preparationMinutes.set($any($event.target).value)"
+          (valueChange)="preparationMinutes.set($event)"
         />
       </div>
     </div>

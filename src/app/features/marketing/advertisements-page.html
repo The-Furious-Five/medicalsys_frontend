@@ -164,12 +164,10 @@
       </div>
       <div class="field">
         <label class="field-label" for="ad-priority">Prioridad</label>
-        <input
-          id="ad-priority"
-          class="input input-num"
-          type="number"
-          min="1"
-          max="10"
+        <medsys-number-field
+          controlId="ad-priority"
+          [min]="1"
+          [max]="10"
           formControlName="priority"
         />
         <span class="field-hint">1 es la mayor: se muestra antes que los demás.</span>
@@ -187,11 +185,11 @@
     <div class="grid-2">
       <div class="field">
         <label class="field-label" for="ad-from">Vigente desde</label>
-        <input id="ad-from" class="input" type="datetime-local" formControlName="validFrom" />
+        <medsys-datetime-field controlId="ad-from" formControlName="validFrom" />
       </div>
       <div class="field">
         <label class="field-label" for="ad-until">Vigente hasta</label>
-        <input id="ad-until" class="input" type="datetime-local" formControlName="validUntil" />
+        <medsys-datetime-field controlId="ad-until" formControlName="validUntil" />
       </div>
     </div>
 

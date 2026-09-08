@@ -32,15 +32,13 @@
 
     <div class="field">
       <label class="field-label" for="coupon-amount">Importe a cobrar</label>
-      <input
-        id="coupon-amount"
-        class="input input-num"
-        type="number"
-        min="0"
-        step="0.01"
+      <medsys-number-field
+        controlId="coupon-amount"
+        [min]="0"
+        [step]="0.01"
         placeholder="0.00"
         [value]="baseAmount()"
-        (input)="baseAmount.set($any($event.target).value)"
+        (valueChange)="baseAmount.set($event)"
       />
       <span class="field-hint">Sobre este importe se calcula el descuento.</span>
     </div>

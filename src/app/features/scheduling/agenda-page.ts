@@ -37,7 +37,20 @@ import {
 /** Un minuto ocupa un píxel: una consulta de media hora mide 30 px y la altura
  *  del bloque es, literalmente, su duración. */
 const PX_PER_MINUTE = 1.1;
-const COLUMN_MIN_WIDTH = 200;
+/**
+ * Ancho minimo de la columna de un profesional.
+ *
+ * Eran 200 px y no daban: descontados el avatar, el relleno y los separadores
+ * quedaban 139 px utiles, de modo que «Arispe Calderon Fernando» y la mitad de
+ * la plantilla se cortaban en la cabecera, y el nombre del paciente se cortaba
+ * dentro de cada cita. Un nombre boliviano completo -dos nombres y dos
+ * apellidos- necesita alrededor de 175 px a 13 px de cuerpo; 248 los cubre y
+ * deja sitio a la hora dentro del bloque.
+ *
+ * El tablero ya se desplaza en horizontal, asi que ensanchar no rompe nada:
+ * cambia columnas apretadas e ilegibles por columnas legibles que se recorren.
+ */
+const COLUMN_MIN_WIDTH = 248;
 const GUTTER_WIDTH = 64;
 /** Al pinchar un hueco, la hora se redondea al cuarto en el que se pinchó. */
 const CLICK_STEP_MINUTES = 15;

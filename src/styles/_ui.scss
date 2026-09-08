@@ -212,6 +212,202 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Celda que envuelve. Por defecto la tabla no parte el texto para que las filas
+   midan lo mismo; una direccion o un correo largos, en cambio, se leen enteros o
+   no sirven de nada. */
+.td-wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 14rem;
+  line-height: 1.45;
+}
+
+/* ------------------------------------------------------- campo numerico -- */
+/* Sustituye a `<input type="number">`. Las flechas nativas las dibuja el sistema
+   operativo y la rueda del raton cambia el valor con el campo enfocado: en una
+   hoja de constantes vitales eso es un error clinico silencioso. */
+.ms-num {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--h-control);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  transition: border-color var(--dur-micro) var(--ease-standard);
+}
+.ms-num:focus-within {
+  border-color: var(--brand-solid);
+}
+.ms-num.is-invalid {
+  border-color: var(--err-500);
+}
+.ms-num.is-disabled {
+  background: var(--bg-subtle);
+}
+.ms-num-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--s-3);
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.ms-num-input:focus {
+  outline: none;
+}
+.ms-num-input:disabled {
+  color: var(--text-tertiary);
+}
+/* La unidad va dentro del campo: «120 mmHg» se lee como una sola cosa, y asi no
+   compite con el texto de ayuda que hay debajo. */
+.ms-num-suffix {
+  padding-right: var(--s-2);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.ms-num-steppers {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  border-left: 1px solid var(--border-subtle);
+}
+.ms-num-step {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  flex: 1;
+  color: var(--text-tertiary);
+}
+.ms-num-step:first-child {
+  border-radius: 0 var(--r-input) 0 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ms-num-step:last-child {
+  border-radius: 0 0 var(--r-input) 0;
+}
+.ms-num-step:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ms-num-step:disabled {
+  opacity: 0.4;
+}
+
+/* ------------------------------------------------------------ campo hora -- */
+/* Sustituye a `<input type="time">`: el nativo cambia de formato y de idioma
+   segun el sistema operativo, y en la agenda la hora se teclea todo el dia. */
+.ms-time {
+  position: relative;
+  display: block;
+}
+.ms-time-control {
+  display: flex;
+  align-items: center;
+  min-height: var(--h-control);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  transition: border-color var(--dur-micro) var(--ease-standard);
+}
+.ms-time-control:focus-within {
+  border-color: var(--brand-solid);
+}
+.ms-time-control.is-invalid {
+  border-color: var(--err-500);
+}
+.ms-time-control.is-disabled {
+  background: var(--bg-subtle);
+}
+.ms-time-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--s-3);
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.ms-time-input:focus {
+  outline: none;
+}
+.ms-time-toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  align-self: stretch;
+  color: var(--text-tertiary);
+  border-radius: 0 var(--r-input) var(--r-input) 0;
+}
+.ms-time-toggle:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.ms-time-toggle:disabled {
+  opacity: 0.5;
+}
+.ms-time-panel {
+  position: absolute;
+  top: calc(100% + var(--s-1));
+  left: 0;
+  z-index: var(--z-overlay);
+  width: 100%;
+  min-width: 132px;
+  max-height: 244px;
+  overflow-y: auto;
+  padding: var(--s-1);
+  animation: pop-in var(--dur-pop) var(--ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-time-panel {
+    animation: none;
+  }
+}
+.ms-time-panel:focus {
+  outline: none;
+}
+.ms-time-slot {
+  display: block;
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  text-align: left;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  border-radius: var(--r-sm);
+}
+.ms-time-slot:hover {
+  background: var(--bg-hover);
+}
+.ms-time-slot.is-selected {
+  background: var(--brand-subtle);
+  color: var(--brand-strong);
+  font-weight: 500;
+}
+
+/* --------------------------------------------------- campo fecha y hora -- */
+/* El nativo pega dos widgets del sistema en un mismo recuadro; aqui son dos
+   campos del producto con su propio espacio. La hora se deshabilita mientras no
+   haya dia: una hora suelta no describe ningun instante. */
+.ms-datetime {
+  display: grid;
+  /* La hora no se reparte en proporcion sino que reserva lo suyo: «hh:mm» mas el
+     boton del reloj necesitan 116px, y con `1fr` en una columna estrecha el
+     marcador se cortaba en «hh:mn». La fecha se queda con el resto. */
+  grid-template-columns: minmax(0, 1fr) 116px;
+  gap: var(--s-2);
+}
+/* En un formulario de una sola columna estrecha se apilan, que es preferible a
+   dos campos ilegibles uno al lado del otro. */
+@media (max-width: 480px) {
+  .ms-datetime {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ------------------------------------------------------ desplegable propio -- */
 /* Sustituye a `<select>`: el nativo lo dibuja el sistema operativo y su lista no
    acepta la tipografía, los radios ni los colores de este sistema. Aquí la lista
@@ -904,8 +1100,15 @@
 /* Rejilla de definiciones: etiqueta arriba, valor debajo. Densa y escaneable. */
 .deflist {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--s-4);
+  /* 200px y no 180px: con 180 el correo del centro no cabia y, al no tener donde
+     partirse, invadia la columna del telefono y los dos se leian pegados. */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--s-5) var(--s-6);
+}
+.deflist > * {
+  /* Sin esto una celda de rejilla nunca baja de su contenido y el valor largo
+     empuja fuera en vez de ajustarse. */
+  min-width: 0;
 }
 .def-term {
   font-size: 11px;
@@ -918,6 +1121,9 @@
   font-size: 14px;
   color: var(--text-primary);
   margin-top: 2px;
+  /* Un correo o un NIT no tienen espacios donde partir: `anywhere` es lo unico
+     que evita que se desborden. */
+  overflow-wrap: anywhere;
 }
 
 /* Indicador de espera. Rotación constante: es un reloj, no una animación de entrada. */
@@ -1070,7 +1276,32 @@
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: var(--s-3) var(--s-2);
+  /* Relleno inferior extra: el último grupo quedaba pegado al pie con la ficha
+     del usuario y su elemento activo se veía cortado por la mitad, como si la
+     interfaz estuviera rota en vez de simplemente tener más abajo. */
+  padding: var(--s-3) var(--s-2) var(--s-6);
+  /* El difuminado del borde inferior dice que la lista continúa. Sin él, en una
+     pantalla de portátil el menú termina en un corte seco y no hay ninguna
+     señal de que Catálogos o Configuración existan. */
+  scrollbar-width: thin;
+}
+/* Solo se difumina mientras haya recorrido por delante; `animation-timeline`
+   evita tener que escuchar el scroll desde TypeScript. */
+@supports (animation-timeline: scroll()) {
+  .sidebar-nav {
+    animation: desvanecer-final linear both;
+    animation-timeline: scroll(self block);
+    animation-range: contain;
+  }
+  @keyframes desvanecer-final {
+    0%,
+    90% {
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent 100%);
+    }
+    100% {
+      mask-image: linear-gradient(to bottom, #000 100%, #000 100%);
+    }
+  }
 }
 .nav-group + .nav-group {
   margin-top: var(--s-4);
@@ -1453,7 +1684,13 @@
   flex-wrap: wrap;
 }
 .page-actions {
+  /* No se encoge -los botones no deben quedar aplastados- pero tampoco puede
+     salirse de la fila: sin el tope, la barra de la agenda (dos desplegables, el
+     conmutador día/semana, el paso de fecha y dos botones) medía 951px y hacía
+     que la página entera se desplazara en horizontal por debajo de 1100px. Con
+     el tope, `wrap` reparte los controles en dos líneas. */
   flex-shrink: 0;
+  max-width: 100%;
 }
 .crumbs {
   display: flex;
@@ -2732,14 +2969,22 @@ medsys-toast-host {
   line-height: 14px;
   opacity: 0.85;
 }
+/* El nombre usa hasta dos lineas y solo despues recorta.
+   Con una sola linea, «Quispe Iturralde Mateo Sebastian» se quedaba en «Quispe
+   Iturralde Mate…» y desde el tablero no se distinguia a dos hermanos con el
+   mismo apellido. Dos lineas caben en cualquier bloque de 20 minutos o mas, que
+   es la cita mas corta del catalogo. */
 .agenda-event-patient {
   font-size: 12px;
   font-weight: 600;
-  line-height: 16px;
+  line-height: 15px;
   min-width: 0;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
 }
 .agenda-event-meta {
   display: flex;
