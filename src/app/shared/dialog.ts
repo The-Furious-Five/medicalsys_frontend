@@ -5,6 +5,7 @@ import {
   effect,
   input,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import { Icon } from '../core/ui/icon';
@@ -58,8 +59,12 @@ import { Icon } from '../core/ui/icon';
           <ng-content />
         </div>
 
-        <div class="dialog-foot">
-          <ng-content select="[dialogFooter]" />
+        <!-- El pie solo existe si alguien lo llena. Sin esto, una capa sin acciones
+             -como el buscador global- dibujaba una franja gris vacía al final. -->
+        <div class="dialog-foot" [class.is-empty]="footerEmpty()">
+          <div #footer style="display: contents">
+            <ng-content select="[dialogFooter]" />
+          </div>
         </div>
       </div>
     </dialog>
@@ -73,14 +78,27 @@ export class Dialog {
   readonly width = input<number | null>(null);
 
   readonly closed = output<void>();
+  /**
+   * Se emite al abrir, con el propio `<dialog>`.
+   *
+   * Lo necesita quien tenga que colocar el foco en un campo concreto o escuchar
+   * el teclado de toda la capa: `showModal()` enfoca el primer elemento
+   * enfocable, que aquí es el botón de cerrar, y los eventos de teclado nacen
+   * donde esté el foco, no en el contenido proyectado.
+   */
+  readonly opened = output<HTMLDialogElement>();
 
   private readonly layer = viewChild.required<ElementRef<HTMLDialogElement>>('layer');
+  private readonly footer = viewChild<ElementRef<HTMLElement>>('footer');
+  protected readonly footerEmpty = signal(true);
 
   constructor() {
     effect(() => {
       const element = this.layer().nativeElement;
       if (this.open() && !element.open) {
         element.showModal();
+        this.footerEmpty.set((this.footer()?.nativeElement.childElementCount ?? 0) === 0);
+        this.opened.emit(element);
       } else if (!this.open() && element.open) {
         element.close();
       }

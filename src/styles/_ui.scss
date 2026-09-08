@@ -778,6 +778,9 @@
   padding: var(--s-4) var(--s-5);
   overflow-y: auto;
 }
+.dialog-foot.is-empty {
+  display: none;
+}
 .dialog-foot {
   display: flex;
   justify-content: flex-end;
@@ -1503,10 +1506,14 @@
   display: flex;
   align-items: center;
   gap: var(--s-2);
-  height: var(--h-control-sm);
+  /* Alto de control normal, no el pequeño: con `--h-control-sm` la tecla de 20px
+     casi tocaba los bordes por arriba y por abajo. */
+  height: var(--h-control);
   max-width: 380px;
   flex: 1;
-  padding: 0 var(--s-2) 0 var(--s-3);
+  /* El relleno derecho es menor que el izquierdo a propósito: a la izquierda hay
+     texto y a la derecha una caja que ya trae su propio contorno. */
+  padding: 0 6px 0 var(--s-3);
   background: var(--bg-sunken);
   border: 1px solid var(--border);
   border-radius: var(--r-input);
@@ -1524,16 +1531,45 @@
   white-space: nowrap;
 }
 
+/* Pistas de teclado del buscador global, al pie de la capa. */
+.palette-hints {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  width: 100%;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.palette-hints span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+/* Tecla. Es una caja de tamaño fijo y no un texto con relleno: con `padding`
+   suelto, «⌘K» y «Esc» salían de anchos distintos y el glifo de comando —que es
+   más alto que una letra— descentraba el recuadro respecto a la línea base. */
 .kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
   font-family: var(--font-ui);
   font-size: 11px;
   font-weight: 500;
-  padding: 2px 5px;
+  line-height: 1;
   border: 1px solid var(--border);
-  border-radius: var(--r-chip);
+  border-bottom-width: 2px;
+  border-radius: 5px;
   background: var(--bg-surface);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   flex-shrink: 0;
+  /* Los caracteres no se separan: «⌘K» es una sola tecla, no dos. */
+  white-space: nowrap;
 }
 
 .avatar-button {
@@ -2621,7 +2657,7 @@ medsys-toast-host {
 /* ------------------------------------------- piezas nativas que se retiran -- */
 /* Las flechas del campo numérico y el aspa del de búsqueda las dibuja el
    navegador con su propio aspecto y no se pueden estilar. Se retiran: el valor
-   se ajusta con el teclado y limpiar la búsqueda tiene su botón en la vista. */
+   se ajusta con el teclado. */
 .input[type='number'] {
   appearance: textfield;
 }
@@ -2629,10 +2665,6 @@ medsys-toast-host {
 .input[type='number']::-webkit-inner-spin-button {
   appearance: none;
   margin: 0;
-}
-.input[type='search']::-webkit-search-cancel-button,
-.input[type='search']::-webkit-search-decoration {
-  appearance: none;
 }
 
 /* ---------------------------------------------------- campo de fecha propio -- */

@@ -75,7 +75,7 @@
           <input
             #specialtySearch
             class="input"
-            type="search"
+            type="text"
             [value]="specialtyFilter()"
             (input)="specialtyFilter.set(specialtySearch.value)"
             placeholder="Buscar especialidad..."
@@ -145,7 +145,7 @@
           <input
             #cieSearch
             class="input"
-            type="search"
+            type="text"
             [value]="cie10Query()"
             (input)="searchIcd10(cieSearch.value)"
             placeholder="Buscar código o diagnóstico..."
@@ -230,7 +230,7 @@
           <input
             #medicationSearch
             class="input"
-            type="search"
+            type="text"
             [value]="medicationFilter()"
             (input)="medicationFilter.set(medicationSearch.value)"
             placeholder="Buscar medicamento o principio activo..."
@@ -325,7 +325,7 @@
           <input
             #studySearch
             class="input"
-            type="search"
+            type="text"
             [value]="studyFilter()"
             (input)="studyFilter.set(studySearch.value)"
             placeholder="Buscar tipo de estudio..."

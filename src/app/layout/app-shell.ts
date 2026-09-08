@@ -42,6 +42,16 @@ export class AppShell {
   protected readonly expiringSoon = this.session.expiringSoon;
   protected readonly groups = computed(() => visibleNav(this.roles()));
   protected readonly avatar = computed(() => initials(this.user()?.fullName));
+
+  /**
+   * Etiqueta del atajo del buscador, según el sistema.
+   *
+   * El manejador acepta Cmd y Ctrl, pero la insignia decía «⌘K» siempre: a quien
+   * trabaja en Windows le mostraba una tecla que no tiene en el teclado.
+   */
+  protected readonly searchShortcut = /Mac|iPhone|iPad/i.test(navigator.platform ?? '')
+    ? '⌘K'
+    : 'Ctrl K';
   protected readonly roleSummary = computed(() =>
     this.roles()
       .map((role) => label(ROLE, role))
