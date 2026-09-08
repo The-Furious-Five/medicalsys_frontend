@@ -17,7 +17,6 @@ import { Skeleton } from '../../shared/skeleton';
 import { StatusChip } from '../../shared/status-chip';
 import { PatientName } from '../patients/patient-name';
 import { BillingService } from './billing.service';
-import { DemoCaption } from './demo-caption';
 import { Invoice } from './billing.models';
 
 /**
@@ -34,7 +33,6 @@ import { Invoice } from './billing.models';
     ErrorState,
     Skeleton,
     PatientName,
-    DemoCaption,
     Icon,
     RouterLink,
     ...FORMAT_PIPES,

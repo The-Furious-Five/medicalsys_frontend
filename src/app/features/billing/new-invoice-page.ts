@@ -14,7 +14,6 @@ import { TenancyService } from '../tenancy/tenancy.service';
 import { ServiceOffering } from '../tenancy/tenancy.models';
 import { BillingService } from './billing.service';
 import { Select, SelectOption } from '../../shared/select';
-import { DemoCaption } from './demo-caption';
 import { NumberField } from '../../shared/number-field';
 
 interface Line {
@@ -36,7 +35,6 @@ interface Line {
     PageHeader,
     Select,
     PatientPicker,
-    DemoCaption,
     Notice,
     Skeleton,
     Icon,

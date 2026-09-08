@@ -28,12 +28,8 @@
     </ng-container>
   </medsys-page-header>
 
-  <div class="card invoice-sheet">
+  <div class="card invoice-sheet print-sheet">
     <div class="card-body stack gap-5">
-      @if (data.demo) {
-        <medsys-demo-caption />
-      }
-
       <header class="row gap-4" style="align-items: flex-start">
         <img src="/brand/msys-horizontal.svg" alt="MSYS" width="120" />
         <div class="grow"></div>
@@ -61,7 +57,8 @@
             <span class="t-micro t-num">{{ customerDocument(data) }}</span>
           </div>
           @if (data.customer?.patientId; as patientId) {
-            <a class="t-sec" [routerLink]="['/pacientes', patientId]">Ver ficha</a>
+            <!-- `no-print`: en pantalla lleva al expediente; en papel es un enlace muerto. -->
+            <a class="t-sec no-print" [routerLink]="['/pacientes', patientId]">Ver ficha</a>
           }
         </div>
       </section>
@@ -151,19 +148,6 @@
           }
         </dl>
       </section>
-
-      @if (data.demo) {
-        <p
-          class="t-micro"
-          style="
-            text-align: center;
-            padding-top: var(--s-3);
-            border-top: 1px solid var(--border-subtle);
-          "
-        >
-          {{ data.caption ?? 'Documento de demostración — sin validez fiscal.' }}
-        </p>
-      }
     </div>
   </div>
 }

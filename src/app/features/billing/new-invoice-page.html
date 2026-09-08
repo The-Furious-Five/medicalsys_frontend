@@ -6,8 +6,6 @@
 
 <div class="invoice-layout">
   <div class="stack gap-4">
-    <medsys-demo-caption />
-
     @if (failureMessage(); as detail) {
       <medsys-notice
         [tone]="detail.status >= 500 || detail.status === 0 ? 'err' : 'warn'"

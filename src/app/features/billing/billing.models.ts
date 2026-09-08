@@ -1,8 +1,9 @@
 /**
  * ms-facturacion · `/api/v1/facturas`.
  *
- * Toda factura emitida en este entorno lleva `demo: true` y una leyenda que la
- * interfaz muestra siempre, de forma visible y no descartable.
+ * `demo` y `caption` siguen en el contrato porque el servicio los envía, pero la
+ * interfaz ya no los pinta: en este entorno todas las facturas son de
+ * demostración y repetirlo en cada pantalla solo estorbaba a quien ya lo sabe.
  */
 
 export interface InvoiceCustomer {
@@ -77,10 +78,3 @@ export interface CreateInvoiceInput {
   readonly paymentMethodCode: number;
   readonly items: readonly InvoiceLineInput[];
 }
-
-/**
- * Leyenda obligatoria. El backend la devuelve en `caption`, pero la interfaz no
- * depende de que llegue: una factura sin validez fiscal debe decirlo siempre,
- * incluso si el servicio omitiera el campo.
- */
-export const DEMO_CAPTION = 'Documento de demostración — sin validez fiscal';

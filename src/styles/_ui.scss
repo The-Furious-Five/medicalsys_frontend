@@ -689,6 +689,10 @@
 .td-num {
   font-variant-numeric: tabular-nums;
   text-align: right;
+  /* Un importe no se parte nunca. Al imprimir una factura con muchas líneas, la
+     columna se estrechaba y «Bs 150,00» caía en dos renglones: en un documento
+     que se cobra, eso se lee mal y se presta a confusión. */
+  white-space: nowrap;
 }
 .th-num {
   text-align: right !important;
@@ -2160,44 +2164,6 @@ medsys-toast-host {
 /* ========================================================== facturación ===== */
 /* La leyenda de demostración usa el naranja de marca: es lo que exige atención,
    nunca un error. Y nunca lleva botón de cierre. */
-.demo-caption {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--s-2);
-  padding: var(--s-2) var(--s-3);
-  background: var(--warn-50);
-  border: 1px solid var(--warn-200);
-  /* Franja del naranja de marca a plena fuerza. Es el aviso que nunca debe
-     pasar desapercibido y el único sitio donde el color puede ocupar superficie
-     sin llevar texto encima. */
-  border-left: 3px solid var(--accent-solid);
-  border-radius: var(--r-input);
-  color: var(--warn-700);
-  font-size: 12px;
-  line-height: 18px;
-}
-.demo-caption > medsys-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.demo-caption strong {
-  font-weight: 600;
-}
-.demo-caption-compact {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 1px var(--s-2);
-  border-radius: var(--r-chip);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 16px;
-  white-space: nowrap;
-}
-.demo-caption-compact > medsys-icon {
-  margin-top: 0;
-}
-
 /* Documento de factura: hoja sobria, sin adornos, pensada para imprimirse. */
 .invoice-sheet {
   max-width: 720px;
@@ -3306,4 +3272,112 @@ medsys-toast-host {
   align-items: center;
   flex-wrap: wrap;
   gap: var(--s-2);
+}
+
+/* ==========================================================================
+   Impresión
+   ==========================================================================
+   `window.print()` imprimía la aplicación entera —barra lateral, cabecera,
+   menú y todo— porque no había ninguna hoja para papel. Aquí se define qué
+   sale impreso y qué no.
+
+   La regla es una sola: se imprime el elemento marcado con `.print-sheet` y
+   nada más. Hoy lo lleva la hoja de la factura; cualquier otra pantalla que
+   necesite imprimirse solo tiene que marcar su documento igual.
+
+   Se usa `visibility` y no `display` para ocultar: `display: none` en un
+   ancestro se lleva por delante al descendiente que sí queremos, mientras que
+   `visibility` se puede volver a activar hacia dentro. */
+
+@media print {
+  @page {
+    /* Márgenes del papel; el documento no lleva los suyos. */
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #fff;
+    /* Los contenedores de la aplicación miden la ventana y recortan por
+       desbordamiento. En papel eso significa perder todo lo que no cabe en la
+       primera pantalla, así que aquí dejan de limitar la altura. */
+    height: auto;
+    overflow: visible;
+  }
+
+  body * {
+    visibility: hidden;
+    box-shadow: none !important;
+  }
+
+  .print-sheet,
+  .print-sheet * {
+    visibility: visible;
+  }
+
+  /* La hoja se saca del flujo del armazón y ocupa la página. Sin esto quedaría
+     desplazada por el hueco que dejan la barra lateral y la cabecera. */
+  .print-sheet {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  /* Los contenedores intermedios no deben recortar ni desplazar la hoja. */
+  .shell,
+  .shell-main,
+  .content {
+    display: block;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    overflow: visible;
+  }
+
+  /* Nada de lo que sirve para navegar o actuar tiene sentido en papel. Lo que
+     esté dentro de la propia hoja se marca con `no-print`. */
+  .no-print,
+  .sidebar,
+  .topbar,
+  .shell-scrim,
+  .page-actions,
+  .crumbs,
+  medsys-toast-host,
+  medsys-command-palette,
+  .layer,
+  dialog {
+    display: none !important;
+  }
+
+  /* Una tabla partida entre dos páginas no debe cortar una fila por la mitad
+     ni dejar la cabecera huérfana. */
+  table {
+    page-break-inside: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* El fondo gris de las bandas no se imprime: gasta tinta y en papel el
+     contraste lo da el propio borde. */
+  .invoice-total-row.is-grand {
+    border-top: 1px solid #000;
+  }
+
+  a[href]::after {
+    /* No se anexa la URL: el documento se lee en papel, no se navega. */
+    content: none;
+  }
 }

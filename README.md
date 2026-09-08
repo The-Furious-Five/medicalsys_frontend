@@ -454,9 +454,9 @@ nadie a hacer su trabajo.
 8. **Resultado de estudio** — en la orden, _Registrar resultado_. Con referencia
    mínima y máxima, el sistema marca solo si el valor queda fuera de rango.
 9. **Factura** — entra como `admin` o `recepcion`, _Emitir factura_, elige al
-   paciente y añade prestaciones. El total se ve siempre a la derecha. La
-   leyenda **«Documento de demostración — sin validez fiscal»** aparece en el
-   formulario, en el listado y en la factura, y no se puede descartar.
+   paciente y añade prestaciones. El total se ve siempre a la derecha. Desde la
+   factura emitida, _Imprimir_ manda al papel solo el comprobante: ni barra
+   lateral, ni cabecera, ni botones.
 10. **Organización** — `admin` edita el centro, da de alta sucursales, mantiene
     el catálogo con sus precios en BOB y consulta el consumo del plan.
 
@@ -487,9 +487,9 @@ y `-700` el estado se leía como un susurro y el conjunto tiraba a menta.
 texto ni una marca pequeña sobre una superficie clara: como punto de 6 px o
 barra fina desaparece. Los puntos de estado y las barras de consumo usan un
 escalón más oscuro del mismo naranja, que sí se distingue. El `#E57833` exacto
-se reserva para el sitio donde rinde a plena fuerza sin llevar texto encima: la
-franja de la leyenda «sin validez fiscal», que es el aviso que nunca debe pasar
-desapercibido.
+se reserva para donde rinde a plena fuerza sin llevar texto encima: la línea de
+la hora actual en la agenda y el punto de las citas en sala, que son las marcas
+que no deben pasar desapercibidas.
 
 El rojo de error se aleja deliberadamente del naranja en tono para que aviso y
 error nunca se confundan, y ningún estado se comunica solo con color: todo chip

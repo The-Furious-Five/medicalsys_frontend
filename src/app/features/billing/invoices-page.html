@@ -11,8 +11,6 @@
   </ng-container>
 </medsys-page-header>
 
-<div class="section"><medsys-demo-caption /></div>
-
 <div class="card">
   <div class="filters">
     <medsys-patient-picker
@@ -84,9 +82,6 @@
                     [dictionary]="invoiceStatuses"
                     [tones]="invoiceTones"
                   />
-                  @if (invoice.demo) {
-                    <medsys-demo-caption [compact]="true" />
-                  }
                 </div>
               </td>
               <td class="td-num t-strong">{{ invoice.totalAmount | msBob }}</td>
