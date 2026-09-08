@@ -91,6 +91,16 @@ export const can = {
   manageOptOut: (r: Roles) =>
     has(r, 'RECEPTIONIST', 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
 
+  /* ms-catalogos.
+     El catálogo es material de referencia de solo lectura —CIE-10, vademécum,
+     tipos de estudio, especialidades— y lo consulta cualquiera que ya haya
+     entrado: el médico busca un código mientras diagnostica, recepción
+     confirma el nombre de un estudio al citar y caja comprueba qué se está
+     cobrando. No hay dato de ninguna persona detrás, así que restringirlo solo
+     obligaría a preguntar a un compañero. */
+  viewCatalogs: (r: Roles) =>
+    has(r, 'ADMINISTRATOR', 'PHYSICIAN', 'RECEPTIONIST', 'BILLING_CLERK', 'PLATFORM_ADMIN'),
+
   /* ms-pacientes, servicio de apoyo */
   viewPatients: (r: Roles) =>
     has(r, 'RECEPTIONIST', 'ADMINISTRATOR', 'PHYSICIAN', 'BILLING_CLERK', 'PLATFORM_ADMIN'),

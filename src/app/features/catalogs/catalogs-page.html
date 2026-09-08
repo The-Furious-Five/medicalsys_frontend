@@ -1,0 +1,317 @@
+<section class="catalogs" aria-labelledby="tabs-title">
+  <div class="intro">
+    <p class="eyebrow">Referencias del sistema</p>
+    <h2 id="tabs-title">Consulta de catálogos clínicos</h2>
+    <p>
+      Especialidades, CIE-10, medicamentos y tipos de estudio se leen desde
+      <code>ms-catalogos</code> a través del Gateway. Esta pantalla es de solo lectura.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs" role="tablist" aria-label="Tipos de catálogo">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'specialties'"
+        [class.active]="activeTab() === 'specialties'"
+        (click)="selectTab('specialties')"
+      >
+        Especialidades <span>{{ specialties().length }}</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'cie10'"
+        [class.active]="activeTab() === 'cie10'"
+        (click)="selectTab('cie10')"
+      >
+        CIE-10
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'medications'"
+        [class.active]="activeTab() === 'medications'"
+        (click)="selectTab('medications')"
+      >
+        Medicamentos <span>{{ medications().length }}</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'studies'"
+        [class.active]="activeTab() === 'studies'"
+        (click)="selectTab('studies')"
+      >
+        Tipos de estudio <span>{{ studyTypes().length }}</span>
+      </button>
+    </div>
+    <button class="refresh" type="button" (click)="reload()" [disabled]="loading()">
+      {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </div>
+
+  @if (error(); as apiError) {
+    <div class="error" role="alert">
+      <strong>No se pudieron cargar los catálogos.</strong>
+      <span>{{ apiError.message }}</span>
+      @if (apiError.correlationId) {
+        <small>
+          ID de seguimiento: <code>{{ apiError.correlationId }}</code>
+          <button type="button" (click)="copyCorrelationId(apiError.correlationId)">
+            {{ copiedCorrelationId() ? 'Copiado' : 'Copiar' }}
+          </button>
+        </small>
+      }
+      <button type="button" (click)="reload()">Reintentar</button>
+    </div>
+  }
+
+  @if (activeTab() === 'specialties') {
+    <section role="tabpanel">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input
+          #specialtySearch
+          type="search"
+          [value]="specialtyFilter()"
+          (input)="specialtyFilter.set(specialtySearch.value)"
+          placeholder="Buscar especialidad..."
+          aria-label="Buscar especialidad"
+        />
+      </label>
+      @if (loading()) {
+        <div class="state">Cargando especialidades…</div>
+      } @else if (filteredSpecialties().length === 0) {
+        <div class="state">No hay especialidades que coincidan con la búsqueda.</div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Especialidad</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of filteredSpecialties(); track item.id) {
+                <tr>
+                  <td>
+                    <code>{{ item.code }}</code>
+                  </td>
+                  <td>{{ item.name }}</td>
+                  <td>
+                    <span class="badge badge--ok">{{ item.active ? 'Activa' : 'Inactiva' }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="count">
+          {{ filteredSpecialties().length }} de {{ specialties().length }} especialidades
+        </p>
+      }
+    </section>
+  }
+
+  @if (activeTab() === 'cie10') {
+    <section role="tabpanel">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input
+          #cieSearch
+          type="search"
+          [value]="cie10Query()"
+          (input)="searchIcd10(cieSearch.value)"
+          placeholder="Buscar código o diagnóstico..."
+          aria-label="Buscar diagnóstico CIE-10"
+        />
+        @if (cie10Query()) {
+          <button
+            type="button"
+            (click)="clearSearch(); cieSearch.value = ''"
+            aria-label="Limpiar búsqueda"
+          >
+            ×
+          </button>
+        }
+      </label>
+      @if (cie10Loading()) {
+        <div class="state">Buscando diagnósticos…</div>
+      } @else if (!cie10Query().trim()) {
+        <div class="state">
+          Escribe un código o diagnóstico. El backend devuelve hasta 20 coincidencias.
+        </div>
+      } @else if (cie10Results().length === 0) {
+        <div class="state">No se encontraron diagnósticos para “{{ cie10Query() }}”.</div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Diagnóstico</th>
+                <th>Capítulo</th>
+                <th>Categoría</th>
+                <th>Aplicable a</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of cie10Results(); track item.code) {
+                <tr>
+                  <td>
+                    <code class="warm">{{ item.code }}</code>
+                  </td>
+                  <td>{{ item.description }}</td>
+                  <td>{{ item.chapter || '—' }}</td>
+                  <td>{{ item.category || '—' }}</td>
+                  <td>{{ label(item.applicableSex, 'Todos') }}</td>
+                  <td>
+                    <span class="badge badge--ok">{{ item.active ? 'Activo' : 'Inactivo' }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="count">
+          {{ cie10Results().length }} coincidencia{{ cie10Results().length === 1 ? '' : 's' }}
+        </p>
+      }
+    </section>
+  }
+
+  @if (activeTab() === 'medications') {
+    <section role="tabpanel">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input
+          #medicationSearch
+          type="search"
+          [value]="medicationFilter()"
+          (input)="medicationFilter.set(medicationSearch.value)"
+          placeholder="Buscar medicamento o principio activo..."
+          aria-label="Buscar medicamento"
+        />
+      </label>
+      @if (loading()) {
+        <div class="state">Cargando medicamentos…</div>
+      } @else if (filteredMedications().length === 0) {
+        <div class="state">No hay medicamentos que coincidan con la búsqueda.</div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Medicamento</th>
+                <th>Principio activo</th>
+                <th>Forma</th>
+                <th>Concentración</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of filteredMedications(); track item.id) {
+                <tr>
+                  <td>
+                    <strong>{{ item.tradeName || item.genericName }}</strong>
+                    @if (item.tradeName) {
+                      <small>{{ item.code }}</small>
+                    }
+                  </td>
+                  <td>{{ item.genericName }}</td>
+                  <td>{{ label(item.pharmaceuticalForm) }}</td>
+                  <td>
+                    <code>{{ item.concentration || '—' }}</code>
+                  </td>
+                  <td>
+                    @if (item.controlled) {
+                      <span class="badge badge--warn">Controlado</span>
+                    }
+                    @if (item.requiresPrescription) {
+                      <span class="badge">Receta</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge badge--ok">{{ item.active ? 'Activo' : 'Inactivo' }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="count">
+          {{ filteredMedications().length }} de {{ medications().length }} medicamentos
+        </p>
+      }
+    </section>
+  }
+
+  @if (activeTab() === 'studies') {
+    <section role="tabpanel">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input
+          #studySearch
+          type="search"
+          [value]="studyFilter()"
+          (input)="studyFilter.set(studySearch.value)"
+          placeholder="Buscar tipo de estudio..."
+          aria-label="Buscar tipo de estudio"
+        />
+      </label>
+      @if (loading()) {
+        <div class="state">Cargando tipos de estudio…</div>
+      } @else if (filteredStudyTypes().length === 0) {
+        <div class="state">No hay tipos de estudio que coincidan con la búsqueda.</div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Estudio</th>
+                <th>Categoría</th>
+                <th>Características</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of filteredStudyTypes(); track item.id) {
+                <tr>
+                  <td>
+                    <code>{{ item.code }}</code>
+                  </td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ label(item.category) }}</td>
+                  <td>
+                    @if (item.requiresFasting) {
+                      <span class="badge">Ayuno</span>
+                    }
+                    @if (item.generatesImage) {
+                      <span class="badge badge--ok">Genera imagen</span>
+                    }
+                    @if (!item.requiresFasting && !item.generatesImage) {
+                      <span>—</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge badge--ok">{{ item.active ? 'Activo' : 'Inactivo' }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="count">
+          {{ filteredStudyTypes().length }} de {{ studyTypes().length }} tipos de estudio
+        </p>
+      }
+    </section>
+  }
+</section>

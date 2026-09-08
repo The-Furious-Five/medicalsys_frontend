@@ -5,6 +5,7 @@ agrupar sus páginas, componentes, modelos, acceso HTTP, rutas y pruebas relacio
 
 Áreas previstas para el flujo MVP:
 
+- `catalogs` (consulta de referencias clínicas; primer recorte funcional)
 - `auth`
 - `patients`
 - `professionals`

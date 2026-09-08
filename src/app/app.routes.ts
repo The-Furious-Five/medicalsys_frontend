@@ -20,6 +20,15 @@ export const routes: Routes = [
         loadComponent: () => import('./features/home/home-page').then((m) => m.HomePage),
       },
 
+      /* ----------------------------------------------------- catálogos -- */
+      {
+        path: 'catalogos',
+        title: 'MSYS · Catálogos clínicos',
+        canActivate: [permissionGuard('viewCatalogs')],
+        loadComponent: () =>
+          import('./features/catalogs/catalogs-page').then((m) => m.CatalogsPage),
+      },
+
       /* --------------------------------------------------------- agenda -- */
       {
         path: 'agenda',

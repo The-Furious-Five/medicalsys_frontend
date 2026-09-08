@@ -5,7 +5,7 @@ Angular que consume exclusivamente el API Gateway de la plataforma de microservi
 
 ## Qué implementa
 
-Cubre ocho microservicios del MVP:
+Cubre nueve microservicios del MVP:
 
 | Módulo en la interfaz | Microservicio      | Prefijos que consume                                                                                                |
 | --------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
@@ -17,9 +17,9 @@ Cubre ocho microservicios del MVP:
 | Pacientes             | `ms-pacientes`     | `/api/v1/patients/**`                                                                                               |
 | Marketing             | `ms-marketing`     | `/api/v1/campanas`, `/segmentos`, `/promociones`, `/anuncios`, `/fidelidad`, `/pacientes/**`                        |
 | Acceso                | `ms-identidad`     | `/api/v1/identity/**`                                                                                               |
+| Catálogos clínicos    | `ms-catalogos`     | `/api/v1/catalogs/specialties`, `/cie10`, `/medications`, `/study-types`                                            |
 
-Consume además el catálogo de especialidades de `ms-catalogos`. Si `ms-pacientes`
-no responde, cada vista degrada por su cuenta y muestra el resto de la
+Si `ms-pacientes` no responde, cada vista degrada por su cuenta y muestra el resto de la
 información: los demás módulos referencian al paciente solo por UUID.
 
 Nota sobre `/api/v1/pacientes/**`: es de `ms-marketing` (actividad comercial y

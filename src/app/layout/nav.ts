@@ -101,6 +101,20 @@ const NAV: readonly NavGroup[] = [
     ],
   },
   {
+    // Grupo propio y no dentro de «Historial clínico»: el catálogo lo consultan
+    // también recepción al citar y caja al cobrar, no solo quien diagnostica.
+    id: 'referencia',
+    label: 'Referencia',
+    items: [
+      {
+        link: '/catalogos',
+        label: 'Catálogos clínicos',
+        icon: 'pill',
+        permission: 'viewCatalogs',
+      },
+    ],
+  },
+  {
     id: 'tenencia',
     label: 'Organización',
     items: [

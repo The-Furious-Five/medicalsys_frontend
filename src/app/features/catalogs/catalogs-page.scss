@@ -1,0 +1,259 @@
+:host {
+  display: block;
+}
+
+.catalogs {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.intro h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+}
+
+.intro p:not(.eyebrow) {
+  max-width: 42rem;
+  margin: 0.55rem 0 0;
+  color: var(--muted-foreground);
+  line-height: 1.55;
+}
+
+.eyebrow {
+  margin: 0 0 0.3rem;
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1.15rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+  font-size: 0.86rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+}
+
+.tabs span {
+  padding: 0.1rem 0.4rem;
+  border-radius: 99rem;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+}
+
+.tabs button.active span {
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+.refresh {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  color: var(--primary);
+  background: var(--card);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.refresh:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  background: var(--card);
+  color: var(--muted-foreground);
+}
+
+.search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--foreground);
+  background: transparent;
+}
+
+.search button {
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.table-wrap {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+th {
+  padding: 0.75rem 1rem;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+tr:hover td {
+  background: var(--muted);
+}
+
+td strong,
+td small {
+  display: block;
+}
+
+td small {
+  margin-top: 0.15rem;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+}
+
+code {
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+code.warm {
+  color: var(--accent);
+}
+
+.badge {
+  display: inline-block;
+  margin-right: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 99rem;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.badge--ok {
+  background: #dcfce7;
+  color: #0b7a5e;
+}
+
+.badge--warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.state,
+.error {
+  display: grid;
+  gap: 0.3rem;
+  min-height: 8rem;
+  place-items: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.state {
+  border: 1px dashed var(--border);
+  color: var(--muted-foreground);
+}
+
+.error {
+  min-height: auto;
+  place-items: start;
+  border: 1px solid #f1c6c6;
+  background: #fff5f5;
+  color: var(--danger);
+  text-align: left;
+  font-size: 0.84rem;
+}
+
+.error button {
+  width: max-content;
+  margin-top: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #e2b4b4;
+  border-radius: 0.35rem;
+  color: var(--danger);
+  background: #fff;
+  cursor: pointer;
+}
+
+.error small {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.error small button {
+  margin-top: 0;
+}
+
+.count {
+  margin: 0.55rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
