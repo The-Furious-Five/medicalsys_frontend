@@ -1,3 +1,447 @@
 :host {
   display: block;
 }
+
+/* La composición ocupa el viewport; el ancho legible se limita en el contenido. */
+.access-page {
+  --access-brand-bg: color-mix(in oklab, var(--brand-soft) 48%, var(--bg-surface));
+  --access-gutter: clamp(32px, 6vw, 112px);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to right, var(--access-brand-bg) 52%, var(--bg-surface) 52%);
+}
+
+.access-header,
+.access-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding-inline: var(--access-gutter);
+}
+
+.access-header {
+  padding-block: var(--s-8);
+}
+
+.access-header img {
+  width: 158px;
+  height: auto;
+}
+
+:host-context([data-theme='dark']) .access-header img {
+  filter: brightness(1.5);
+}
+
+.access-header-label,
+.access-footer {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.access-footer {
+  padding-block: var(--s-6);
+}
+
+.access-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
+}
+
+.access-brand {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s-10);
+  padding: var(--s-10) var(--access-gutter);
+  color: var(--text-secondary);
+}
+
+.access-brand::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 480px;
+  height: 480px;
+  right: -340px;
+  bottom: -240px;
+  border: 64px solid color-mix(in oklab, var(--brand-solid) 7%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.access-brand-heading,
+.access-features,
+.access-brand-footer {
+  width: 100%;
+  max-width: 480px;
+}
+
+.access-eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.access-brand .access-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-link);
+}
+
+.access-brand .access-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 2px;
+  background: var(--accent-solid);
+}
+
+.access-brand h2 {
+  max-width: 10ch;
+  margin-block: var(--s-5);
+  color: var(--brand-text);
+  font-size: clamp(40px, 4.5vw, 68px);
+  line-height: 1.12;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.access-brand h2 span {
+  color: var(--accent-text);
+}
+
+.access-brand-lead {
+  max-width: 38ch;
+  line-height: 24px;
+}
+
+.access-features {
+  display: grid;
+  gap: var(--s-6);
+}
+
+.access-features li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.access-feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  height: 44px;
+  background: var(--brand-soft);
+  color: var(--text-link);
+  border: 1px solid color-mix(in oklab, var(--brand-solid) 18%, transparent);
+  border-radius: var(--r-card);
+}
+
+.access-features h3 {
+  color: var(--brand-text);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.access-features p {
+  margin-top: var(--s-1);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.access-brand-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding-top: var(--s-6);
+  border-top: 1px solid color-mix(in oklab, var(--brand-solid) 18%, transparent);
+  font-size: 12px;
+}
+
+.access-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s-6);
+  padding: var(--s-10) clamp(32px, 5vw, 96px);
+}
+
+.access-panel > * {
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+
+.access-form-heading .access-eyebrow {
+  margin-bottom: var(--s-3);
+  color: var(--text-link);
+}
+
+.access-form-heading h1 {
+  margin-bottom: var(--s-3);
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: -0.03em;
+}
+
+.access-form-heading p,
+.access-help {
+  color: var(--text-secondary);
+  line-height: 22px;
+}
+
+.access-form {
+  display: grid;
+  gap: var(--s-5);
+}
+
+.access-control {
+  position: relative;
+}
+
+.access-control > medsys-icon {
+  position: absolute;
+  inset-block-start: 15px;
+  left: var(--s-4);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.access-control:focus-within > medsys-icon {
+  color: var(--text-link);
+}
+
+.access-control .input {
+  height: 48px;
+  padding-left: var(--s-12);
+  font-size: 16px;
+}
+
+.access-password .input {
+  padding-right: 88px;
+}
+
+.access-password-toggle {
+  position: absolute;
+  right: var(--s-2);
+  top: var(--s-1);
+  min-height: 40px;
+  padding-inline: var(--s-2);
+  color: var(--text-link);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--r-input);
+}
+
+.access-password-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.access-submit {
+  min-height: 48px;
+  margin-top: var(--s-1);
+  justify-content: space-between;
+  padding-inline: var(--s-5);
+  background: var(--brand-solid);
+  color: var(--text-onbrand);
+  font-weight: 600;
+}
+
+.access-submit:hover:not(:disabled) {
+  background: var(--brand-solid-hover);
+}
+
+.access-submit:active:not(:disabled) {
+  background: var(--brand-solid-press);
+}
+
+.access-help {
+  font-size: 12px;
+  text-align: center;
+}
+
+.access-demo {
+  border-top: 1px solid var(--border);
+  padding-top: var(--s-5);
+}
+
+.access-demo summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  min-height: 44px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  list-style: none;
+}
+
+.access-demo summary::-webkit-details-marker {
+  display: none;
+}
+
+.access-demo[open] summary medsys-icon {
+  transform: rotate(180deg);
+}
+
+.access-demo-content {
+  display: grid;
+  gap: var(--s-2);
+  padding-top: var(--s-2);
+}
+
+.access-demo-content > p {
+  margin-bottom: var(--s-2);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.access-demo-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  text-align: left;
+}
+
+.access-demo-account > span {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.access-demo-account strong {
+  color: var(--text-link);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.access-demo-account span span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.access-demo-account:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-focus);
+}
+
+.access-demo-account:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.access-environment {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.access-environment::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent-solid);
+}
+
+@media (max-width: 1000px) {
+  .access-page {
+    --access-gutter: 32px;
+  }
+
+  .access-panel {
+    padding-inline: var(--s-8);
+  }
+}
+
+@media (max-width: 760px) {
+  .access-page {
+    --access-gutter: 32px;
+    background: var(--bg-surface);
+  }
+
+  .access-header {
+    background: var(--access-brand-bg);
+    padding-block: var(--s-6);
+  }
+
+  .access-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .access-brand {
+    gap: 0;
+    padding-block: var(--s-4) var(--s-8);
+    background: var(--access-brand-bg);
+  }
+
+  .access-brand h2 {
+    max-width: none;
+    margin-block: var(--s-3) 0;
+    font-size: 36px;
+    line-height: 42px;
+  }
+
+  .access-brand-lead,
+  .access-features,
+  .access-brand-footer {
+    display: none;
+  }
+
+  .access-panel {
+    flex: 1;
+    padding: var(--s-10) var(--access-gutter);
+  }
+
+  .access-footer {
+    flex-direction: column;
+    gap: var(--s-1);
+    text-align: center;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 400px) {
+  .access-page {
+    --access-gutter: 24px;
+  }
+
+  .access-header-label {
+    max-width: 100px;
+    text-align: right;
+  }
+
+  .access-brand h2 {
+    font-size: 32px;
+    line-height: 38px;
+  }
+
+  .access-form-heading h1 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+}

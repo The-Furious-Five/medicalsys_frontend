@@ -75,7 +75,10 @@
               "buildTarget": "medicalsys-frontend:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "allowedHosts": ["habits-released-recorders-creek.trycloudflare.com"]
+          }
         },
         "test": {
           "builder": "@angular/build:unit-test"

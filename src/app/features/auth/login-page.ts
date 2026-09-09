@@ -28,23 +28,29 @@ const DEMO_PASSWORD = 'Demo1234!';
 interface BrandPoint {
   readonly icon: IconName;
   readonly label: string;
+  readonly description: string;
 }
 
 /** Tres frases, no diez: lo que la plataforma hace, dicho en verbos concretos. */
 const BRAND_POINTS: readonly BrandPoint[] = [
-  { icon: 'clipboard-list', label: 'Expediente clínico completo de cada paciente' },
-  { icon: 'calendar', label: 'Agenda del centro y de cada profesional' },
-  { icon: 'receipt', label: 'Facturación de las prestaciones sin duplicar datos' },
+  {
+    icon: 'clipboard-list',
+    label: 'Historias que acompañan',
+    description: 'La información clínica de cada paciente, reunida.',
+  },
+  {
+    icon: 'calendar',
+    label: 'Un equipo en sintonía',
+    description: 'Citas y profesionales en una agenda compartida.',
+  },
+  {
+    icon: 'receipt',
+    label: 'Una gestión más simple',
+    description: 'Prestaciones y facturación, sin duplicar datos.',
+  },
 ];
 
-/**
- * Jerarquía: el formulario manda. Vive en una tarjeta blanca elevada sobre un
- * lienzo teñido de verde de marca; la presentación de la plataforma ocupa la
- * columna izquierda, plana y sin elevación, para no competir con él.
- *
- * En el marcado la tarjeta va primero y la rejilla la coloca a la derecha: el
- * orden de lectura empieza donde empieza la tarea.
- */
+/** Acceso centrado con presentación de marca y formulario adaptable a móvil. */
 @Component({
   selector: 'medsys-login-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,6 +67,7 @@ export class LoginPage {
   protected readonly brandPoints = BRAND_POINTS;
   protected readonly email = signal('');
   protected readonly password = signal('');
+  protected readonly passwordVisible = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly pending = signal(false);
 
@@ -81,7 +88,7 @@ export class LoginPage {
     }
   }
 
-  /** Rellena el formulario, pero no entra: pulsar «Entrar» sigue siendo del usuario. */
+  /** Rellena el formulario; el usuario confirma el inicio de sesión. */
   protected useDemoAccount(account: DemoAccount): void {
     this.email.set(account.email);
     this.password.set(DEMO_PASSWORD);
