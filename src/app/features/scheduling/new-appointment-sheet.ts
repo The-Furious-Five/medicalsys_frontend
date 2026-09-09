@@ -28,6 +28,10 @@ import { SchedulingService } from './scheduling.service';
 import { clinicInstant, clinicTime, durationLabel } from './scheduling.time';
 import { NumberField } from '../../shared/number-field';
 import { TimeField } from '../../shared/time-field';
+import {
+  AppointmentBookingService,
+  AppointmentNotificationValidationError,
+} from './appointment-booking.service';
 
 /** Lo que el tablero ya sabe cuando se pincha un hueco: no se vuelve a pedir. */
 export interface NewAppointmentSeed {
@@ -74,6 +78,7 @@ export class NewAppointmentSheet {
   readonly saved = output<void>();
 
   private readonly scheduling = inject(SchedulingService);
+  private readonly booking = inject(AppointmentBookingService);
   private readonly professionals = inject(ProfessionalsService);
   private readonly tenancy = inject(TenancyService);
   private readonly toasts = inject(ToastService);
@@ -96,6 +101,7 @@ export class NewAppointmentSheet {
   protected readonly reason = signal('');
   protected readonly price = signal('');
   protected readonly teleconsultationLink = signal('');
+  protected readonly authorizeWhatsapp = signal(false);
 
   /** Hueco elegido de la lista, o nulo si la hora se fijó a mano. */
   protected readonly slot = signal<Slot | null>(null);
@@ -105,6 +111,7 @@ export class NewAppointmentSheet {
 
   protected readonly pending = signal(false);
   protected readonly failure = signal<unknown>(null);
+  protected readonly localFailure = signal<string | null>(null);
 
   /* ------------------------------------------------------------ fuentes -- */
 
@@ -231,6 +238,10 @@ export class NewAppointmentSheet {
   );
 
   protected readonly errorMessage = computed(() => {
+    const local = this.localFailure();
+    if (local !== null) {
+      return local;
+    }
     const failure = this.failure();
     return failure === null ? null : describeFailure(failure).message;
   });
@@ -260,6 +271,8 @@ export class NewAppointmentSheet {
       this.channelOrigin.set('RECEPTION');
       this.slot.set(null);
       this.failure.set(null);
+      this.localFailure.set(null);
+      this.authorizeWhatsapp.set(false);
       this.professionalId.set(seed.professionalId);
       this.date.set(seed.date);
       this.manual.set(seed.time !== null);
@@ -342,30 +355,44 @@ export class NewAppointmentSheet {
     }
     this.pending.set(true);
     this.failure.set(null);
+    this.localFailure.set(null);
     try {
-      await this.scheduling.create({
-        organizationPublicId: this.scheduling.organizationId()!,
-        branchPublicId: this.branchId()!,
-        patientPublicId: this.patientId()!,
-        healthProfessionalPublicId: this.professionalId()!,
-        serviceOfferingPublicId: this.offeringId()!,
-        startsAt: this.startsAt()!,
-        endsAt: this.endsAt()!,
-        modality: this.modality(),
-        channelOrigin: this.channelOrigin(),
-        reasonForVisit: this.reason().trim() || null,
-        requiresConsent: this.offering()?.requiresConsent ?? false,
-        estimatedPriceBob: this.price().trim() || null,
-        teleconsultationLink:
-          this.modality() === 'TELECONSULTATION'
-            ? this.teleconsultationLink().trim() || null
-            : null,
-        physicalResourcePublicId: this.resourceId(),
-      });
-      this.toasts.notify(`Cita agendada para las ${clinicTime(this.startsAt()!)}`, 'ok');
+      await this.booking.create(
+        {
+          organizationPublicId: this.scheduling.organizationId()!,
+          branchPublicId: this.branchId()!,
+          patientPublicId: this.patientId()!,
+          healthProfessionalPublicId: this.professionalId()!,
+          serviceOfferingPublicId: this.offeringId()!,
+          startsAt: this.startsAt()!,
+          endsAt: this.endsAt()!,
+          modality: this.modality(),
+          channelOrigin: this.channelOrigin(),
+          reasonForVisit: this.reason().trim() || null,
+          requiresConsent: this.offering()?.requiresConsent ?? false,
+          estimatedPriceBob: this.price().trim() || null,
+          teleconsultationLink:
+            this.modality() === 'TELECONSULTATION'
+              ? this.teleconsultationLink().trim() || null
+              : null,
+          physicalResourcePublicId: this.resourceId(),
+        },
+        this.authorizeWhatsapp(),
+      );
+      const confirmation = this.authorizeWhatsapp()
+        ? ' Se solicitó la confirmación por WhatsApp.'
+        : '';
+      this.toasts.notify(
+        `Cita agendada para las ${clinicTime(this.startsAt()!)}.${confirmation}`,
+        'ok',
+      );
       this.saved.emit();
     } catch (failure) {
-      this.failure.set(failure);
+      if (failure instanceof AppointmentNotificationValidationError) {
+        this.localFailure.set(failure.message);
+      } else {
+        this.failure.set(failure);
+      }
     } finally {
       this.pending.set(false);
     }

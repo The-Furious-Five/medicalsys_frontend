@@ -253,6 +253,25 @@
         (input)="reason.set($any($event.target).value)"
       ></textarea>
     </div>
+
+    <label class="check-row">
+      <input
+        type="checkbox"
+        class="checkbox"
+        [checked]="authorizeWhatsapp()"
+        (change)="authorizeWhatsapp.set($any($event.target).checked)"
+      />
+      <span class="check-box" aria-hidden="true"
+        ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+      /></span>
+      <span class="pair">
+        <span class="t-strong">Enviar confirmación y recordatorios por WhatsApp</span>
+        <span class="field-hint">
+          Marca esta opción únicamente si el paciente autoriza mensajes clínicos en el número
+          registrado.
+        </span>
+      </span>
+    </label>
   </form>
 
   <ng-container dialogFooter>

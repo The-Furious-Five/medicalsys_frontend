@@ -4,7 +4,14 @@ import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../../core/config/api-url';
 import { Page } from '../../core/http/api-error';
 import { dataResource } from '../../core/http/data-resource';
-import { Patient, RegisterPatientInput } from './patients.models';
+import {
+  NotificationCategory,
+  NotificationChannel,
+  NotificationPreference,
+  NotificationPreferenceInput,
+  Patient,
+  RegisterPatientInput,
+} from './patients.models';
 
 @Injectable({ providedIn: 'root' })
 export class PatientsService {
@@ -64,5 +71,22 @@ export class PatientsService {
 
   register(body: RegisterPatientInput): Promise<Patient> {
     return firstValueFrom(this.http.post<Patient>(`${this.baseUrl}/patients`, body));
+  }
+
+  /** Registra la decisión del paciente antes de que otro microservicio intente
+   * enviarle una comunicación. Para citas, CLINICAL se traduce a UTILITY en
+   * ms-notificaciones. */
+  setNotificationPreference(
+    patientId: string,
+    channel: NotificationChannel,
+    category: NotificationCategory,
+    body: NotificationPreferenceInput,
+  ): Promise<NotificationPreference> {
+    return firstValueFrom(
+      this.http.put<NotificationPreference>(
+        `${this.baseUrl}/patients/${patientId}/notification-preferences/${channel}/${category}`,
+        body,
+      ),
+    );
   }
 }
