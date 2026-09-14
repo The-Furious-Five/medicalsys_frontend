@@ -42,7 +42,3 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
-
-# Configuracion local (contiene la URL del backend)
-.env
-.env.local

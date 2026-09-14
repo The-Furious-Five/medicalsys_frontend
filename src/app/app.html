@@ -1,0 +1,18 @@
+<header class="app-header">
+  <a class="brand" routerLink="/" aria-label="MedicalSys, ir al inicio">
+    <span class="brand__mark" aria-hidden="true">M</span>
+    <span>
+      <strong>MedicalSys</strong>
+      <small>Plataforma clínica</small>
+    </span>
+  </a>
+
+  <span class="environment-badge">Entorno local</span>
+</header>
+
+<router-outlet />
+
+<footer class="app-footer">
+  <span>MedicalSys · {{ currentYear }}</span>
+  <span>Los datos utilizados en desarrollo deben ser ficticios.</span>
+</footer>

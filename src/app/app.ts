@@ -1,15 +1,12 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterLink, RouterOutlet } from '@angular/router';
 
-/**
- * Raíz de la aplicación. El armazón con barra lateral y cabecera es una ruta
- * más (`AppShell`), de modo que la pantalla de acceso pueda ocupar el alto
- * completo sin la navegación de alguien que todavía no ha entrado.
- */
 @Component({
+  imports: [RouterLink, RouterOutlet],
   selector: 'medsys-root',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet],
-  template: '<router-outlet />',
+  styleUrl: './app.scss',
+  templateUrl: './app.html',
 })
-export class App {}
+export class App {
+  protected readonly currentYear = new Date().getFullYear();
+}
