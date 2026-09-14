@@ -101,7 +101,7 @@
                         [disabled]="line.quantity <= 1"
                         (click)="changeQuantity(line.key, -1)"
                       >
-                        <medsys-icon name="minus" [size]="13" />
+                        <medsys-icon name="minus" [size]="18" [strokeWidth]="2" />
                       </button>
                       <span class="t-num t-strong qty-value">{{ line.quantity }}</span>
                       <button
@@ -110,7 +110,7 @@
                         aria-label="Sumar una unidad"
                         (click)="changeQuantity(line.key, 1)"
                       >
-                        <medsys-icon name="plus" [size]="13" />
+                        <medsys-icon name="plus" [size]="18" [strokeWidth]="2" />
                       </button>
                     </div>
                   </td>

@@ -65,6 +65,7 @@ export const can = {
     has(r, 'BILLING_CLERK', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
   issueInvoice: (r: Roles) =>
     has(r, 'BILLING_CLERK', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  correctInvoice: (r: Roles) => has(r, 'BILLING_CLERK', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
 
   /* ms-marketing.
      El servicio declara `MARKETING_MANAGER` para el día en que ms-identidad lo

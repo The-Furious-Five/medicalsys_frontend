@@ -2074,6 +2074,12 @@ medsys-toast-host {
   min-width: 24px;
   text-align: center;
 }
+.qty .btn-icon {
+  /* Las cantidades se ajustan también en tablet: el área no depende del icono. */
+  width: 40px;
+  height: 40px;
+  touch-action: manipulation;
+}
 
 /* ============================================================ encuentro ===== */
 .encounter-layout {
@@ -3014,6 +3020,46 @@ medsys-toast-host {
 
 /* Constructor de criterios. Cada grupo se enmarca para que se lea de dónde sale
    el dato: demografía por un lado, actividad comercial por otro. */
+.criteria-starter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--r-card);
+  background: var(--brand-soft);
+}
+.criteria-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.criteria-preset {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 76px;
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  text-align: left;
+}
+.criteria-preset:hover {
+  border-color: var(--brand-solid);
+  background: var(--bg-hover);
+}
+.criteria-preset span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 17px;
+}
+@media (max-width: 620px) {
+  .criteria-presets {
+    grid-template-columns: 1fr;
+  }
+}
 .criteria-group {
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-card);
@@ -3042,6 +3088,16 @@ medsys-toast-host {
   border: 1px solid var(--border);
   border-radius: var(--r-card);
   background: var(--bg-sunken);
+}
+.criteria-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  line-height: 20px;
 }
 .criteria-sample {
   display: flex;

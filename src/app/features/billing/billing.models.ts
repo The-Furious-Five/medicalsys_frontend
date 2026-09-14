@@ -52,7 +52,31 @@ export interface Invoice {
   readonly paymentMethodCode: number | null;
   readonly issuedAt: string;
   readonly validatedAt: string | null;
+  readonly cancellationReasonCode: number | null;
+  readonly voidedAt: string | null;
   readonly items: readonly InvoiceItem[];
+}
+
+export type CreditDebitNoteType = 'CREDIT' | 'DEBIT';
+
+export interface CreditDebitNote {
+  readonly id: string;
+  readonly invoiceId: string;
+  readonly type: CreditDebitNoteType;
+  readonly noteNumber: number;
+  readonly status: string;
+  readonly demo: boolean;
+  readonly cuf: string;
+  readonly taxReceiptCode: string | null;
+  readonly amount: string;
+  readonly reason: string;
+  readonly issuedAt: string;
+}
+
+export interface CreateCreditDebitNoteInput {
+  readonly type: CreditDebitNoteType;
+  readonly amount: string;
+  readonly reason: string;
 }
 
 export interface InvoiceSummary {

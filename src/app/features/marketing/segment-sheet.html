@@ -38,6 +38,30 @@
       }
     </div>
 
+    <section class="criteria-starter" aria-labelledby="criteria-starter-title">
+      <div class="stack gap-1">
+        <h3 id="criteria-starter-title" class="t-card">Empieza con un ejemplo</h3>
+        <p class="t-sec">
+          Solo necesitas un criterio. Elige una base y ajústala; combina más filtros únicamente si
+          quieres reducir el grupo.
+        </p>
+      </div>
+      <div class="criteria-presets">
+        <button type="button" class="criteria-preset" (click)="applyExample('reactivation')">
+          <strong>Pacientes por reactivar</strong>
+          <span>Sin visitas en los últimos 6 meses</span>
+        </button>
+        <button type="button" class="criteria-preset" (click)="applyExample('birthday')">
+          <strong>Cumpleaños del mes</strong>
+          <span>Personas que cumplen años este mes</span>
+        </button>
+        <button type="button" class="criteria-preset" (click)="applyExample('frequent')">
+          <strong>Pacientes frecuentes</strong>
+          <span>Con 3 o más citas atendidas</span>
+        </button>
+      </div>
+    </section>
+
     <div class="field">
       <label class="field-label" for="segment-description">
         Descripción <span class="field-optional">(opcional)</span>
@@ -65,22 +89,26 @@
 
       <div class="grid-2">
         <div class="field">
-          <label class="field-label" for="segment-min-age">Edad mínima</label>
+          <label class="field-label" for="segment-min-age">
+            Edad mínima <span class="field-optional">(opcional)</span>
+          </label>
           <medsys-number-field
             controlId="segment-min-age"
             [min]="0"
             [max]="130"
-            placeholder="Sin mínimo"
+            placeholder="Ej.: 18"
             formControlName="minAge"
           />
         </div>
         <div class="field">
-          <label class="field-label" for="segment-max-age">Edad máxima</label>
+          <label class="field-label" for="segment-max-age">
+            Edad máxima <span class="field-optional">(opcional)</span>
+          </label>
           <medsys-number-field
             controlId="segment-max-age"
             [min]="0"
             [max]="130"
-            placeholder="Sin máximo"
+            placeholder="Ej.: 65"
             formControlName="maxAge"
           />
         </div>
@@ -235,6 +263,11 @@
           <medsys-icon name="refresh" [size]="13" /> Recalcular
         </button>
       </div>
+
+      <p class="criteria-summary">
+        <span class="t-micro">Tu selección:</span>
+        <strong>{{ criteriaSummary() }}</strong>
+      </p>
 
       @if (axisCount() === 0) {
         <p class="t-sec">

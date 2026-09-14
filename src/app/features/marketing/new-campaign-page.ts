@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { describeFailure } from '../../core/http/api-error';
 import { FORMAT_PIPES } from '../../core/format/format.pipe';
 import { CAMPAIGN_CHANNEL, CAMPAIGN_TYPE, options } from '../../core/labels/labels';
@@ -13,6 +14,9 @@ import { Skeleton } from '../../shared/skeleton';
 import { MarketingService } from './marketing.service';
 import { NumberField } from '../../shared/number-field';
 import { DateTimeField } from '../../shared/datetime-field';
+
+const trimmedRequired: ValidatorFn = (control) =>
+  typeof control.value === 'string' && control.value.trim() !== '' ? null : { required: true };
 
 /**
  * Jerarquía: crear una campaña son tres decisiones — qué se comunica, a quién y
@@ -108,7 +112,14 @@ export class NewCampaignPage {
     return failure === null ? null : describeFailure(failure);
   });
 
-  protected errorFor(control: 'name' | 'segmentId' | 'startsAt'): string | null {
+  constructor() {
+    this.updateObjectiveValidators(this.form.controls.channel.value);
+    this.form.controls.channel.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((channel) => this.updateObjectiveValidators(channel));
+  }
+
+  protected errorFor(control: 'name' | 'segmentId' | 'startsAt' | 'objective'): string | null {
     const field = this.form.controls[control];
     if (!field.touched || field.valid) {
       return null;
@@ -116,7 +127,9 @@ export class NewCampaignPage {
     if (field.hasError('required')) {
       return control === 'segmentId'
         ? 'Elige a quién va dirigida la campaña'
-        : 'Este campo es obligatorio';
+        : control === 'objective'
+          ? 'Escribe el mensaje que recibirán por correo'
+          : 'Este campo es obligatorio';
     }
     if (field.hasError('maxlength')) {
       return `Máximo ${field.getError('maxlength').requiredLength} caracteres`;
@@ -154,6 +167,15 @@ export class NewCampaignPage {
     } finally {
       this.pending.set(false);
     }
+  }
+
+  private updateObjectiveValidators(channel: string): void {
+    this.form.controls.objective.setValidators(
+      channel === 'EMAIL'
+        ? [trimmedRequired, Validators.maxLength(300)]
+        : [Validators.maxLength(300)],
+    );
+    this.form.controls.objective.updateValueAndValidity({ emitEvent: false });
   }
 
   /** `datetime-local` espera `aaaa-mm-ddThh:mm` en hora local, sin zona. */

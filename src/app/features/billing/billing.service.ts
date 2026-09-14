@@ -4,7 +4,13 @@ import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../../core/config/api-url';
 import { Page } from '../../core/http/api-error';
 import { dataResource } from '../../core/http/data-resource';
-import { CreateInvoiceInput, Invoice, InvoiceSummary } from './billing.models';
+import {
+  CreateCreditDebitNoteInput,
+  CreateInvoiceInput,
+  CreditDebitNote,
+  Invoice,
+  InvoiceSummary,
+} from './billing.models';
 
 @Injectable({ providedIn: 'root' })
 export class BillingService {
@@ -29,7 +35,31 @@ export class BillingService {
     );
   }
 
+  creditDebitNotesResource(invoiceId: Signal<string | null>) {
+    return dataResource(
+      httpResource<readonly CreditDebitNote[]>(() => {
+        const id = invoiceId();
+        return id ? `${this.baseUrl}/facturas/${id}/notas` : undefined;
+      }),
+    );
+  }
+
   issue(body: CreateInvoiceInput): Promise<Invoice> {
     return firstValueFrom(this.http.post<Invoice>(`${this.baseUrl}/facturas`, body));
+  }
+
+  voidInvoice(invoiceId: string, reasonCode: number): Promise<Invoice> {
+    return firstValueFrom(
+      this.http.post<Invoice>(`${this.baseUrl}/facturas/${invoiceId}/anulacion`, { reasonCode }),
+    );
+  }
+
+  issueCreditDebitNote(
+    invoiceId: string,
+    body: CreateCreditDebitNoteInput,
+  ): Promise<CreditDebitNote> {
+    return firstValueFrom(
+      this.http.post<CreditDebitNote>(`${this.baseUrl}/facturas/${invoiceId}/notas`, body),
+    );
   }
 }

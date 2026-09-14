@@ -214,6 +214,7 @@ export const advertisementTone: Record<AdvertisementStatus, Tone> = {
 export const recipientTone: Record<string, Tone> = {
   SELECTED: 'neutral',
   EXCLUDED_OPT_OUT: 'muted',
+  EXCLUDED_NO_DESTINATION: 'muted',
   SENT: 'brand',
   READ: 'warn',
   CONVERTED: 'ok',
