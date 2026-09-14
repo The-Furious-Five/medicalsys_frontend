@@ -1,0 +1,79 @@
+@if (patientId()) {
+  <div class="patient-chosen">
+    <span class="patient-avatar" aria-hidden="true"><medsys-icon name="user" [size]="14" /></span>
+    @if (loadingSelected()) {
+      <medsys-skeleton width="160px" height="14px" />
+    } @else if (selected(); as person) {
+      <span class="pair grow">
+        <span class="t-strong truncate">{{ person.fullName }}</span>
+        <span class="t-micro t-num">{{ documentLine(person) }}</span>
+      </span>
+    } @else {
+      <span class="grow t-sec">Paciente sin identificar</span>
+    }
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm btn-icon"
+      aria-label="Quitar el paciente seleccionado"
+      (click)="clear()"
+    >
+      <medsys-icon name="x" [size]="14" />
+    </button>
+  </div>
+} @else {
+  <div class="patient-picker">
+    <div class="search-field is-wide">
+      <medsys-icon name="search" [size]="15" />
+      <input
+        class="input"
+        type="search"
+        role="combobox"
+        [attr.aria-expanded]="open()"
+        aria-controls="patient-results"
+        [attr.aria-label]="placeholder()"
+        [placeholder]="placeholder()"
+        [autofocus]="autoFocus()"
+        [value]="term()"
+        (focus)="open.set(true)"
+        (input)="onInput($any($event.target).value)"
+        (keydown)="onKeyDown($event)"
+      />
+    </div>
+
+    @if (open() && term().trim().length >= 2) {
+      <div class="patient-results" id="patient-results" role="listbox">
+        @if (searching()) {
+          <div class="stack gap-2" style="padding: var(--s-3)">
+            <medsys-skeleton width="70%" height="14px" />
+            <medsys-skeleton width="50%" height="14px" />
+          </div>
+        } @else if (failed()) {
+          <p class="t-sec" style="padding: var(--s-3)">
+            No se pudo consultar el registro de pacientes. Vuelve a intentarlo en unos segundos.
+          </p>
+        } @else if (results().length === 0) {
+          <p class="t-sec" style="padding: var(--s-3)">
+            Ningún paciente coincide con «{{ term().trim() }}».
+          </p>
+        } @else {
+          @for (person of results(); track person.patientId; let i = $index) {
+            <button
+              type="button"
+              role="option"
+              class="patient-option"
+              [class.is-active]="i === highlighted()"
+              [attr.aria-selected]="i === highlighted()"
+              (mouseenter)="highlighted.set(i)"
+              (click)="pick(person)"
+            >
+              <span class="pair grow">
+                <span class="t-strong truncate">{{ person.fullName }}</span>
+                <span class="t-micro t-num">{{ documentLine(person) }}</span>
+              </span>
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+}

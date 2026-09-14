@@ -1,0 +1,129 @@
+<medsys-page-header
+  heading="Cupones"
+  description="Descuentos que el paciente presenta al cobrar. Facturación los valida contra este servicio antes de aplicarlos."
+>
+  <ng-container headerActions>
+    @if (canValidate()) {
+      <button type="button" class="btn btn-secondary" (click)="checkCoupon(null)">
+        <medsys-icon name="ticket" [size]="15" /> Comprobar un cupón
+      </button>
+    }
+    @if (canManage()) {
+      <button type="button" class="btn btn-primary" (click)="sheetOpen.set(true)">
+        <medsys-icon name="plus" [size]="15" /> Nuevo cupón
+      </button>
+    }
+  </ng-container>
+</medsys-page-header>
+
+<div class="card">
+  @if (promotions.isLoading()) {
+    <medsys-table-skeleton [rows]="5" [columns]="5" />
+  } @else if (promotions.error()) {
+    <medsys-error-state
+      [failure]="promotions.error()"
+      [compact]="true"
+      (retry)="promotions.reload()"
+    />
+  } @else if (promotions.value()!.content.length === 0) {
+    <medsys-empty-state
+      icon="ticket"
+      heading="Todavía no hay ningún cupón"
+      description="Un cupón se crea con su código, su descuento y su ventana de vigencia. Puedes limitar cuántas veces se usa en total y cuántas puede usarlo el mismo paciente."
+    >
+      @if (canManage()) {
+        <button type="button" class="btn btn-primary" (click)="sheetOpen.set(true)">
+          <medsys-icon name="plus" [size]="15" /> Crear el primer cupón
+        </button>
+      }
+    </medsys-empty-state>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Promoción</th>
+            <th scope="col" class="th-num">Descuento</th>
+            <th scope="col">Vigencia</th>
+            <th scope="col" class="th-num">Usos</th>
+            <th scope="col" class="td-tight"><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (promotion of promotions.value()!.content; track promotion.id) {
+            <tr>
+              <td>
+                <div class="row gap-2 wrap">
+                  <span class="clin-code">{{ promotion.couponCode }}</span>
+                  @if (!isLive(promotion)) {
+                    <span class="chip chip-muted">
+                      <span class="chip-dot" aria-hidden="true"></span>
+                      {{ promotion.active ? 'Fuera de vigencia' : 'Desactivado' }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="pair">
+                  <span class="t-strong">{{ promotion.name }}</span>
+                  <span class="t-micro">
+                    <medsys-status-chip
+                      [value]="promotion.discountType"
+                      [dictionary]="discountTypes"
+                    />
+                  </span>
+                </div>
+              </td>
+              <td class="td-num t-strong">{{ discountText(promotion) }}</td>
+              <td class="t-sec t-num">
+                {{ promotion.validFrom | msDate }} — {{ promotion.validUntil | msDate }}
+              </td>
+              <td class="td-num t-sec t-num">{{ remaining(promotion) }}</td>
+              <td class="td-tight">
+                <div class="row gap-1">
+                  @if (canValidate()) {
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm"
+                      [attr.aria-label]="'Comprobar ' + promotion.couponCode"
+                      (click)="checkCoupon(promotion.couponCode)"
+                    >
+                      Comprobar
+                    </button>
+                  }
+                  @if (canManage() && promotion.active) {
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm btn-icon"
+                      [attr.aria-label]="'Desactivar ' + promotion.couponCode"
+                      (click)="deactivate(promotion)"
+                    >
+                      <medsys-icon name="ban" [size]="14" />
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (promotions.value(); as result) {
+    <medsys-pager
+      [page]="result.page"
+      [totalPages]="result.totalPages"
+      (pageChange)="page.set($event)"
+    />
+  }
+</div>
+
+<medsys-promotion-sheet [open]="sheetOpen()" (closed)="sheetOpen.set(false)" (saved)="onSaved()" />
+
+<medsys-validate-coupon-dialog
+  [open]="validatorOpen()"
+  [initialCode]="validatingCode()"
+  (closed)="validatorOpen.set(false)"
+/>

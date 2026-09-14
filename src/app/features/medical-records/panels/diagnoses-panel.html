@@ -1,0 +1,168 @@
+<section class="card">
+  <div class="card-head">
+    <div class="row gap-2">
+      <medsys-icon name="stethoscope" [size]="15" class="icon-muted" />
+      <h2 class="t-section">Diagnósticos</h2>
+      @if ((diagnoses.value() ?? []).length > 0) {
+        <span class="t-sec t-num">{{ (diagnoses.value() ?? []).length }}</span>
+      }
+    </div>
+    @if (editable()) {
+      <button type="button" class="btn btn-secondary btn-sm" (click)="openForm()">
+        <medsys-icon name="plus" [size]="14" /> Añadir diagnóstico
+      </button>
+    }
+  </div>
+
+  @if (diagnoses.isLoading()) {
+    <div class="card-body stack gap-2">
+      <medsys-skeleton width="60%" height="16px" />
+      <medsys-skeleton width="40%" height="16px" />
+    </div>
+  } @else if (diagnoses.error()) {
+    <div class="card-body"><p class="t-sec">No se pudieron cargar los diagnósticos.</p></div>
+  } @else if ((diagnoses.value() ?? []).length === 0) {
+    <div class="card-body">
+      <p class="t-sec">
+        @if (editable()) {
+          Sin diagnósticos. Añade al menos el diagnóstico principal antes de firmar.
+        } @else {
+          No se registró ningún diagnóstico en este encuentro.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="clin-list">
+      @for (diagnosis of diagnoses.value(); track diagnosis.id) {
+        <div class="clin-item">
+          <span class="clin-code">{{ diagnosis.icd10Code }}</span>
+          <div class="pair grow">
+            <div class="row gap-2 wrap">
+              @if (diagnosis.primary) {
+                <span class="chip chip-brand"><span class="chip-dot"></span>Principal</span>
+              }
+              <medsys-status-chip [value]="diagnosis.type" [dictionary]="diagnosisTypes" />
+              <medsys-status-chip [value]="diagnosis.status" [dictionary]="diagnosisStatuses" />
+              @if (diagnosis.chronic) {
+                <span class="chip chip-neutral"><span class="chip-dot"></span>Crónico</span>
+              }
+              @if (diagnosis.laterality && diagnosis.laterality !== 'NOT_APPLICABLE') {
+                <span class="chip chip-neutral">{{ lateralityLabel(diagnosis.laterality) }}</span>
+              }
+            </div>
+            @if (diagnosis.observation) {
+              <p class="t-sec t-measure">{{ diagnosis.observation }}</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>
+
+<medsys-dialog
+  [open]="adding()"
+  [width]="520"
+  heading="Añadir diagnóstico"
+  description="Se registra sobre este encuentro y pasa a formar parte de la historia clínica de la persona."
+  (closed)="adding.set(false)"
+>
+  <div class="stack gap-4">
+    @if (errorMessage(); as message) {
+      <medsys-notice tone="err">{{ message }}</medsys-notice>
+    }
+
+    <div class="field">
+      <label class="field-label" for="diagnosis-code">Código CIE-10</label>
+      <input
+        id="diagnosis-code"
+        class="input t-mono"
+        maxlength="10"
+        autofocus
+        placeholder="J06.9"
+        [value]="icd10Code()"
+        (input)="icd10Code.set($any($event.target).value.toUpperCase())"
+      />
+      <span class="field-hint">Por ejemplo J06.9 o I10. Máximo 10 caracteres.</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="diagnosis-type">Tipo</label>
+        <medsys-select
+          [controlId]="'diagnosis-type'"
+          [options]="typeOptions"
+          [value]="type()"
+          (valueChange)="type.set($event)"
+          [allowEmpty]="false"
+        />
+      </div>
+      <div class="field">
+        <label class="field-label" for="diagnosis-laterality">Lateralidad</label>
+        <medsys-select
+          [controlId]="'diagnosis-laterality'"
+          [options]="lateralityOptions"
+          [value]="laterality()"
+          (valueChange)="laterality.set($event)"
+          [allowEmpty]="false"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="diagnosis-observation">
+        Observación <span class="field-optional">(opcional)</span>
+      </label>
+      <textarea
+        id="diagnosis-observation"
+        class="textarea"
+        rows="3"
+        maxlength="1000"
+        [value]="observation()"
+        (input)="observation.set($any($event.target).value)"
+      ></textarea>
+    </div>
+
+    <div class="stack gap-2">
+      <label class="check-row">
+        <input
+          type="checkbox"
+          class="checkbox"
+          [checked]="primary()"
+          (change)="primary.set($any($event.target).checked)"
+        />
+        <span class="check-box" aria-hidden="true"
+          ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+        /></span>
+        <span class="pair">
+          <span class="t-strong">Es el diagnóstico principal</span>
+          <span class="field-hint">El motivo central de la atención.</span>
+        </span>
+      </label>
+      <label class="check-row">
+        <input
+          type="checkbox"
+          class="checkbox"
+          [checked]="chronic()"
+          (change)="chronic.set($any($event.target).checked)"
+        />
+        <span class="check-box" aria-hidden="true"
+          ><medsys-icon name="check" [size]="11" [strokeWidth]="2.6"
+        /></span>
+        <span class="t-strong">Es una condición crónica</span>
+      </label>
+    </div>
+  </div>
+
+  <ng-container dialogFooter>
+    <button type="button" class="btn btn-secondary" (click)="adding.set(false)">Cancelar</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="icd10Code().trim().length === 0 || pending()"
+      (click)="save()"
+    >
+      Añadir diagnóstico
+    </button>
+  </ng-container>
+</medsys-dialog>

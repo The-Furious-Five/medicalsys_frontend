@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+
+/* La página de catálogos usa los primitivos del sistema (card, tabs-list,
+   filters, search-field, table, chip, pager). Aquí solo viven los ajustes
+   específicos de esta pantalla. */
+
+.tabs-list .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.tabs-list .tab .t-micro {
+  padding: 1px var(--s-2);
+  border-radius: var(--r-chip);
+  background: var(--bg-sunken);
+  color: var(--text-tertiary);
+}
+
+.tabs-list .tab.is-active .t-micro {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+}

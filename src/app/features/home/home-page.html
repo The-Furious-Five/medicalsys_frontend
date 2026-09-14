@@ -1,66 +1,236 @@
-<main class="home">
-  <section class="hero" aria-labelledby="hero-title">
-    <p class="eyebrow">Sprint 2 · Frontend del flujo MVP</p>
-    <h1 id="hero-title">Una experiencia clínica conectada de principio a fin.</h1>
-    <p class="hero__description">
-      Esta es la base compartida del frontend de MedicalSys. Todas las operaciones de negocio deben
-      atravesar el API Gateway y conservar el contexto de usuario, rol y organización.
-    </p>
-    <div class="hero__actions">
-      <a class="button button--primary" href="#mvp-flow">Ver recorrido MVP</a>
-      <a class="button button--secondary" href="http://localhost:8080/actuator/health">
-        Comprobar gateway
-      </a>
-    </div>
-  </section>
+<medsys-page-header
+  [heading]="'Hola, ' + greeting()"
+  [description]="today + '. Esto es lo que tienes pendiente hoy.'"
+/>
 
-  <section class="principles" aria-label="Principios técnicos">
-    <article>
-      <span>01</span>
-      <div>
-        <h2>Un punto de entrada</h2>
-        <p>
-          El navegador usa rutas <code>/api/v1</code>; nunca llama directamente a un microservicio.
-        </p>
-      </div>
-    </article>
-    <article>
-      <span>02</span>
-      <div>
-        <h2>Contratos antes que pantallas</h2>
-        <p>Ruta, roles y JSON se acuerdan antes de implementar cada funcionalidad.</p>
-      </div>
-    </article>
-    <article>
-      <span>03</span>
-      <div>
-        <h2>Evidencia para cerrar</h2>
-        <p>
-          Una historia requiere pruebas, estados de interfaz y recorrido integrado reproducible.
-        </p>
-      </div>
-    </article>
-  </section>
-
-  <section class="flow" id="mvp-flow" aria-labelledby="flow-title">
-    <div class="section-heading">
-      <p class="eyebrow">Recorrido vertical</p>
-      <h2 id="flow-title">Funcionalidades que construiremos</h2>
-    </div>
-
-    <div class="flow__grid">
-      @for (step of mvpSteps; track step.number) {
-        <article class="flow-card">
-          <div class="flow-card__topline">
-            <span class="flow-card__number">{{ step.number }}</span>
-            <span class="status" [class.status--ready]="step.status === 'Base disponible'">
-              {{ step.status }}
-            </span>
-          </div>
-          <h3>{{ step.title }}</h3>
-          <p>{{ step.description }}</p>
-        </article>
+@if (actions().length > 0) {
+  <div class="section">
+    <div class="quick-actions">
+      @for (action of actions(); track action.link) {
+        <a class="quick-action" [routerLink]="action.link">
+          <span class="quick-action-icon" aria-hidden="true">
+            <medsys-icon [name]="action.icon" [size]="16" />
+          </span>
+          <span class="pair">
+            <span class="t-strong truncate">{{ action.label }}</span>
+            <span class="t-micro truncate">{{ action.hint }}</span>
+          </span>
+        </a>
       }
     </div>
-  </section>
-</main>
+  </div>
+}
+
+<div class="stack gap-4">
+  @if (showsDrafts()) {
+    <section class="card">
+      <div class="card-head">
+        <div class="row gap-2">
+          <medsys-icon name="file-signature" [size]="15" class="icon-muted" />
+          <h2 class="t-section">Encuentros sin firmar</h2>
+          @if (drafts.value()?.totalElements; as total) {
+            <span class="t-sec t-num">{{ total }}</span>
+          }
+        </div>
+        <a class="t-sec" routerLink="/encuentros">Ver todos</a>
+      </div>
+
+      @if (drafts.isLoading()) {
+        <div class="card-body stack gap-2">
+          <medsys-skeleton width="100%" height="20px" />
+          <medsys-skeleton width="80%" height="20px" />
+        </div>
+      } @else if (drafts.error()) {
+        <medsys-error-state [failure]="drafts.error()" [compact]="true" (retry)="drafts.reload()" />
+      } @else if (drafts.value()!.content.length === 0) {
+        <div class="card-body">
+          <p class="t-sec">No tienes encuentros en borrador. Todo lo atendido está firmado.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table is-compact">
+            <tbody>
+              @for (encounter of drafts.value()!.content; track encounter.id) {
+                <tr
+                  data-clickable="true"
+                  tabindex="0"
+                  (click)="go(['/encuentros', encounter.id])"
+                  (keydown)="onRowKey($event, ['/encuentros', encounter.id])"
+                >
+                  <td><medsys-patient-name [patientId]="encounter.patientId" /></td>
+                  <td class="t-sec">{{ typeLabel(encounter.type) }}</td>
+                  <td class="t-num t-sec">{{ encounter.startsAt | msDateTime }}</td>
+                  <td class="td-tight">
+                    <medsys-status-chip
+                      [value]="encounter.status"
+                      [dictionary]="encounterStatuses"
+                      [tones]="encounterTones"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
+  @if (showsOrders()) {
+    <section class="card">
+      <div class="card-head">
+        <div class="row gap-2">
+          <medsys-icon name="flask" [size]="15" class="icon-muted" />
+          <h2 class="t-section">Resultados disponibles</h2>
+          @if (reported.value()?.totalElements; as total) {
+            <span class="t-sec t-num">{{ total }}</span>
+          }
+        </div>
+        <a class="t-sec" routerLink="/ordenes-estudio">Ver la bandeja</a>
+      </div>
+
+      @if (reported.isLoading()) {
+        <div class="card-body stack gap-2">
+          <medsys-skeleton width="100%" height="20px" />
+          <medsys-skeleton width="80%" height="20px" />
+        </div>
+      } @else if (reported.error()) {
+        <medsys-error-state
+          [failure]="reported.error()"
+          [compact]="true"
+          (retry)="reported.reload()"
+        />
+      } @else if (reported.value()!.content.length === 0) {
+        <div class="card-body"><p class="t-sec">No hay resultados nuevos por revisar.</p></div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table is-compact">
+            <tbody>
+              @for (order of reported.value()!.content; track order.id) {
+                <tr
+                  data-clickable="true"
+                  tabindex="0"
+                  (click)="go(['/ordenes-estudio', order.id])"
+                  (keydown)="onRowKey($event, ['/ordenes-estudio', order.id])"
+                >
+                  <td><medsys-patient-name [patientId]="order.patientId" /></td>
+                  <td>
+                    <span class="clin-code">{{ order.studyTypeCode }}</span>
+                  </td>
+                  <td class="t-num t-sec">{{ order.requestedAt | msDateTime }}</td>
+                  <td class="td-tight">
+                    <medsys-status-chip
+                      [value]="order.status"
+                      [dictionary]="orderStatuses"
+                      [tones]="orderTones"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
+  @if (showsBilling()) {
+    <section class="card">
+      <div class="card-head">
+        <div class="row gap-2">
+          <medsys-icon name="receipt" [size]="15" class="icon-muted" />
+          <h2 class="t-section">Facturación reciente</h2>
+          @if (invoices.value()?.totalElements; as total) {
+            <span class="t-sec t-num">{{ total }}</span>
+          }
+        </div>
+        <a class="t-sec" routerLink="/facturas">Ver facturas</a>
+      </div>
+
+      @if (invoices.isLoading()) {
+        <div class="card-body stack gap-2">
+          <medsys-skeleton width="100%" height="20px" />
+          <medsys-skeleton width="80%" height="20px" />
+        </div>
+      } @else if (invoices.error()) {
+        <medsys-error-state
+          [failure]="invoices.error()"
+          [compact]="true"
+          (retry)="invoices.reload()"
+        />
+      } @else if (invoices.value()!.content.length === 0) {
+        <div class="card-body"><p class="t-sec">Todavía no se emitió ninguna factura.</p></div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table is-compact">
+            <tbody>
+              @for (invoice of invoices.value()!.content; track invoice.id) {
+                <tr
+                  data-clickable="true"
+                  tabindex="0"
+                  (click)="go(['/facturas', invoice.id])"
+                  (keydown)="onRowKey($event, ['/facturas', invoice.id])"
+                >
+                  <td class="invoice-number td-tight">Nº {{ invoice.invoiceNumber }}</td>
+                  <td><medsys-patient-name [patientId]="invoice.patientId" /></td>
+                  <td class="t-num t-sec">{{ invoice.issuedAt | msDateTime }}</td>
+                  <td class="td-num t-strong">{{ invoice.totalAmount | msBob }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
+  @if (showsCentre()) {
+    <section class="card">
+      <div class="card-head">
+        <div class="row gap-2">
+          <medsys-icon name="building" [size]="15" class="icon-muted" />
+          <h2 class="t-section">El centro hoy</h2>
+        </div>
+        <a class="t-sec" routerLink="/organizacion">Ver organización</a>
+      </div>
+      <div class="card-body">
+        @if (organization.isLoading() || usage.isLoading()) {
+          <div class="stat-row">
+            @for (slot of [1, 2, 3, 4]; track slot) {
+              <div class="stack gap-1">
+                <medsys-skeleton width="80px" height="10px" />
+                <medsys-skeleton width="60px" height="24px" />
+              </div>
+            }
+          </div>
+        } @else if (organization.value(); as centre) {
+          <div class="stat-row">
+            <div class="pair">
+              <span class="t-label">Centro</span>
+              <span class="t-section">{{ centre.tradeName }}</span>
+            </div>
+            @for (metric of usage.value(); track metric.metric) {
+              <div class="pair">
+                <span class="t-label">{{ metricLabel(metric) }}</span>
+                <span
+                  class="t-page t-num"
+                  [style.color]="metric.exceeded ? 'var(--err-700)' : null"
+                >
+                  {{ metricValue(metric) }}
+                </span>
+                <span class="t-micro">{{ metricHint(metric) }}</span>
+                @if (metric.exceeded) {
+                  <span class="chip chip-err"><span class="chip-dot"></span>Cuota superada</span>
+                }
+              </div>
+            }
+            <div class="pair">
+              <span class="t-label">Prestaciones vigentes</span>
+              <span class="t-page t-num">{{ offerings.value()?.totalElements ?? 0 }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>
