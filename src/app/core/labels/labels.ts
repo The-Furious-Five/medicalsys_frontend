@@ -269,6 +269,17 @@ export const INVOICE_STATUS: Dict = dict({
   REJECTED: 'Rechazada',
   VOIDED: 'Anulada',
 });
+export const CREDIT_DEBIT_NOTE_TYPE: Dict = dict({
+  CREDIT: 'Nota de crédito',
+  DEBIT: 'Nota de débito',
+});
+export const INVOICE_CANCELLATION_REASON: Dict = dict({
+  '1': 'Factura emitida con datos incorrectos',
+  '2': 'Error en el detalle o importe',
+  '3': 'Operación no realizada',
+  '4': 'Duplicidad de factura',
+  '5': 'Otro error de emisión',
+});
 export const TAX_DOCUMENT_TYPE: Dict = dict({
   PURCHASE_SALE_INVOICE: 'Factura de compra-venta',
   HEALTH_SECTOR_INVOICE: 'Factura del sector salud',
@@ -313,6 +324,7 @@ export const CAMPAIGN_CHANNEL: Dict = dict({
 export const RECIPIENT_STATUS: Dict = dict({
   SELECTED: 'Seleccionado',
   EXCLUDED_OPT_OUT: 'Excluido por opt-out',
+  EXCLUDED_NO_DESTINATION: 'Sin dirección de entrega',
   SENT: 'Enviado',
   READ: 'Leído',
   CONVERTED: 'Convertido',

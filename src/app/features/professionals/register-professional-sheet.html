@@ -216,13 +216,11 @@
           <label class="field-label" for="professional-commission">
             Comisión <span class="field-optional">(opcional)</span>
           </label>
-          <input
-            id="professional-commission"
-            class="input input-num"
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
+          <medsys-number-field
+            controlId="professional-commission"
+            [min]="0"
+            [max]="100"
+            [step]="0.01"
             placeholder="0"
             formControlName="commissionPercentage"
             [attr.aria-invalid]="errorFor('commissionPercentage') !== null"

@@ -17,6 +17,7 @@ import { Notice } from '../../shared/notice';
 import { PatientPicker } from '../patients/patient-picker';
 import { MarketingService } from './marketing.service';
 import { CouponValidation } from './marketing.models';
+import { NumberField } from '../../shared/number-field';
 
 /**
  * Comprobador de cupones para el mostrador.
@@ -33,7 +34,7 @@ import { CouponValidation } from './marketing.models';
 @Component({
   selector: 'medsys-validate-coupon-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Notice, PatientPicker, Icon, ...FORMAT_PIPES],
+  imports: [Dialog, Notice, PatientPicker, Icon, ...FORMAT_PIPES, NumberField],
   templateUrl: './validate-coupon-dialog.html',
 })
 export class ValidateCouponDialog {

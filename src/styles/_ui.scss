@@ -212,6 +212,202 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Celda que envuelve. Por defecto la tabla no parte el texto para que las filas
+   midan lo mismo; una direccion o un correo largos, en cambio, se leen enteros o
+   no sirven de nada. */
+.td-wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 14rem;
+  line-height: 1.45;
+}
+
+/* ------------------------------------------------------- campo numerico -- */
+/* Sustituye a `<input type="number">`. Las flechas nativas las dibuja el sistema
+   operativo y la rueda del raton cambia el valor con el campo enfocado: en una
+   hoja de constantes vitales eso es un error clinico silencioso. */
+.ms-num {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--h-control);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  transition: border-color var(--dur-micro) var(--ease-standard);
+}
+.ms-num:focus-within {
+  border-color: var(--brand-solid);
+}
+.ms-num.is-invalid {
+  border-color: var(--err-500);
+}
+.ms-num.is-disabled {
+  background: var(--bg-subtle);
+}
+.ms-num-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--s-3);
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.ms-num-input:focus {
+  outline: none;
+}
+.ms-num-input:disabled {
+  color: var(--text-tertiary);
+}
+/* La unidad va dentro del campo: «120 mmHg» se lee como una sola cosa, y asi no
+   compite con el texto de ayuda que hay debajo. */
+.ms-num-suffix {
+  padding-right: var(--s-2);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.ms-num-steppers {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  border-left: 1px solid var(--border-subtle);
+}
+.ms-num-step {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  flex: 1;
+  color: var(--text-tertiary);
+}
+.ms-num-step:first-child {
+  border-radius: 0 var(--r-input) 0 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ms-num-step:last-child {
+  border-radius: 0 0 var(--r-input) 0;
+}
+.ms-num-step:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ms-num-step:disabled {
+  opacity: 0.4;
+}
+
+/* ------------------------------------------------------------ campo hora -- */
+/* Sustituye a `<input type="time">`: el nativo cambia de formato y de idioma
+   segun el sistema operativo, y en la agenda la hora se teclea todo el dia. */
+.ms-time {
+  position: relative;
+  display: block;
+}
+.ms-time-control {
+  display: flex;
+  align-items: center;
+  min-height: var(--h-control);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  transition: border-color var(--dur-micro) var(--ease-standard);
+}
+.ms-time-control:focus-within {
+  border-color: var(--brand-solid);
+}
+.ms-time-control.is-invalid {
+  border-color: var(--err-500);
+}
+.ms-time-control.is-disabled {
+  background: var(--bg-subtle);
+}
+.ms-time-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--s-3);
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.ms-time-input:focus {
+  outline: none;
+}
+.ms-time-toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  align-self: stretch;
+  color: var(--text-tertiary);
+  border-radius: 0 var(--r-input) var(--r-input) 0;
+}
+.ms-time-toggle:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.ms-time-toggle:disabled {
+  opacity: 0.5;
+}
+.ms-time-panel {
+  position: absolute;
+  top: calc(100% + var(--s-1));
+  left: 0;
+  z-index: var(--z-overlay);
+  width: 100%;
+  min-width: 132px;
+  max-height: 244px;
+  overflow-y: auto;
+  padding: var(--s-1);
+  animation: pop-in var(--dur-pop) var(--ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-time-panel {
+    animation: none;
+  }
+}
+.ms-time-panel:focus {
+  outline: none;
+}
+.ms-time-slot {
+  display: block;
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  text-align: left;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  border-radius: var(--r-sm);
+}
+.ms-time-slot:hover {
+  background: var(--bg-hover);
+}
+.ms-time-slot.is-selected {
+  background: var(--brand-subtle);
+  color: var(--brand-strong);
+  font-weight: 500;
+}
+
+/* --------------------------------------------------- campo fecha y hora -- */
+/* El nativo pega dos widgets del sistema en un mismo recuadro; aqui son dos
+   campos del producto con su propio espacio. La hora se deshabilita mientras no
+   haya dia: una hora suelta no describe ningun instante. */
+.ms-datetime {
+  display: grid;
+  /* La hora no se reparte en proporcion sino que reserva lo suyo: «hh:mm» mas el
+     boton del reloj necesitan 116px, y con `1fr` en una columna estrecha el
+     marcador se cortaba en «hh:mn». La fecha se queda con el resto. */
+  grid-template-columns: minmax(0, 1fr) 116px;
+  gap: var(--s-2);
+}
+/* En un formulario de una sola columna estrecha se apilan, que es preferible a
+   dos campos ilegibles uno al lado del otro. */
+@media (max-width: 480px) {
+  .ms-datetime {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ------------------------------------------------------ desplegable propio -- */
 /* Sustituye a `<select>`: el nativo lo dibuja el sistema operativo y su lista no
    acepta la tipografía, los radios ni los colores de este sistema. Aquí la lista
@@ -493,6 +689,10 @@
 .td-num {
   font-variant-numeric: tabular-nums;
   text-align: right;
+  /* Un importe no se parte nunca. Al imprimir una factura con muchas líneas, la
+     columna se estrechaba y «Bs 150,00» caía en dos renglones: en un documento
+     que se cobra, eso se lee mal y se presta a confusión. */
+  white-space: nowrap;
 }
 .th-num {
   text-align: right !important;
@@ -577,6 +777,9 @@
 .dialog-body {
   padding: var(--s-4) var(--s-5);
   overflow-y: auto;
+}
+.dialog-foot.is-empty {
+  display: none;
 }
 .dialog-foot {
   display: flex;
@@ -904,8 +1107,15 @@
 /* Rejilla de definiciones: etiqueta arriba, valor debajo. Densa y escaneable. */
 .deflist {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--s-4);
+  /* 200px y no 180px: con 180 el correo del centro no cabia y, al no tener donde
+     partirse, invadia la columna del telefono y los dos se leian pegados. */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--s-5) var(--s-6);
+}
+.deflist > * {
+  /* Sin esto una celda de rejilla nunca baja de su contenido y el valor largo
+     empuja fuera en vez de ajustarse. */
+  min-width: 0;
 }
 .def-term {
   font-size: 11px;
@@ -918,6 +1128,9 @@
   font-size: 14px;
   color: var(--text-primary);
   margin-top: 2px;
+  /* Un correo o un NIT no tienen espacios donde partir: `anywhere` es lo unico
+     que evita que se desborden. */
+  overflow-wrap: anywhere;
 }
 
 /* Indicador de espera. Rotación constante: es un reloj, no una animación de entrada. */
@@ -1070,7 +1283,32 @@
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: var(--s-3) var(--s-2);
+  /* Relleno inferior extra: el último grupo quedaba pegado al pie con la ficha
+     del usuario y su elemento activo se veía cortado por la mitad, como si la
+     interfaz estuviera rota en vez de simplemente tener más abajo. */
+  padding: var(--s-3) var(--s-2) var(--s-6);
+  /* El difuminado del borde inferior dice que la lista continúa. Sin él, en una
+     pantalla de portátil el menú termina en un corte seco y no hay ninguna
+     señal de que Catálogos o Configuración existan. */
+  scrollbar-width: thin;
+}
+/* Solo se difumina mientras haya recorrido por delante; `animation-timeline`
+   evita tener que escuchar el scroll desde TypeScript. */
+@supports (animation-timeline: scroll()) {
+  .sidebar-nav {
+    animation: desvanecer-final linear both;
+    animation-timeline: scroll(self block);
+    animation-range: contain;
+  }
+  @keyframes desvanecer-final {
+    0%,
+    90% {
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent 100%);
+    }
+    100% {
+      mask-image: linear-gradient(to bottom, #000 100%, #000 100%);
+    }
+  }
 }
 .nav-group + .nav-group {
   margin-top: var(--s-4);
@@ -1268,10 +1506,14 @@
   display: flex;
   align-items: center;
   gap: var(--s-2);
-  height: var(--h-control-sm);
+  /* Alto de control normal, no el pequeño: con `--h-control-sm` la tecla de 20px
+     casi tocaba los bordes por arriba y por abajo. */
+  height: var(--h-control);
   max-width: 380px;
   flex: 1;
-  padding: 0 var(--s-2) 0 var(--s-3);
+  /* El relleno derecho es menor que el izquierdo a propósito: a la izquierda hay
+     texto y a la derecha una caja que ya trae su propio contorno. */
+  padding: 0 6px 0 var(--s-3);
   background: var(--bg-sunken);
   border: 1px solid var(--border);
   border-radius: var(--r-input);
@@ -1289,16 +1531,45 @@
   white-space: nowrap;
 }
 
+/* Pistas de teclado del buscador global, al pie de la capa. */
+.palette-hints {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  width: 100%;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.palette-hints span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+/* Tecla. Es una caja de tamaño fijo y no un texto con relleno: con `padding`
+   suelto, «⌘K» y «Esc» salían de anchos distintos y el glifo de comando —que es
+   más alto que una letra— descentraba el recuadro respecto a la línea base. */
 .kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
   font-family: var(--font-ui);
   font-size: 11px;
   font-weight: 500;
-  padding: 2px 5px;
+  line-height: 1;
   border: 1px solid var(--border);
-  border-radius: var(--r-chip);
+  border-bottom-width: 2px;
+  border-radius: 5px;
   background: var(--bg-surface);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   flex-shrink: 0;
+  /* Los caracteres no se separan: «⌘K» es una sola tecla, no dos. */
+  white-space: nowrap;
 }
 
 .avatar-button {
@@ -1453,7 +1724,13 @@
   flex-wrap: wrap;
 }
 .page-actions {
+  /* No se encoge -los botones no deben quedar aplastados- pero tampoco puede
+     salirse de la fila: sin el tope, la barra de la agenda (dos desplegables, el
+     conmutador día/semana, el paso de fecha y dos botones) medía 951px y hacía
+     que la página entera se desplazara en horizontal por debajo de 1100px. Con
+     el tope, `wrap` reparte los controles en dos líneas. */
   flex-shrink: 0;
+  max-width: 100%;
 }
 .crumbs {
   display: flex;
@@ -1580,262 +1857,6 @@ medsys-toast-host {
   border-top: 1px solid var(--border-subtle);
 }
 
-/* ============================================================== acceso ====== */
-/* Una tarjeta blanca elevada sobre un lienzo teñido de verde de marca. El verde
-   estructura la pantalla y el naranja se reserva para «Entrar», que es lo único
-   que se le pide a la persona aquí. */
-.login {
-  position: relative;
-  isolation: isolate;
-  min-height: 100dvh;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
-  align-items: center;
-  justify-content: center;
-  gap: var(--s-16);
-  padding: var(--s-12) var(--s-10);
-  background: color-mix(in oklab, var(--brand-soft) 42%, var(--bg-app));
-}
-
-/* Retícula de puntos: la misma textura del diseño de referencia, apagada al
-   punto en que se percibe como grano y no como patrón. */
-.login::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: radial-gradient(
-    color-mix(in oklab, var(--brand-500) 26%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: 18px 18px;
-  mask-image: radial-gradient(120% 90% at 50% 50%, transparent 42%, #000 100%);
-}
-
-/* Isotipo enorme, recortado por el borde inferior. Da profundidad al lienzo sin
-   pedir una ilustración que todavía no existe. */
-.login-watermark {
-  position: absolute;
-  right: -80px;
-  bottom: -140px;
-  width: 420px;
-  height: auto;
-  z-index: -1;
-  opacity: 0.06;
-  pointer-events: none;
-}
-
-/* ------------------------------------------------------------------ tarjeta */
-.login-panel {
-  grid-column: 2;
-  grid-row: 1;
-  display: flex;
-  justify-content: center;
-}
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-6);
-  padding: var(--s-10) var(--s-8);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-dialog);
-  box-shadow: var(--shadow-overlay);
-}
-.login-card-logo {
-  align-self: center;
-  height: 40px;
-  width: auto;
-}
-.login-card-head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-  text-align: center;
-}
-.login-title {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  color: var(--text-primary);
-}
-.login-subtitle {
-  font-size: 13px;
-  line-height: 19px;
-  color: var(--text-secondary);
-}
-
-/* Campo con icono guía. El icono se tiñe de marca al enfocar: confirma dónde
-   está el cursor sin añadir un segundo borde de color. */
-.login-control {
-  position: relative;
-  display: flex;
-}
-.login-control .input {
-  height: var(--h-control-lg);
-  padding-left: var(--s-10);
-}
-.login-control-icon {
-  position: absolute;
-  left: var(--s-3);
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  color: var(--text-tertiary);
-  pointer-events: none;
-  transition: color var(--dur-micro) var(--ease-standard);
-}
-.login-control:focus-within .login-control-icon {
-  color: var(--brand-solid);
-}
-
-/* La acción principal de la pantalla, en naranja de marca. Se usa el escalón
-   -600 porque el #E57833 exacto no sostiene texto blanco a 14px. */
-.login-submit {
-  margin-top: var(--s-1);
-  background: var(--accent-600);
-  color: #fff;
-  font-weight: 500;
-}
-.login-submit:hover:not(:disabled) {
-  background: var(--accent-700);
-}
-.login-submit:active:not(:disabled) {
-  background: var(--accent-800);
-}
-
-/* ------------------------------------------------------------ demostración */
-.login-demo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-  padding-top: var(--s-5);
-  border-top: 1px solid var(--border-subtle);
-}
-.demo-account {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  height: var(--h-control);
-  padding: 0 var(--s-3);
-  border: 1px solid var(--border);
-  border-radius: var(--r-input);
-  background: var(--bg-surface);
-  font-size: 13px;
-  color: var(--text-body);
-  text-align: left;
-  transition:
-    border-color var(--dur-micro) var(--ease-standard),
-    background-color var(--dur-micro) var(--ease-standard);
-}
-.demo-account:hover {
-  background: var(--brand-soft);
-  border-color: var(--brand-300);
-}
-.demo-account-mail {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: -0.01em;
-}
-.demo-account-role {
-  flex-shrink: 0;
-  font-size: 11px;
-  line-height: 15px;
-  font-weight: 500;
-  color: var(--brand-text);
-  background: var(--brand-soft);
-  border-radius: var(--r-chip);
-  padding: 2px var(--s-2);
-}
-
-/* --------------------------------------------------------------- presentación */
-.login-brand {
-  grid-column: 1;
-  grid-row: 1;
-  justify-self: end;
-  max-width: 460px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-6);
-}
-.login-brand-mark {
-  width: 84px;
-  height: auto;
-}
-.login-claim {
-  font-size: 31px;
-  line-height: 40px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--brand-text);
-  text-wrap: balance;
-}
-.login-brand-lead {
-  font-size: 14px;
-  line-height: 22px;
-  color: var(--text-secondary);
-  max-width: 46ch;
-}
-
-.login-points {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-}
-.login-point {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  font-size: 13px;
-  line-height: 19px;
-  color: var(--text-body);
-}
-.login-point-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  border-radius: var(--r-input);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  color: var(--brand-solid);
-}
-
-.login-env {
-  padding-top: var(--s-4);
-  border-top: 1px solid color-mix(in oklab, var(--brand-500) 18%, transparent);
-}
-
-/* Por debajo de 980px la presentación desaparece entera: en una pantalla
-   estrecha lo único que importa es el formulario. */
-@media (max-width: 980px) {
-  .login {
-    grid-template-columns: minmax(0, 480px);
-    gap: 0;
-    padding: var(--s-8) var(--s-4);
-  }
-  .login-panel {
-    grid-column: 1;
-  }
-  .login-brand {
-    display: none;
-  }
-  .login-watermark {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .login-card {
-    padding: var(--s-8) var(--s-5);
-  }
-}
-
 /* ============================================================== buscador ==== */
 .palette-results {
   max-height: 46vh;
@@ -1923,44 +1944,6 @@ medsys-toast-host {
 /* ========================================================== facturación ===== */
 /* La leyenda de demostración usa el naranja de marca: es lo que exige atención,
    nunca un error. Y nunca lleva botón de cierre. */
-.demo-caption {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--s-2);
-  padding: var(--s-2) var(--s-3);
-  background: var(--warn-50);
-  border: 1px solid var(--warn-200);
-  /* Franja del naranja de marca a plena fuerza. Es el aviso que nunca debe
-     pasar desapercibido y el único sitio donde el color puede ocupar superficie
-     sin llevar texto encima. */
-  border-left: 3px solid var(--accent-solid);
-  border-radius: var(--r-input);
-  color: var(--warn-700);
-  font-size: 12px;
-  line-height: 18px;
-}
-.demo-caption > medsys-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.demo-caption strong {
-  font-weight: 600;
-}
-.demo-caption-compact {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 1px var(--s-2);
-  border-radius: var(--r-chip);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 16px;
-  white-space: nowrap;
-}
-.demo-caption-compact > medsys-icon {
-  margin-top: 0;
-}
-
 /* Documento de factura: hoja sobria, sin adornos, pensada para imprimirse. */
 .invoice-sheet {
   max-width: 720px;
@@ -2090,6 +2073,12 @@ medsys-toast-host {
 .qty-value {
   min-width: 24px;
   text-align: center;
+}
+.qty .btn-icon {
+  /* Las cantidades se ajustan también en tablet: el área no depende del icono. */
+  width: 40px;
+  height: 40px;
+  touch-action: manipulation;
 }
 
 /* ============================================================ encuentro ===== */
@@ -2418,7 +2407,7 @@ medsys-toast-host {
 /* ------------------------------------------- piezas nativas que se retiran -- */
 /* Las flechas del campo numérico y el aspa del de búsqueda las dibuja el
    navegador con su propio aspecto y no se pueden estilar. Se retiran: el valor
-   se ajusta con el teclado y limpiar la búsqueda tiene su botón en la vista. */
+   se ajusta con el teclado. */
 .input[type='number'] {
   appearance: textfield;
 }
@@ -2426,10 +2415,6 @@ medsys-toast-host {
 .input[type='number']::-webkit-inner-spin-button {
   appearance: none;
   margin: 0;
-}
-.input[type='search']::-webkit-search-cancel-button,
-.input[type='search']::-webkit-search-decoration {
-  appearance: none;
 }
 
 /* ---------------------------------------------------- campo de fecha propio -- */
@@ -2732,14 +2717,22 @@ medsys-toast-host {
   line-height: 14px;
   opacity: 0.85;
 }
+/* El nombre usa hasta dos lineas y solo despues recorta.
+   Con una sola linea, «Quispe Iturralde Mateo Sebastian» se quedaba en «Quispe
+   Iturralde Mate…» y desde el tablero no se distinguia a dos hermanos con el
+   mismo apellido. Dos lineas caben en cualquier bloque de 20 minutos o mas, que
+   es la cita mas corta del catalogo. */
 .agenda-event-patient {
   font-size: 12px;
   font-weight: 600;
-  line-height: 16px;
+  line-height: 15px;
   min-width: 0;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
 }
 .agenda-event-meta {
   display: flex;
@@ -3027,6 +3020,46 @@ medsys-toast-host {
 
 /* Constructor de criterios. Cada grupo se enmarca para que se lea de dónde sale
    el dato: demografía por un lado, actividad comercial por otro. */
+.criteria-starter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--r-card);
+  background: var(--brand-soft);
+}
+.criteria-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.criteria-preset {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 76px;
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  text-align: left;
+}
+.criteria-preset:hover {
+  border-color: var(--brand-solid);
+  background: var(--bg-hover);
+}
+.criteria-preset span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 17px;
+}
+@media (max-width: 620px) {
+  .criteria-presets {
+    grid-template-columns: 1fr;
+  }
+}
 .criteria-group {
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-card);
@@ -3056,9 +3089,127 @@ medsys-toast-host {
   border-radius: var(--r-card);
   background: var(--bg-sunken);
 }
+.criteria-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  line-height: 20px;
+}
 .criteria-sample {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--s-2);
+}
+
+/* ==========================================================================
+   Impresión
+   ==========================================================================
+   `window.print()` imprimía la aplicación entera —barra lateral, cabecera,
+   menú y todo— porque no había ninguna hoja para papel. Aquí se define qué
+   sale impreso y qué no.
+
+   La regla es una sola: se imprime el elemento marcado con `.print-sheet` y
+   nada más. Hoy lo lleva la hoja de la factura; cualquier otra pantalla que
+   necesite imprimirse solo tiene que marcar su documento igual.
+
+   Se usa `visibility` y no `display` para ocultar: `display: none` en un
+   ancestro se lleva por delante al descendiente que sí queremos, mientras que
+   `visibility` se puede volver a activar hacia dentro. */
+
+@media print {
+  @page {
+    /* Márgenes del papel; el documento no lleva los suyos. */
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #fff;
+    /* Los contenedores de la aplicación miden la ventana y recortan por
+       desbordamiento. En papel eso significa perder todo lo que no cabe en la
+       primera pantalla, así que aquí dejan de limitar la altura. */
+    height: auto;
+    overflow: visible;
+  }
+
+  body * {
+    visibility: hidden;
+    box-shadow: none !important;
+  }
+
+  .print-sheet,
+  .print-sheet * {
+    visibility: visible;
+  }
+
+  /* La hoja se saca del flujo del armazón y ocupa la página. Sin esto quedaría
+     desplazada por el hueco que dejan la barra lateral y la cabecera. */
+  .print-sheet {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  /* Los contenedores intermedios no deben recortar ni desplazar la hoja. */
+  .shell,
+  .shell-main,
+  .content {
+    display: block;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    overflow: visible;
+  }
+
+  /* Nada de lo que sirve para navegar o actuar tiene sentido en papel. Lo que
+     esté dentro de la propia hoja se marca con `no-print`. */
+  .no-print,
+  .sidebar,
+  .topbar,
+  .shell-scrim,
+  .page-actions,
+  .crumbs,
+  medsys-toast-host,
+  medsys-command-palette,
+  .layer,
+  dialog {
+    display: none !important;
+  }
+
+  /* Una tabla partida entre dos páginas no debe cortar una fila por la mitad
+     ni dejar la cabecera huérfana. */
+  table {
+    page-break-inside: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* El fondo gris de las bandas no se imprime: gasta tinta y en papel el
+     contraste lo da el propio borde. */
+  .invoice-total-row.is-grand {
+    border-top: 1px solid #000;
+  }
+
+  a[href]::after {
+    /* No se anexa la URL: el documento se lee en papel, no se navega. */
+    content: none;
+  }
 }

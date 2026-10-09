@@ -22,9 +22,11 @@ import { Skeleton } from '../../shared/skeleton';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { MarketingService } from './marketing.service';
 import { Segment, SegmentPreview } from './marketing.models';
+import { NumberField } from '../../shared/number-field';
 import {
   CriteriaForm,
   EMPTY_CRITERIA,
+  describeCriteria,
   toCriteria,
   toForm,
   validationError,
@@ -50,7 +52,7 @@ const PREVIEW_DEBOUNCE_MS = 600;
 @Component({
   selector: 'medsys-segment-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Notice, Select, DateField, Icon, Skeleton, ReactiveFormsModule],
+  imports: [Dialog, Notice, Select, DateField, Icon, Skeleton, ReactiveFormsModule, NumberField],
   templateUrl: './segment-sheet.html',
 })
 export class SegmentSheet {
@@ -107,6 +109,9 @@ export class SegmentSheet {
 
   /** Cuántos ejes están declarados: con cero, el segmento sería «todo el mundo». */
   protected readonly axisCount = signal(0);
+  protected readonly criteriaSummary = signal(
+    'Elige un ejemplo o completa un solo filtro para empezar.',
+  );
 
   protected readonly rangeError = signal<string | null>(null);
 
@@ -145,6 +150,7 @@ export class SegmentSheet {
       } else {
         this.form.controls.name.enable();
         this.axisCount.set(0);
+        this.criteriaSummary.set('Elige un ejemplo o completa un solo filtro para empezar.');
       }
     });
 
@@ -176,6 +182,11 @@ export class SegmentSheet {
     const criteria = toCriteria(raw);
     const count = Object.keys(criteria).length;
     this.axisCount.set(count);
+    this.criteriaSummary.set(
+      count === 0
+        ? 'Elige un ejemplo o completa un solo filtro para empezar.'
+        : describeCriteria(criteria, this.sexLabel),
+    );
 
     if (error !== null || count === 0) {
       this.preview.set(null);
@@ -208,6 +219,26 @@ export class SegmentSheet {
 
   protected clearCriteria(): void {
     this.form.patchValue({ ...EMPTY_CRITERIA, sex: [] });
+  }
+
+  /** Ejemplos cotidianos que evitan tener que entender todos los campos antes de empezar. */
+  protected applyExample(example: 'reactivation' | 'birthday' | 'frequent'): void {
+    const date = new Date();
+    const criteria: CriteriaForm = { ...EMPTY_CRITERIA, sex: [] };
+    if (example === 'reactivation') {
+      date.setMonth(date.getMonth() - 6);
+      criteria.lastVisitBefore = this.isoDate(date);
+    } else if (example === 'birthday') {
+      criteria.birthdayMonth = String(new Date().getMonth() + 1);
+    } else {
+      criteria.minAppointments = '3';
+    }
+    this.form.patchValue({ ...criteria, sex: [...criteria.sex] });
+  }
+
+  private isoDate(value: Date): string {
+    const local = new Date(value.getTime() - value.getTimezoneOffset() * 60_000);
+    return local.toISOString().slice(0, 10);
   }
 
   /** El formulario lleva el nombre y la descripción además del criterio; aquí se separa. */

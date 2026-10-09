@@ -151,6 +151,7 @@ export interface MaterializedAudience {
   readonly matched: number;
   readonly reachable: number;
   readonly excludedOptOut: number;
+  readonly excludedNoDestination: number;
   readonly truncated: boolean;
   readonly materializedAt: string;
 }

@@ -35,8 +35,13 @@ describe('CatalogsPage', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
+    // El aviso lo pinta `medsys-error-state`, el mismo componente que el resto de
+    // las pantallas, así que el texto es el común de la aplicación y no uno propio
+    // de este módulo. Se comprueba que diga qué pasó y qué hacer; ya no menciona
+    // el «API Gateway», que es jerga que no le sirve a quien está en el mostrador.
     expect(fixture.nativeElement.textContent).toContain('El servicio no responde');
-    expect(fixture.nativeElement.textContent).toContain('API Gateway');
+    expect(fixture.nativeElement.textContent).toContain('Comprueba tu conexión');
+    expect(fixture.nativeElement.textContent).toContain('Reintentar');
   });
 });
 

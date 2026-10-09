@@ -1,553 +1,460 @@
-:host {
-  display: block;
-}
+/* Bitácora de auditoría.
+ *
+ * Esta hoja se reescribió sobre el sistema de diseño del producto. La versión
+ * anterior venía de la rama `feature/ms-auditoria`, que salió del primer commit
+ * del repositorio y traía su propia paleta en `:root` (`--color-ink-900`,
+ * `--color-primary-700`, …). Esas dieciséis variables dejaron de existir al
+ * conservar el armazón de `develop`, así que la pantalla se dibujaba sin bordes,
+ * sin fondos y con la tipografía por defecto del navegador.
+ *
+ * Solo queda aquí lo que es propio de esta pantalla: la tarjeta de integridad,
+ * el resumen y la fila de detalle. Los botones, la tabla, los campos y las
+ * capas los pone el sistema. */
 
 .audit {
-  display: grid;
-  width: min(72rem, calc(100% - 2rem));
-  margin: 0 auto;
-  padding: 3rem 0 5rem;
-  gap: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+  padding: var(--s-8) var(--s-8) var(--s-16);
+  max-width: var(--w-content-max);
 }
 
-h1,
-h2,
-h3,
-p {
-  margin-top: 0;
-}
+/* ------------------------------------------------------------- cabecera -- */
 
-h1 {
-  margin-bottom: 1rem;
-  color: var(--color-ink-950);
-  font-size: clamp(2rem, 4.5vw, 3.2rem);
-  line-height: 1.05;
-  letter-spacing: -0.04em;
+.audit__intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
 }
-
-h2 {
-  margin-bottom: 1rem;
-  color: var(--color-ink-950);
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
-}
-
-h3 {
-  margin-bottom: 0.65rem;
-  color: var(--color-ink-800);
-  font-size: 0.85rem;
-  text-transform: uppercase;
+.audit-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.08em;
-}
-
-.eyebrow {
-  margin: 0 0 0.75rem;
-  color: var(--color-primary-700);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--text-tertiary);
 }
-
+.audit h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+}
 .audit__lead {
-  max-width: 46rem;
-  margin-bottom: 0;
-  color: var(--color-ink-600);
-  font-size: 1.05rem;
-  line-height: 1.65;
-}
-
-code {
-  font-family: var(--font-mono);
-  font-size: 0.86em;
-  overflow-wrap: anywhere;
-}
-
-.muted {
-  display: block;
-  color: var(--color-ink-500);
-  font-size: 0.78rem;
-}
-
-.placeholder {
   margin: 0;
-  padding: 1.25rem;
-  border: 1px dashed var(--color-ink-200);
-  border-radius: 0.75rem;
-  color: var(--color-ink-600);
-  font-size: 0.92rem;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.audit h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+.audit h3 {
+  margin: 0 0 var(--s-3);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
 }
 
-.placeholder--error {
-  border-color: var(--color-danger-700);
-  color: var(--color-danger-800);
-}
+/* ------------------------------------------------------------- avisos --- */
 
-/* ------------------------------------------------------------------ botones */
-
-.button {
-  display: inline-flex;
-  min-height: 2.6rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem 1rem;
-  border: 1px solid transparent;
-  border-radius: 0.65rem;
-  background: none;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background-color 140ms ease,
-    border-color 140ms ease;
-}
-
-.button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.button--primary {
-  background: var(--color-primary-700);
-  color: white;
-}
-
-.button--primary:hover:not(:disabled) {
-  background: var(--color-primary-800);
-}
-
-.button--secondary {
-  border-color: var(--color-ink-200);
-  background: white;
-  color: var(--color-ink-800);
-}
-
-.button--ghost {
-  border-color: var(--color-ink-200);
-  color: var(--color-ink-800);
-}
-
-.button--secondary:hover:not(:disabled),
-.button--ghost:hover:not(:disabled) {
-  border-color: var(--color-primary-700);
-  color: var(--color-primary-800);
-}
-
-.button--link {
-  min-height: 2rem;
-  padding: 0.3rem 0.4rem;
-  color: var(--color-primary-700);
-  font-size: 0.85rem;
-  text-decoration: underline;
-}
-
-/* ------------------------------------------------------------------- avisos */
-
-.banner {
+.audit-banner {
   display: flex;
   align-items: flex-start;
-  padding: 1rem 1.15rem;
-  border: 1px solid var(--color-danger-700);
-  border-radius: 0.85rem;
-  background: var(--color-danger-100);
-  gap: 1rem;
   justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
+  border: 1px solid var(--err-200);
+  border-left: 3px solid var(--err-500);
+  border-radius: var(--r-card);
+  background: var(--err-50);
 }
-
-.banner__body strong {
-  color: var(--color-danger-800);
-}
-
-.banner__meta {
-  margin: 0.35rem 0 0;
-  color: var(--color-ink-800);
-  font-size: 0.85rem;
-}
-
-.banner__close {
-  border: 0;
-  background: none;
-  color: var(--color-danger-800);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-/* -------------------------------------------------------------- integridad */
-
-.integrity {
+.audit-banner-body {
   display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.audit-banner-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.audit-banner-close {
+  flex: none;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.audit-banner-close:hover {
+  color: var(--text-primary);
+}
+
+/* ---------------------------------------------------------- integridad -- */
+/* Es el dato que distingue una bitácora de una tabla de registros: se muestra
+   arriba del todo y con su propio peso visual. */
+
+.audit-integrity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
   flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  justify-content: space-between;
-  padding: 1rem 1.15rem;
-  border: 1px solid var(--color-ink-200);
-  border-radius: 0.85rem;
-  background: white;
+  padding: var(--s-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--bg-surface);
 }
-
-.integrity__status {
+.audit-integrity-status {
   margin: 0;
-  color: var(--color-ink-600);
-  font-size: 0.9rem;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
-
-.integrity__status--unknown {
-  color: var(--color-warning-800);
+/* No poder verificar la cadena no es lo mismo que encontrarla rota: se dice en
+   tono neutro para no alarmar por una caida de red. */
+.audit-integrity-status.is-unknown {
+  color: var(--text-tertiary);
 }
-
-.integrity__badge {
+.audit-integrity-badge {
   display: flex;
   align-items: flex-start;
-  gap: 0.85rem;
+  gap: var(--s-3);
+  font-size: 14px;
+  color: var(--text-primary);
 }
-
-.integrity__badge p {
-  margin: 0.2rem 0 0;
-  color: var(--color-ink-600);
-  font-size: 0.85rem;
-  line-height: 1.5;
+.audit-integrity-badge p {
+  margin: var(--s-1) 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
-
-.integrity__mark {
-  display: inline-flex;
-  width: 1.9rem;
-  height: 1.9rem;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font-weight: 800;
-}
-
-.integrity__badge--intact .integrity__mark {
-  background: var(--color-success-100);
-  color: var(--color-success-800);
-}
-
-.integrity__badge--broken .integrity__mark {
-  background: var(--color-danger-100);
-  color: var(--color-danger-800);
-}
-
-.integrity__badge--broken strong {
-  color: var(--color-danger-800);
-}
-
-/* ----------------------------------------------------------------- resumen */
-
-.summary__cards {
+.audit-integrity-mark {
   display: grid;
-  margin-bottom: 1.75rem;
-  gap: 1rem;
-  grid-template-columns: repeat(4, 1fr);
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+}
+.audit-integrity-badge.is-intact .audit-integrity-mark {
+  background: var(--ok-50);
+  color: var(--ok-700);
+}
+.audit-integrity-badge.is-broken .audit-integrity-mark {
+  background: var(--err-50);
+  color: var(--err-700);
 }
 
-.card {
+/* -------------------------------------------------------------- resumen -- */
+
+.audit-summary,
+.audit-filters,
+.audit-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.audit-stats {
   display: grid;
-  padding: 1.1rem 1.2rem;
-  border: 1px solid var(--color-ink-200);
-  border-radius: 0.85rem;
-  background: white;
-  gap: 0.35rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s-4);
 }
-
-.card__label {
-  color: var(--color-ink-600);
-  font-size: 0.8rem;
+.audit-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--bg-surface);
 }
-
-.card__value {
-  color: var(--color-ink-950);
-  font-size: 2rem;
+/* El borde izquierdo dice de qué cifra se trata sin depender solo del color:
+   la etiqueta de arriba lo repite en texto. */
+.audit-stat.is-denied {
+  border-left: 3px solid var(--warn-500);
+}
+.audit-stat.is-failure {
+  border-left: 3px solid var(--err-500);
+}
+.audit-stat.is-critical {
+  border-left: 3px solid var(--accent-solid);
+}
+.audit-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.audit-stat-value {
+  font-size: 26px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
+  color: var(--text-heading);
 }
 
-/* El borde lateral acompana a la etiqueta; el color no es la unica senal. */
-.card--denied {
-  border-left: 4px solid var(--color-warning-800);
-}
-
-.card--failure {
-  border-left: 4px solid var(--color-danger-700);
-}
-
-.card--critical {
-  border-left: 4px solid var(--color-ink-950);
-}
-
-.summary__breakdown {
+.audit-breakdown {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--s-6);
+  padding: var(--s-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--bg-surface);
 }
-
-.tally {
-  display: grid;
+.audit-tally {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
   margin: 0;
   padding: 0;
   list-style: none;
-  gap: 0.4rem;
 }
-
-.tally li {
+.audit-tally li {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--color-ink-100);
-  font-size: 0.9rem;
-  gap: 1rem;
+  gap: var(--s-4);
+  font-size: 13px;
+  color: var(--text-secondary);
 }
-
-.tally strong {
+.audit-tally li strong {
   font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
 }
 
-/* ----------------------------------------------------------------- filtros */
+/* -------------------------------------------------------------- filtros -- */
 
-.filters {
-  padding: 1.4rem 1.5rem;
-  border: 1px solid var(--color-ink-200);
-  border-radius: 1rem;
-  background: white;
+.audit-filters form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  padding: var(--s-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--bg-surface);
 }
-
-.filters__grid {
+.audit-filters-grid {
   display: grid;
-  gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  /* 220px y no menos: debajo van un calendario y una lista de horas, y por
+     debajo de ese ancho el campo de fecha y hora se parte en dos líneas. */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--s-4) var(--s-5);
 }
-
-.filters label {
-  display: grid;
-  gap: 0.35rem;
-  font-size: 0.82rem;
-  font-weight: 650;
-  color: var(--color-ink-800);
+.audit-filters-grid > label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
 }
-
-.filters__wide {
+.audit-filters-grid > label > span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.audit-filters-wide {
   grid-column: 1 / -1;
 }
-
-.filters input,
-.filters select {
-  min-height: 2.6rem;
-  padding: 0.5rem 0.65rem;
-  border: 1px solid var(--color-ink-200);
-  border-radius: 0.55rem;
-  background: white;
-  color: var(--color-ink-900);
-  font-weight: 450;
+.audit-filters-grid input[type='text'],
+.audit-filters-grid input[type='search'] {
+  width: 100%;
+  min-height: var(--h-control);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-input);
+  background: var(--bg-surface);
+  font-size: 14px;
+  color: var(--text-primary);
 }
-
-.filters__actions {
+.audit-filters-grid input:focus {
+  outline: none;
+  border-color: var(--brand-solid);
+}
+.audit-filters-grid input::placeholder {
+  color: var(--text-placeholder);
+}
+.audit-filters-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  margin-top: 1.25rem;
-  gap: 0.7rem;
-}
-
-.filters__note {
-  margin: 0;
-  color: var(--color-ink-500);
-  font-size: 0.8rem;
-}
-
-/* --------------------------------------------------------------- resultados */
-
-.results__heading {
-  display: flex;
   flex-wrap: wrap;
+  gap: var(--s-3);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border-subtle);
+}
+.audit-filters-note {
+  margin: 0;
+  flex: 1 1 16rem;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ------------------------------------------------------------ resultados -- */
+
+.audit-results-head {
+  display: flex;
   align-items: baseline;
-  gap: 1rem;
   justify-content: space-between;
+  gap: var(--s-4);
 }
-
-.results__count {
-  color: var(--color-ink-600);
-  font-size: 0.88rem;
+.audit-results-count {
+  margin: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
 }
-
-.empty {
-  padding: 2rem 1.5rem;
-  border: 1px dashed var(--color-ink-200);
-  border-radius: 0.9rem;
-  background: white;
+.audit-placeholder {
+  margin: 0;
+  padding: var(--s-8);
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-tertiary);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-card);
 }
-
-.empty p {
-  max-width: 38rem;
-  margin: 0.5rem 0 0;
-  color: var(--color-ink-600);
-  font-size: 0.9rem;
+.audit-placeholder.is-error {
+  color: var(--err-700);
+  border-color: var(--err-200);
+  background: var(--err-50);
+}
+.audit-empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-10) var(--s-8);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-card);
+  color: var(--text-secondary);
+}
+.audit-empty p {
+  margin: 0;
+  max-width: 56ch;
+  align-self: center;
+  font-size: 13px;
   line-height: 1.6;
 }
 
-/* La tabla desborda en pantallas angostas; el que hace scroll es su contenedor. */
-.table-scroll {
-  overflow-x: auto;
-  border: 1px solid var(--color-ink-200);
-  border-radius: 0.9rem;
-  background: white;
+/* La celda apila el dato principal y su matiz: en una tabla de siete columnas
+   caben más eventos por pantalla así que repartidos en catorce columnas. */
+.audit .table td .muted {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-tertiary);
 }
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
+.audit .table tr.is-attention td {
+  background: var(--warn-50);
 }
-
-.table th,
-.table td {
-  padding: 0.75rem 0.9rem;
-  border-bottom: 1px solid var(--color-ink-100);
-  text-align: left;
-  vertical-align: top;
-}
-
-.table thead th {
-  position: sticky;
-  top: 0;
-  background: var(--color-ink-100);
-  color: var(--color-ink-800);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.table__actions {
+.td-actions {
   text-align: right;
   white-space: nowrap;
 }
 
-/* Un resultado que no fue exitoso se destaca por fondo y por su etiqueta de texto. */
-.row--attention {
-  background: rgb(254 240 199 / 35%);
+.audit-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-chip);
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--n-100);
+  color: var(--text-secondary);
+}
+.audit-tag.is-success {
+  background: var(--ok-50);
+  color: var(--ok-700);
+}
+.audit-tag.is-denied {
+  background: var(--warn-50);
+  color: var(--warn-700);
+}
+.audit-tag.is-failure,
+.audit-tag.is-critical {
+  background: var(--err-50);
+  color: var(--err-700);
 }
 
-.tag {
-  display: inline-block;
-  margin-right: 0.3rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 999px;
-  background: var(--color-ink-100);
-  color: var(--color-ink-800);
-  font-size: 0.72rem;
-  font-weight: 700;
-  white-space: nowrap;
+/* --------------------------------------------------------------- detalle -- */
+
+.audit-detail-row td {
+  padding: 0;
+  background: var(--bg-sunken);
 }
-
-.tag--success {
-  background: var(--color-success-100);
-  color: var(--color-success-800);
+.audit-detail {
+  padding: var(--s-5) var(--s-6);
 }
-
-.tag--denied {
-  background: var(--color-warning-100);
-  color: var(--color-warning-800);
-}
-
-.tag--failure {
-  background: var(--color-danger-100);
-  color: var(--color-danger-800);
-}
-
-.tag--critical {
-  background: var(--color-ink-950);
-  color: white;
-}
-
-/* ------------------------------------------------------------------ detalle */
-
-.detail-row td {
-  background: var(--color-ink-100);
-}
-
-.detail dl {
+.audit-detail dl {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--s-4) var(--s-6);
   margin: 0;
-  gap: 0.9rem 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 }
-
-.detail__wide {
+.audit-detail dl > div {
+  min-width: 0;
+}
+.audit-detail-wide {
   grid-column: 1 / -1;
 }
-
-.detail dt {
-  color: var(--color-ink-600);
-  font-size: 0.75rem;
-  text-transform: uppercase;
+.audit-detail dt {
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
 }
-
-.detail dd {
-  margin: 0.25rem 0 0;
-  color: var(--color-ink-900);
+.audit-detail dd {
+  margin: var(--s-1) 0 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
-
-.hash {
-  color: var(--color-ink-600);
-  font-size: 0.78rem;
-}
-
-.chip {
-  display: inline-block;
-  padding: 0.15rem 0.45rem;
-  border: 1px solid var(--color-ink-200);
-  border-radius: 0.4rem;
-  background: white;
-  color: var(--color-ink-800);
+.audit-detail code {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+/* El hash es de 64 caracteres: sin `anywhere` estira la fila y rompe la tabla. */
+.audit-hash {
+  display: block;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 
-.chip--button {
-  cursor: pointer;
+/* Copiar un identificador es la acción más repetida al cruzar la bitácora con
+   los registros de un microservicio, así que el propio valor es el botón. */
+.audit-copy {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.audit-copy:hover {
+  color: var(--brand-solid-hover);
+}
+.audit-copied {
+  margin-left: var(--s-2);
+  font-size: 11px;
+  color: var(--ok-700);
 }
 
-.chip--button:hover {
-  border-color: var(--color-primary-700);
-  color: var(--color-primary-800);
-}
-
-.copied {
-  margin-left: 0.5rem;
-  color: var(--color-success-800);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-/* --------------------------------------------------------------- paginacion */
-
-.pagination {
+.audit-pagination {
   display: flex;
   align-items: center;
-  margin-top: 1rem;
-  gap: 1rem;
   justify-content: center;
-  color: var(--color-ink-600);
-  font-size: 0.88rem;
-}
-
-@media (max-width: 900px) {
-  .summary__cards,
-  .summary__breakdown {
-    grid-template-columns: 1fr;
-  }
-
-  .table thead th {
-    position: static;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .button {
-    transition: none;
-  }
+  gap: var(--s-4);
+  font-size: 13px;
+  color: var(--text-secondary);
 }

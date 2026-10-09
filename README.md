@@ -5,7 +5,7 @@ Angular que consume exclusivamente el API Gateway de la plataforma de microservi
 
 ## Qué implementa
 
-Cubre nueve microservicios del MVP:
+Cubre diez microservicios del MVP:
 
 | Módulo en la interfaz | Microservicio      | Prefijos que consume                                                                                                |
 | --------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
@@ -18,6 +18,7 @@ Cubre nueve microservicios del MVP:
 | Marketing             | `ms-marketing`     | `/api/v1/campanas`, `/segmentos`, `/promociones`, `/anuncios`, `/fidelidad`, `/pacientes/**`                        |
 | Acceso                | `ms-identidad`     | `/api/v1/identity/**`                                                                                               |
 | Catálogos clínicos    | `ms-catalogos`     | `/api/v1/catalogs/specialties`, `/cie10`, `/medications`, `/study-types`                                            |
+| Auditoría             | `ms-auditoria`     | `/api/v1/audit/events`, `/summary`, `/integrity`, `/events/export`                                                  |
 
 Si `ms-pacientes` no responde, cada vista degrada por su cuenta y muestra el resto de la
 información: los demás módulos referencian al paciente solo por UUID.
@@ -216,15 +217,14 @@ Prefijos públicos actuales:
 | Historial     | `/api/v1/encuentros/**`, `/api/v1/expedientes/**`, `/api/v1/ordenes-estudio/**` |
 | Documental    | `/api/v1/documents/**`                                                          |
 | Facturación   | `/api/v1/facturas/**`                                                           |
-| Auditoría     | `/api/v1/audit/**` — **aún no publicado**, ver nota                             |
+| Auditoría     | `/api/v1/audit/**`                                                              |
 
 Criptografía no tiene funcionalidad pública de frontend. Debe ser consumida internamente por los
 servicios autorizados.
 
-`/api/v1/audit/**` figura en la tabla porque es el prefijo acordado, pero hoy responde 404: no
-existe `ms-auditoria` en la plataforma ni ruta hacia él en el gateway. El módulo `audit/` está
-fusionado y su ruta registrada, pero **no aparece en el menú lateral** hasta que el servicio
-exista, para que nadie llegue por accidente a una pantalla que solo puede mostrar errores.
+La escritura de la bitácora, `/internal/v1/audit-events`, queda deliberadamente fuera del
+gateway: se asienta entre servicios y nunca desde el navegador, o cualquiera podría fabricar la
+prueba de lo que no hizo.
 
 Esta tabla orienta la navegación, pero no reemplaza el contrato de cada endpoint. Antes de crear
 una pantalla se deben confirmar método, ruta exacta, rol, request, response y errores con el
@@ -454,9 +454,9 @@ nadie a hacer su trabajo.
 8. **Resultado de estudio** — en la orden, _Registrar resultado_. Con referencia
    mínima y máxima, el sistema marca solo si el valor queda fuera de rango.
 9. **Factura** — entra como `admin` o `recepcion`, _Emitir factura_, elige al
-   paciente y añade prestaciones. El total se ve siempre a la derecha. La
-   leyenda **«Documento de demostración — sin validez fiscal»** aparece en el
-   formulario, en el listado y en la factura, y no se puede descartar.
+   paciente y añade prestaciones. El total se ve siempre a la derecha. Desde la
+   factura emitida, _Imprimir_ manda al papel solo el comprobante: ni barra
+   lateral, ni cabecera, ni botones.
 10. **Organización** — `admin` edita el centro, da de alta sucursales, mantiene
     el catálogo con sus precios en BOB y consulta el consumo del plan.
 
@@ -487,9 +487,9 @@ y `-700` el estado se leía como un susurro y el conjunto tiraba a menta.
 texto ni una marca pequeña sobre una superficie clara: como punto de 6 px o
 barra fina desaparece. Los puntos de estado y las barras de consumo usan un
 escalón más oscuro del mismo naranja, que sí se distingue. El `#E57833` exacto
-se reserva para el sitio donde rinde a plena fuerza sin llevar texto encima: la
-franja de la leyenda «sin validez fiscal», que es el aviso que nunca debe pasar
-desapercibido.
+se reserva para donde rinde a plena fuerza sin llevar texto encima: la línea de
+la hora actual en la agenda y el punto de las citas en sala, que son las marcas
+que no deben pasar desapercibidas.
 
 El rojo de error se aleja deliberadamente del naranja en tono para que aviso y
 error nunca se confundan, y ningún estado se comunica solo con color: todo chip

@@ -1,0 +1,54 @@
+<div class="ms-time" [class.is-open]="open()">
+  <div class="ms-time-control" [class.is-invalid]="invalid()" [class.is-disabled]="isDisabled()">
+    <input
+      [id]="controlId()"
+      #campo
+      class="ms-time-input"
+      type="text"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="hh:mm"
+      maxlength="5"
+      [attr.aria-label]="ariaLabel()"
+      [attr.aria-invalid]="invalid() || null"
+      [disabled]="isDisabled()"
+      [value]="text()"
+      (input)="onInput($any($event.target).value)"
+      (blur)="onBlur()"
+    />
+    <button
+      type="button"
+      class="ms-time-toggle"
+      aria-label="Elegir la hora de una lista"
+      [attr.aria-expanded]="open()"
+      [disabled]="isDisabled()"
+      (click)="toggle()"
+    >
+      <medsys-icon name="clock" [size]="15" />
+    </button>
+  </div>
+
+  @if (open()) {
+    <div
+      #panel
+      class="ms-time-panel popover"
+      tabindex="-1"
+      role="listbox"
+      aria-label="Horas disponibles"
+      (keydown)="onPanelKey($event)"
+    >
+      @for (slot of slots(); track slot) {
+        <button
+          type="button"
+          class="ms-time-slot"
+          role="option"
+          [class.is-selected]="slot === value()"
+          [attr.aria-selected]="slot === value()"
+          (click)="choose(slot)"
+        >
+          {{ slot }}
+        </button>
+      }
+    </div>
+  }
+</div>

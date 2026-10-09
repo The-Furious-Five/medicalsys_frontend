@@ -94,15 +94,13 @@
         <label class="field-label" for="vital-systolic">
           Presión sistólica <span class="field-optional">(opcional)</span>
         </label>
-        <input
-          id="vital-systolic"
-          class="input input-num"
-          type="number"
-          min="0"
-          max="400"
-          autofocus
+        <medsys-number-field
+          controlId="vital-systolic"
+          [min]="0"
+          [max]="400"
           [value]="draftValue('systolicPressure')"
-          (input)="setDraft('systolicPressure', $any($event.target).value)"
+          (valueChange)="setDraft('systolicPressure', $event)"
+          autofocus
         />
         <span class="field-hint">mmHg</span>
       </div>
@@ -110,14 +108,12 @@
         <label class="field-label" for="vital-diastolic">
           Presión diastólica <span class="field-optional">(opcional)</span>
         </label>
-        <input
-          id="vital-diastolic"
-          class="input input-num"
-          type="number"
-          min="0"
-          max="400"
+        <medsys-number-field
+          controlId="vital-diastolic"
+          [min]="0"
+          [max]="400"
           [value]="draftValue('diastolicPressure')"
-          (input)="setDraft('diastolicPressure', $any($event.target).value)"
+          (valueChange)="setDraft('diastolicPressure', $event)"
         />
         <span class="field-hint">mmHg</span>
       </div>
@@ -129,15 +125,13 @@
           <label class="field-label" [attr.for]="'vital-' + metric.key">
             {{ metric.label }} <span class="field-optional">(opcional)</span>
           </label>
-          <input
-            [id]="'vital-' + metric.key"
-            class="input input-num"
-            type="number"
+          <medsys-number-field
+            [controlId]="'vital-' + metric.key"
             [min]="metric.min"
             [max]="metric.max"
             [step]="metric.step"
             [value]="draftValue(metric.key)"
-            (input)="setDraft(metric.key, $any($event.target).value)"
+            (valueChange)="setDraft(metric.key, $event)"
           />
           <span class="field-hint">{{ metric.unit }}</span>
         </div>

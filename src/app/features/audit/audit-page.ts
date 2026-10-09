@@ -20,6 +20,8 @@ import type {
 } from './audit-event';
 import { isApiError } from '../../core/http/api-error';
 import type { ApiError } from '../../core/http/api-error';
+import { DateTimeField } from '../../shared/datetime-field';
+import { Select } from '../../shared/select';
 
 /** Estado de una petición de la pantalla, para no confundir "sin datos" con "todavía cargando". */
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
@@ -28,7 +30,7 @@ const PAGE_SIZE = 25;
 
 @Component({
   selector: 'medsys-audit-page',
-  imports: [DatePipe, ReactiveFormsModule],
+  imports: [DatePipe, ReactiveFormsModule, DateTimeField, Select],
   templateUrl: './audit-page.html',
   styleUrl: './audit-page.scss',
 })
@@ -39,6 +41,22 @@ export class AuditPage {
   protected readonly categories = AUDIT_CATEGORIES;
   protected readonly outcomes = AUDIT_OUTCOMES;
   protected readonly severities = AUDIT_SEVERITIES;
+
+  /* El desplegable propio recibe la lista ya construida; el `<select>` nativo la
+     armaba con un `@for` de `<option>` que el sistema operativo dibujaba a su
+     manera. */
+  protected readonly categoryOptions = AUDIT_CATEGORIES.map((value) => ({
+    value,
+    label: categoryLabel(value),
+  }));
+  protected readonly outcomeOptions = AUDIT_OUTCOMES.map((value) => ({
+    value,
+    label: outcomeLabel(value),
+  }));
+  protected readonly severityOptions = AUDIT_SEVERITIES.map((value) => ({
+    value,
+    label: severityLabel(value),
+  }));
 
   protected readonly categoryLabel = categoryLabel;
   protected readonly outcomeLabel = outcomeLabel;

@@ -141,28 +141,24 @@
               <label class="field-label" [attr.for]="'med-freq-' + item.key">
                 Cada cuántas horas <span class="field-optional">(opcional)</span>
               </label>
-              <input
-                [id]="'med-freq-' + item.key"
-                class="input input-num"
-                type="number"
-                min="1"
-                max="168"
+              <medsys-number-field
+                [controlId]="'med-freq-' + item.key"
+                [min]="1"
+                [max]="168"
                 [value]="item.frequencyHours"
-                (input)="patchItem(item.key, 'frequencyHours', $any($event.target).value)"
+                (valueChange)="patchItem(item.key, 'frequencyHours', $event)"
               />
             </div>
             <div class="field">
               <label class="field-label" [attr.for]="'med-days-' + item.key">
                 Durante cuántos días <span class="field-optional">(opcional)</span>
               </label>
-              <input
-                [id]="'med-days-' + item.key"
-                class="input input-num"
-                type="number"
-                min="1"
-                max="365"
+              <medsys-number-field
+                [controlId]="'med-days-' + item.key"
+                [min]="1"
+                [max]="365"
                 [value]="item.durationDays"
-                (input)="patchItem(item.key, 'durationDays', $any($event.target).value)"
+                (valueChange)="patchItem(item.key, 'durationDays', $event)"
               />
             </div>
           </div>
@@ -194,14 +190,12 @@
         <label class="field-label" for="prescription-validity">
           Validez en días <span class="field-optional">(opcional)</span>
         </label>
-        <input
-          id="prescription-validity"
-          class="input input-num"
-          type="number"
-          min="1"
-          max="365"
+        <medsys-number-field
+          controlId="prescription-validity"
+          [min]="1"
+          [max]="365"
           [value]="validityDays()"
-          (input)="validityDays.set($any($event.target).value)"
+          (valueChange)="validityDays.set($event)"
         />
         <span class="field-hint">Entre 1 y 365.</span>
       </div>

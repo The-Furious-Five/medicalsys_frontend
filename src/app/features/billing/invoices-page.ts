@@ -17,7 +17,6 @@ import { TableSkeleton } from '../../shared/table-skeleton';
 import { PatientName } from '../patients/patient-name';
 import { PatientPicker } from '../patients/patient-picker';
 import { BillingService } from './billing.service';
-import { DemoCaption } from './demo-caption';
 
 /**
  * Jerarquía: el importe y el estado son lo que se busca en un listado de
@@ -36,7 +35,6 @@ import { DemoCaption } from './demo-caption';
     Pager,
     PatientName,
     PatientPicker,
-    DemoCaption,
     Icon,
     RouterLink,
     ...FORMAT_PIPES,

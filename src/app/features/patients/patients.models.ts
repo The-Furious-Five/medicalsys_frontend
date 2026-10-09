@@ -46,3 +46,24 @@ export interface RegisterPatientInput {
   readonly emergencyContactName: string | null;
   readonly emergencyContactPhone: string | null;
 }
+
+export type NotificationChannel = 'WHATSAPP' | 'SMS' | 'EMAIL' | 'PUSH';
+export type NotificationCategory = 'CLINICAL' | 'ADMINISTRATIVE';
+export type ConsentSource =
+  'WEB_FORM' | 'RECEPTION' | 'WHATSAPP_RESPONSE' | 'PHYSICAL_CONTRACT' | 'IMPORT';
+
+export interface NotificationPreferenceInput {
+  readonly optIn: boolean;
+  readonly consentSource: ConsentSource | null;
+}
+
+export interface NotificationPreference {
+  readonly patientId: string;
+  readonly channel: NotificationChannel;
+  readonly category: NotificationCategory;
+  readonly optIn: boolean;
+  readonly consentSource: ConsentSource | null;
+  readonly optInAt: string | null;
+  readonly optOutAt: string | null;
+  readonly updatedAt: string;
+}

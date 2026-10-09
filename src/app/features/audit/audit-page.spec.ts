@@ -125,7 +125,7 @@ describe('AuditPage', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.empty')).not.toBeNull();
+    expect(element.querySelector('.audit-empty')).not.toBeNull();
     expect(element.querySelector('table')).toBeNull();
   });
 
@@ -158,8 +158,8 @@ describe('AuditPage', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.banner--error')?.textContent).toContain('FORBIDDEN');
-    expect(element.querySelector('.banner--error')?.textContent).toContain(
+    expect(element.querySelector('.audit-banner')?.textContent).toContain('FORBIDDEN');
+    expect(element.querySelector('.audit-banner')?.textContent).toContain(
       '147c87d8-e5f4-4d24-a760-4974f8897a0c',
     );
   });

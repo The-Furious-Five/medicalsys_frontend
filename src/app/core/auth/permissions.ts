@@ -65,6 +65,7 @@ export const can = {
     has(r, 'BILLING_CLERK', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
   issueInvoice: (r: Roles) =>
     has(r, 'BILLING_CLERK', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  correctInvoice: (r: Roles) => has(r, 'BILLING_CLERK', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
 
   /* ms-marketing.
      El servicio declara `MARKETING_MANAGER` para el día en que ms-identidad lo
@@ -96,10 +97,9 @@ export const can = {
      es material de control interno y no de consulta general: la ve quien
      responde por el centro, no quien atiende en él.
 
-     El servicio todavía no existe —`/api/v1/audit/**` responde 404— y por eso
-     la entrada no está en `nav.ts`. El permiso se declara igual para que la
-     ruta nazca con la misma guarda que el resto y no haya que recordar
-     añadirla el día que el backend aparezca. */
+     Coincide con el `@RequiresRole({ADMINISTRATOR, PLATFORM_ADMIN})` que
+     declaran los controladores de ms-auditoria, así que la interfaz no ofrece
+     una puerta que el servicio vaya a cerrar con un 403. */
   viewAudit: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
 
   /* ms-catalogos.

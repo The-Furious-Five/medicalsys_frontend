@@ -23,6 +23,8 @@ import { StatusChip } from '../../shared/status-chip';
 import { TableSkeleton } from '../../shared/table-skeleton';
 import { MarketingService } from './marketing.service';
 import { Advertisement } from './marketing.models';
+import { NumberField } from '../../shared/number-field';
+import { DateTimeField } from '../../shared/datetime-field';
 
 /**
  * Jerarquía: a diferencia de la campaña, el anuncio es pasivo — no busca a nadie,
@@ -48,6 +50,8 @@ import { Advertisement } from './marketing.models';
     Icon,
     ReactiveFormsModule,
     ...FORMAT_PIPES,
+    NumberField,
+    DateTimeField,
   ],
   templateUrl: './advertisements-page.html',
 })

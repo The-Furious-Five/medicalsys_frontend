@@ -94,6 +94,10 @@
                 {{ audience.reachable }} recibirán el mensaje y
                 {{ audience.excludedOptOut }} quedaron excluidos por haber pedido no recibir
                 publicidad, registrados con su motivo.
+                @if (audience.excludedNoDestination > 0) {
+                  {{ audience.excludedNoDestination }} no tienen una dirección válida para este
+                  canal.
+                }
                 @if (audience.truncated) {
                   La audiencia se cortó en el tope configurado del servicio.
                 }
@@ -277,8 +281,13 @@
         </div>
         <div class="card-foot">
           <p class="t-micro">
-            Este servicio no entrega mensajes: publica el evento y ms-notificaciones se encarga del
-            envío, con sus propias reglas de opt-in y de ventana de 24 horas.
+            @if (current.channel === 'EMAIL') {
+              Los correos se entregan por SMTP en segundo plano, con reintentos y resultado por
+              destinatario. En desarrollo puedes verlos en el buzón Mailpit.
+            } @else {
+              La campaña publica su evento de entrega y respeta las preferencias comerciales de cada
+              paciente.
+            }
           </p>
         </div>
       </section>

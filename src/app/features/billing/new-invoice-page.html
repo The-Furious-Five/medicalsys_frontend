@@ -6,8 +6,6 @@
 
 <div class="invoice-layout">
   <div class="stack gap-4">
-    <medsys-demo-caption />
-
     @if (failureMessage(); as detail) {
       <medsys-notice
         [tone]="detail.status >= 500 || detail.status === 0 ? 'err' : 'warn'"
@@ -103,7 +101,7 @@
                         [disabled]="line.quantity <= 1"
                         (click)="changeQuantity(line.key, -1)"
                       >
-                        <medsys-icon name="minus" [size]="13" />
+                        <medsys-icon name="minus" [size]="18" [strokeWidth]="2" />
                       </button>
                       <span class="t-num t-strong qty-value">{{ line.quantity }}</span>
                       <button
@@ -112,21 +110,19 @@
                         aria-label="Sumar una unidad"
                         (click)="changeQuantity(line.key, 1)"
                       >
-                        <medsys-icon name="plus" [size]="13" />
+                        <medsys-icon name="plus" [size]="18" [strokeWidth]="2" />
                       </button>
                     </div>
                   </td>
                   <td class="td-num">
-                    <input
-                      class="input input-num"
-                      type="number"
-                      min="0"
-                      step="0.01"
+                    <medsys-number-field
+                      [min]="0"
+                      [step]="0.01"
                       placeholder="0.00"
                       style="width: 96px; text-align: right"
                       [attr.aria-label]="'Descuento en ' + line.offering.name"
                       [value]="line.discount"
-                      (input)="setDiscount(line.key, $any($event.target).value)"
+                      (valueChange)="setDiscount(line.key, $event)"
                     />
                   </td>
                   <td class="td-num t-strong">{{ lineSubtotal(line) }}</td>

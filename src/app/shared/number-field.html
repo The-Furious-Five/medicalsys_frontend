@@ -1,0 +1,47 @@
+<div class="ms-num" [class.is-invalid]="invalid()" [class.is-disabled]="isDisabled()">
+  <input
+    [id]="controlId()"
+    #campo
+    class="ms-num-input"
+    type="text"
+    inputmode="decimal"
+    autocomplete="off"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-invalid]="invalid() || null"
+    [attr.placeholder]="placeholder() || null"
+    [disabled]="isDisabled()"
+    [value]="text()"
+    (input)="onInput($any($event.target).value)"
+    (keydown)="onKeydown($event)"
+    (blur)="onBlur()"
+  />
+
+  @if (suffix()) {
+    <span class="ms-num-suffix" aria-hidden="true">{{ suffix() }}</span>
+  }
+
+  @if (steppers()) {
+    <span class="ms-num-steppers">
+      <button
+        type="button"
+        class="ms-num-step"
+        tabindex="-1"
+        aria-label="Restar"
+        [disabled]="isDisabled()"
+        (click)="nudge(-1)"
+      >
+        <medsys-icon name="minus" [size]="13" />
+      </button>
+      <button
+        type="button"
+        class="ms-num-step"
+        tabindex="-1"
+        aria-label="Sumar"
+        [disabled]="isDisabled()"
+        (click)="nudge(1)"
+      >
+        <medsys-icon name="plus" [size]="13" />
+      </button>
+    </span>
+  }
+</div>

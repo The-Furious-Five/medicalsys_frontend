@@ -139,14 +139,18 @@ const NAV: readonly NavGroup[] = [
     ],
   },
   {
+    /* Reservado a lo que administra el sistema, no a lo que se consulta para
+       trabajar. Por eso el catálogo clínico no está aquí sino en «Referencia»:
+       lo abre cualquiera que entre, y la bitácora solo quien responde por el
+       centro. */
     id: 'sistema',
     label: 'Sistema',
     items: [
       {
-        link: '/catalogos',
-        label: 'Catálogos',
-        icon: 'clipboard-list',
-        permission: 'viewCatalogs',
+        link: '/auditoria',
+        label: 'Auditoría',
+        icon: 'file-signature',
+        permission: 'viewAudit',
       },
     ],
   },

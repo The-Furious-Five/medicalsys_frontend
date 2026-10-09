@@ -54,22 +54,46 @@
               [controlId]="'campaign-channel'"
               [allowEmpty]="false"
             />
-            <span class="field-hint">Quien entrega es ms-notificaciones, no este servicio.</span>
+            @if (form.controls.channel.value === 'EMAIL') {
+              <span class="field-hint">
+                Se enviará por el servidor SMTP configurado y cada entrega quedará registrada.
+              </span>
+            } @else {
+              <span class="field-hint">
+                El canal elegido procesa la campaña al lanzarla, nunca al guardarla.
+              </span>
+            }
           </div>
         </div>
 
         <div class="field">
           <label class="field-label" for="campaign-objective">
-            Objetivo <span class="field-optional">(opcional)</span>
+            {{ form.controls.channel.value === 'EMAIL' ? 'Mensaje del correo' : 'Objetivo' }}
+            @if (form.controls.channel.value !== 'EMAIL') {
+              <span class="field-optional">(opcional)</span>
+            }
           </label>
           <textarea
             id="campaign-objective"
             class="textarea"
             rows="2"
-            placeholder="Qué se busca con esta campaña"
+            [placeholder]="
+              form.controls.channel.value === 'EMAIL'
+                ? 'Ej.: Agenda tu chequeo preventivo durante octubre.'
+                : 'Qué se busca con esta campaña'
+            "
             formControlName="objective"
+            [attr.aria-invalid]="errorFor('objective') !== null"
           ></textarea>
-          <span class="field-hint">Queda registrado para quien la audite después.</span>
+          @if (errorFor('objective'); as message) {
+            <span class="field-error" role="alert">{{ message }}</span>
+          } @else if (form.controls.channel.value === 'EMAIL') {
+            <span class="field-hint">
+              El nombre de la campaña será el asunto; este texto será el cuerpo del correo.
+            </span>
+          } @else {
+            <span class="field-hint">Queda registrado para quien la audite después.</span>
+          }
         </div>
       </div>
     </section>
@@ -132,10 +156,8 @@
       <div class="card-body grid-2">
         <div class="field">
           <label class="field-label" for="campaign-starts">Inicio</label>
-          <input
-            id="campaign-starts"
-            class="input"
-            type="datetime-local"
+          <medsys-datetime-field
+            controlId="campaign-starts"
             formControlName="startsAt"
             [attr.aria-invalid]="errorFor('startsAt') !== null"
           />
@@ -147,18 +169,16 @@
           <label class="field-label" for="campaign-ends">
             Fin <span class="field-optional">(opcional)</span>
           </label>
-          <input id="campaign-ends" class="input" type="datetime-local" formControlName="endsAt" />
+          <medsys-datetime-field controlId="campaign-ends" formControlName="endsAt" />
         </div>
         <div class="field">
           <label class="field-label" for="campaign-budget">
             Presupuesto <span class="field-optional">(opcional)</span>
           </label>
-          <input
-            id="campaign-budget"
-            class="input input-num"
-            type="number"
-            min="0"
-            step="0.01"
+          <medsys-number-field
+            controlId="campaign-budget"
+            [min]="0"
+            [step]="0.01"
             placeholder="0.00"
             formControlName="budgetBob"
           />

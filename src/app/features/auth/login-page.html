@@ -1,27 +1,46 @@
-<div class="login">
-  <!-- El formulario va primero en el DOM: quien usa lector de pantalla o teclado
-       llega al campo de correo sin atravesar la presentación de la marca. La
-       rejilla lo coloca a la derecha, como en el diseño. -->
-  <main class="login-panel">
-    <div class="login-card">
-      <img
-        src="/brand/msys-horizontal.svg"
-        alt="MSYS"
-        width="158"
-        height="40"
-        class="login-card-logo"
-      />
+<div class="access-page">
+  <header class="access-header">
+    <img src="/brand/msys-horizontal.svg" alt="MSYS" width="158" height="40" />
+    <span class="access-header-label">Gestión médica integral</span>
+  </header>
 
-      <div class="login-card-head">
-        <h1 class="login-title">Bienvenido de nuevo</h1>
-        <p class="login-subtitle">Accede con la cuenta que te asignó tu centro médico.</p>
+  <div class="access-layout">
+    <section class="access-brand" aria-labelledby="access-claim">
+      <div class="access-brand-heading">
+        <span class="access-eyebrow">Conectados por el cuidado</span>
+        <h2 id="access-claim">Más tiempo para <span>cuidar.</span></h2>
+        <p class="access-brand-lead">
+          Todo lo que tu centro médico necesita, en un mismo lugar. Para acompañar mejor a cada
+          paciente, cada día.
+        </p>
       </div>
+      <ul class="access-features">
+        @for (point of brandPoints; track point.label) {
+          <li>
+            <span class="access-feature-icon"><medsys-icon [name]="point.icon" [size]="20" /></span>
+            <div>
+              <h3>{{ point.label }}</h3>
+              <p>{{ point.description }}</p>
+            </div>
+          </li>
+        }
+      </ul>
+      <div class="access-brand-footer">
+        <span>La salud nos conecta.</span>
+      </div>
+    </section>
 
-      <form class="stack gap-4" novalidate (submit)="submit($event)">
-        <div class="field login-field">
+    <main class="access-panel" aria-labelledby="login-title">
+      <div class="access-form-heading">
+        <span class="access-eyebrow">Tu espacio de trabajo</span>
+        <h1 id="login-title">Bienvenido de nuevo</h1>
+        <p>Ingresa con la cuenta de tu centro médico para continuar.</p>
+      </div>
+      <form class="access-form" novalidate (submit)="submit($event)">
+        <div class="field">
           <label class="field-label" for="login-email">Correo electrónico</label>
-          <div class="login-control">
-            <span class="login-control-icon"><medsys-icon name="user" [size]="16" /></span>
+          <div class="access-control">
+            <medsys-icon name="user" [size]="18" />
             <input
               id="login-email"
               #emailField
@@ -29,6 +48,8 @@
               type="email"
               name="email"
               autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
               required
               placeholder="nombre@centro.med"
               [value]="email()"
@@ -36,15 +57,14 @@
             />
           </div>
         </div>
-
-        <div class="field login-field">
+        <div class="field">
           <label class="field-label" for="login-password">Contraseña</label>
-          <div class="login-control">
-            <span class="login-control-icon"><medsys-icon name="lock" [size]="16" /></span>
+          <div class="access-control access-password">
+            <medsys-icon name="lock" [size]="18" />
             <input
               id="login-password"
               class="input"
-              type="password"
+              [type]="passwordVisible() ? 'text' : 'password'"
               name="password"
               autocomplete="current-password"
               required
@@ -52,67 +72,61 @@
               [value]="password()"
               (input)="password.set($any($event.target).value)"
             />
+            <button
+              type="button"
+              class="access-password-toggle"
+              aria-controls="login-password"
+              [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              [attr.aria-pressed]="passwordVisible()"
+              (click)="passwordVisible.set(!passwordVisible())"
+            >
+              {{ passwordVisible() ? 'Ocultar' : 'Mostrar' }}
+            </button>
           </div>
         </div>
-
         @if (error(); as message) {
           <div role="alert">
             <medsys-notice tone="err" icon="alert-triangle">{{ message }}</medsys-notice>
           </div>
         }
-
-        <!-- Naranja: es la única acción de la pantalla. Ningún otro control de
-             esta vista compite con ella. -->
         <button
           type="submit"
-          class="btn btn-lg btn-block login-submit"
+          class="btn btn-block access-submit"
           [disabled]="pending()"
           [attr.aria-busy]="pending() ? 'true' : null"
         >
-          <medsys-icon name="log-in" [size]="16" />
-          {{ pending() ? 'Entrando…' : 'Entrar' }}
+          {{ pending() ? 'Entrando…' : 'Iniciar sesión' }}
+          <medsys-icon name="log-in" [size]="18" />
         </button>
       </form>
-
-      <div class="login-demo">
-        <p class="t-label">Cuentas de demostración</p>
-        <div class="stack gap-1">
+      <p class="access-help">¿Necesitas acceso? Contacta al administrador de tu centro médico.</p>
+      <details class="access-demo">
+        <summary>
+          <span>Cuentas de demostración</span>
+          <medsys-icon name="chevron-down" [size]="16" />
+        </summary>
+        <div class="access-demo-content">
+          <p>Elige un perfil para completar el formulario y luego pulsa «Iniciar sesión».</p>
           @for (account of demoAccounts; track account.email) {
-            <button type="button" class="demo-account" (click)="useDemoAccount(account)">
-              <span class="demo-account-mail grow truncate">{{ account.email }}</span>
-              <span class="demo-account-role">{{ account.role }}</span>
+            <button
+              type="button"
+              class="access-demo-account"
+              [disabled]="pending()"
+              (click)="useDemoAccount(account)"
+            >
+              <span>
+                <strong>{{ account.role }}</strong>
+                <span>{{ account.email }}</span>
+              </span>
+              <medsys-icon name="chevron-right" [size]="16" />
             </button>
           }
         </div>
-        <p class="t-micro">
-          Rellenan el formulario con la contraseña de demostración. No pulses «Entrar» por ellas.
-        </p>
-      </div>
-    </div>
-  </main>
-
-  <section class="login-brand">
-    <img src="/brand/msys-isotipo.svg" alt="" width="96" height="96" class="login-brand-mark" />
-
-    <div class="stack gap-3">
-      <p class="login-claim">La historia clínica de una persona, sostenida en un solo lugar.</p>
-      <p class="login-brand-lead">
-        MSYS reúne el expediente clínico, la organización del centro y la facturación de las
-        prestaciones en una misma plataforma.
-      </p>
-    </div>
-
-    <ul class="login-points">
-      @for (point of brandPoints; track point.label) {
-        <li class="login-point">
-          <span class="login-point-icon"><medsys-icon [name]="point.icon" [size]="16" /></span>
-          {{ point.label }}
-        </li>
-      }
-    </ul>
-
-    <p class="t-micro login-env">Entorno de demostración · datos ficticios</p>
-  </section>
-
-  <img src="/brand/msys-mark-green.svg" alt="" class="login-watermark" aria-hidden="true" />
+      </details>
+    </main>
+  </div>
+  <footer class="access-footer">
+    <span>MSYS · Tecnología al servicio del cuidado</span>
+    <span class="access-environment">Entorno de demostración · datos ficticios</span>
+  </footer>
 </div>

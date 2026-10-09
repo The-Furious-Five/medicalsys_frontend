@@ -163,7 +163,10 @@
                     <span class="t-micro">{{ branch.code }}</span>
                   </div>
                 </td>
-                <td class="truncate" style="max-width: 260px">{{ branch.address }}</td>
+                <!-- La dirección se envuelve en vez de cortarse: «Av. Ecuador 2456, esq. Rosendo
+                     Gutierrez, Sopocachi» es justo el dato que hay que leer entero para saber
+                     a qué sede se está mirando. -->
+                <td class="td-wrap">{{ branch.address }}</td>
                 <td>{{ departmentLabel(branch.department) }}</td>
                 <td class="t-num">{{ branch.phoneE164 ?? '—' }}</td>
                 <td>

@@ -242,24 +242,20 @@
     <div class="grid-2">
       <div class="field">
         <label class="field-label" for="program-points">Puntos por cada Bs 1</label>
-        <input
-          id="program-points"
-          class="input input-num"
-          type="number"
-          min="0"
-          step="0.0001"
+        <medsys-number-field
+          controlId="program-points"
+          [min]="0"
+          [step]="0.0001"
           formControlName="pointsPerBob"
         />
         <span class="field-hint">Cuántos puntos otorga cada boliviano facturado.</span>
       </div>
       <div class="field">
         <label class="field-label" for="program-value">Valor de un punto</label>
-        <input
-          id="program-value"
-          class="input input-num"
-          type="number"
-          min="0"
-          step="0.0001"
+        <medsys-number-field
+          controlId="program-value"
+          [min]="0"
+          [step]="0.0001"
           formControlName="bobPerPoint"
         />
         <span class="field-hint">En bolivianos, al canjearlo.</span>
@@ -270,12 +266,10 @@
       <label class="field-label" for="program-validity">
         Vigencia de los puntos <span class="field-optional">(opcional)</span>
       </label>
-      <input
-        id="program-validity"
-        class="input input-num"
-        type="number"
-        min="1"
-        max="600"
+      <medsys-number-field
+        controlId="program-validity"
+        [min]="1"
+        [max]="600"
         placeholder="Sin caducidad"
         formControlName="pointsValidityMonths"
       />
@@ -318,13 +312,7 @@
 
     <div class="field">
       <label class="field-label" for="movement-points">Puntos</label>
-      <input
-        id="movement-points"
-        class="input input-num"
-        type="number"
-        min="1"
-        formControlName="points"
-      />
+      <medsys-number-field controlId="movement-points" [min]="1" formControlName="points" />
       <span class="field-hint">Siempre en positivo.</span>
     </div>
 

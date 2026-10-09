@@ -19,6 +19,7 @@ import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
 import { TenancyService } from './tenancy.service';
 import { ServiceOffering } from './tenancy.models';
+import { NumberField } from '../../shared/number-field';
 
 const CODE = /^[A-Za-z0-9_-]+$/;
 
@@ -29,7 +30,7 @@ const CODE = /^[A-Za-z0-9_-]+$/;
 @Component({
   selector: 'medsys-offering-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Select, Icon, ReactiveFormsModule, Dialog, Notice],
+  imports: [Select, Icon, ReactiveFormsModule, Dialog, Notice, NumberField],
   templateUrl: './offering-form.html',
 })
 export class OfferingForm {

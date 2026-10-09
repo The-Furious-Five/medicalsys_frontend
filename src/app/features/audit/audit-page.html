@@ -1,6 +1,6 @@
 <main class="audit">
   <section class="audit__intro">
-    <p class="eyebrow">Control interno · Solo administración</p>
+    <p class="audit-eyebrow">Control interno · Solo administración</p>
     <h1 id="audit-title">Bitácora de auditoría</h1>
     <p class="audit__lead">
       Quién hizo qué, sobre qué recurso y cuándo, dentro de esta organización. La bitácora es
@@ -9,16 +9,16 @@
   </section>
 
   @if (error(); as apiError) {
-    <div class="banner banner--error" role="alert">
-      <div class="banner__body">
+    <div class="audit-banner" role="alert">
+      <div class="audit-banner-body">
         <strong>{{ apiError.message }}</strong>
-        <p class="banner__meta">
+        <p class="audit-banner-meta">
           Código <code>{{ apiError.code }}</code> · HTTP {{ apiError.status }}
           @if (apiError.correlationId !== '') {
             · Correlation ID
             <button
               type="button"
-              class="chip chip--button"
+              class="audit-copy"
               (click)="copy(apiError.correlationId)"
               [attr.aria-label]="'Copiar correlation ID ' + apiError.correlationId"
             >
@@ -27,30 +27,34 @@
           }
         </p>
       </div>
-      <button type="button" class="banner__close" (click)="dismissError()">Cerrar aviso</button>
+      <button type="button" class="audit-banner-close" (click)="dismissError()">
+        Cerrar aviso
+      </button>
     </div>
   }
 
   <!-- Integridad: el dato que distingue una bitácora de una tabla de logs cualquiera. -->
-  <section class="integrity" aria-labelledby="integrity-title">
-    <h2 id="integrity-title" class="visually-hidden">Integridad de la cadena</h2>
+  <section class="audit-integrity" aria-labelledby="integrity-title">
+    <h2 id="integrity-title" class="sr-only">Integridad de la cadena</h2>
     @switch (integrityState()) {
       @case ('loading') {
-        <p class="integrity__status" aria-live="polite">Verificando la cadena de hashes…</p>
+        <p class="audit-integrity-status" aria-live="polite">Verificando la cadena de hashes…</p>
       }
       @case ('error') {
-        <p class="integrity__status integrity__status--unknown">
+        <p class="audit-integrity-status is-unknown">
           No se pudo verificar la cadena en este momento.
         </p>
       }
       @default {
         @if (integrity(); as report) {
           <div
-            class="integrity__badge"
-            [class.integrity__badge--intact]="report.intact"
-            [class.integrity__badge--broken]="!report.intact"
+            class="audit-integrity-badge"
+            [class.is-intact]="report.intact"
+            [class.is-broken]="!report.intact"
           >
-            <span class="integrity__mark" aria-hidden="true">{{ report.intact ? '✓' : '!' }}</span>
+            <span class="audit-integrity-mark" aria-hidden="true">{{
+              report.intact ? '✓' : '!'
+            }}</span>
             <div>
               <strong>
                 {{ report.intact ? 'Cadena verificada' : 'Cadena inconsistente' }}
@@ -68,7 +72,7 @@
             </div>
           </div>
         }
-        <button type="button" class="button button--ghost" (click)="loadIntegrity()">
+        <button type="button" class="btn btn-ghost" (click)="loadIntegrity()">
           Volver a verificar
         </button>
       }
@@ -76,38 +80,38 @@
   </section>
 
   <!-- Resumen: las preguntas con las que empieza toda revisión. -->
-  <section class="summary" aria-labelledby="summary-title">
+  <section class="audit-summary" aria-labelledby="summary-title">
     <h2 id="summary-title">Resumen de la ventana consultada</h2>
 
     @if (summaryState() === 'loading') {
-      <p class="placeholder" aria-live="polite">Calculando el resumen…</p>
+      <p class="audit-placeholder" aria-live="polite">Calculando el resumen…</p>
     } @else if (summary(); as totals) {
-      <div class="summary__cards">
-        <article class="card">
-          <span class="card__label">Eventos</span>
-          <strong class="card__value">{{ totals.totalEvents }}</strong>
+      <div class="audit-stats">
+        <article class="audit-stat">
+          <span class="audit-stat-label">Eventos</span>
+          <strong class="audit-stat-value">{{ totals.totalEvents }}</strong>
         </article>
-        <article class="card card--denied">
-          <span class="card__label">Intentos denegados</span>
-          <strong class="card__value">{{ totals.deniedEvents }}</strong>
+        <article class="audit-stat is-denied">
+          <span class="audit-stat-label">Intentos denegados</span>
+          <strong class="audit-stat-value">{{ totals.deniedEvents }}</strong>
         </article>
-        <article class="card card--failure">
-          <span class="card__label">Operaciones con error</span>
-          <strong class="card__value">{{ totals.failedEvents }}</strong>
+        <article class="audit-stat is-failure">
+          <span class="audit-stat-label">Operaciones con error</span>
+          <strong class="audit-stat-value">{{ totals.failedEvents }}</strong>
         </article>
-        <article class="card card--critical">
-          <span class="card__label">Eventos críticos</span>
-          <strong class="card__value">{{ totals.criticalEvents }}</strong>
+        <article class="audit-stat is-critical">
+          <span class="audit-stat-label">Eventos críticos</span>
+          <strong class="audit-stat-value">{{ totals.criticalEvents }}</strong>
         </article>
       </div>
 
-      <div class="summary__breakdown">
+      <div class="audit-breakdown">
         <div>
           <h3>Por área</h3>
           @if (totals.byCategory.length === 0) {
-            <p class="placeholder">Sin actividad en la ventana.</p>
+            <p class="audit-placeholder">Sin actividad en la ventana.</p>
           } @else {
-            <ul class="tally">
+            <ul class="audit-tally">
               @for (item of totals.byCategory; track item.key) {
                 <li>
                   <span>{{ categoryLabel(item.key) }}</span>
@@ -120,9 +124,9 @@
         <div>
           <h3>Por microservicio</h3>
           @if (totals.byService.length === 0) {
-            <p class="placeholder">Sin actividad en la ventana.</p>
+            <p class="audit-placeholder">Sin actividad en la ventana.</p>
           } @else {
-            <ul class="tally">
+            <ul class="audit-tally">
               @for (item of totals.byService; track item.key) {
                 <li>
                   <span>{{ item.key }}</span>
@@ -135,9 +139,9 @@
         <div>
           <h3>Usuarios más activos</h3>
           @if (totals.topActors.length === 0) {
-            <p class="placeholder">Sin actividad atribuible a una persona.</p>
+            <p class="audit-placeholder">Sin actividad atribuible a una persona.</p>
           } @else {
-            <ul class="tally">
+            <ul class="audit-tally">
               @for (actor of totals.topActors; track actor.actorUserId) {
                 <li>
                   <span>{{ actor.actorDisplayName ?? actor.actorUserId }}</span>
@@ -151,45 +155,38 @@
     }
   </section>
 
-  <section class="filters" aria-labelledby="filters-title">
+  <section class="audit-filters" aria-labelledby="filters-title">
     <h2 id="filters-title">Filtrar la bitácora</h2>
 
     <form [formGroup]="filters" (ngSubmit)="applyFilters()">
-      <div class="filters__grid">
+      <div class="audit-filters-grid">
         <label>
           <span>Desde</span>
-          <input type="datetime-local" formControlName="from" />
+          <medsys-datetime-field formControlName="from" />
         </label>
         <label>
           <span>Hasta</span>
-          <input type="datetime-local" formControlName="to" />
+          <medsys-datetime-field formControlName="to" />
         </label>
         <label>
           <span>Área</span>
-          <select formControlName="category">
-            <option value="">Todas</option>
-            @for (category of categories; track category) {
-              <option [value]="category">{{ categoryLabel(category) }}</option>
-            }
-          </select>
+          <medsys-select
+            formControlName="category"
+            [options]="categoryOptions"
+            placeholder="Todas"
+          />
         </label>
         <label>
           <span>Resultado</span>
-          <select formControlName="outcome">
-            <option value="">Todos</option>
-            @for (outcome of outcomes; track outcome) {
-              <option [value]="outcome">{{ outcomeLabel(outcome) }}</option>
-            }
-          </select>
+          <medsys-select formControlName="outcome" [options]="outcomeOptions" placeholder="Todos" />
         </label>
         <label>
           <span>Relevancia</span>
-          <select formControlName="severity">
-            <option value="">Todas</option>
-            @for (severity of severities; track severity) {
-              <option [value]="severity">{{ severityLabel(severity) }}</option>
-            }
-          </select>
+          <medsys-select
+            formControlName="severity"
+            [options]="severityOptions"
+            placeholder="Todas"
+          />
         </label>
         <label>
           <span>Microservicio</span>
@@ -207,36 +204,34 @@
           <span>Correlation ID</span>
           <input type="text" formControlName="correlationId" placeholder="147c87d8-…" />
         </label>
-        <label class="filters__wide">
+        <label class="audit-filters-wide">
           <span>Búsqueda libre</span>
-          <input type="search" formControlName="q" placeholder="Acción, recurso, actor o motivo" />
+          <input type="text" formControlName="q" placeholder="Acción, recurso, actor o motivo" />
         </label>
       </div>
 
-      <div class="filters__actions">
-        <button type="submit" class="button button--primary">Aplicar filtros</button>
-        <button type="button" class="button button--secondary" (click)="clearFilters()">
-          Limpiar
-        </button>
+      <div class="audit-filters-actions">
+        <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+        <button type="button" class="btn btn-secondary" (click)="clearFilters()">Limpiar</button>
         <button
           type="button"
-          class="button button--ghost"
+          class="btn btn-ghost"
           (click)="exportCsv()"
           [disabled]="exportState() === 'loading'"
         >
           {{ exportState() === 'loading' ? 'Preparando CSV…' : 'Exportar CSV' }}
         </button>
         <!-- Sacar la bitácora del sistema es en sí mismo un hecho auditable, y así queda asentado. -->
-        <p class="filters__note">La exportación queda registrada en la propia bitácora.</p>
+        <p class="audit-filters-note">La exportación queda registrada en la propia bitácora.</p>
       </div>
     </form>
   </section>
 
-  <section class="results" aria-labelledby="results-title">
-    <div class="results__heading">
+  <section class="audit-results" aria-labelledby="results-title">
+    <div class="audit-results-head">
       <h2 id="results-title">Eventos</h2>
       @if (eventsState() === 'loaded') {
-        <p class="results__count" aria-live="polite">
+        <p class="audit-results-count" aria-live="polite">
           {{ totalElements() }} evento{{ totalElements() === 1 ? '' : 's' }} encontrados
         </p>
       }
@@ -244,16 +239,16 @@
 
     @switch (eventsState()) {
       @case ('loading') {
-        <p class="placeholder" aria-live="polite">Consultando la bitácora…</p>
+        <p class="audit-placeholder" aria-live="polite">Consultando la bitácora…</p>
       }
       @case ('error') {
-        <p class="placeholder placeholder--error">
+        <p class="audit-placeholder is-error">
           No se pudieron cargar los eventos. Revisa el aviso de arriba y vuelve a intentarlo.
         </p>
       }
       @default {
         @if (isEmpty()) {
-          <div class="empty">
+          <div class="audit-empty">
             <strong>Ningún evento coincide con estos filtros.</strong>
             <p>
               Amplía el rango de fechas o quita algún criterio. Una bitácora vacía en una ventana
@@ -261,9 +256,9 @@
             </p>
           </div>
         } @else {
-          <div class="table-scroll">
+          <div class="table-wrap">
             <table class="table">
-              <caption class="visually-hidden">
+              <caption class="sr-only">
                 Eventos de auditoría de la organización, del más reciente al más antiguo
               </caption>
               <thead>
@@ -274,12 +269,12 @@
                   <th scope="col">Recurso</th>
                   <th scope="col">Resultado</th>
                   <th scope="col">Origen</th>
-                  <th scope="col"><span class="visually-hidden">Detalle</span></th>
+                  <th scope="col"><span class="sr-only">Detalle</span></th>
                 </tr>
               </thead>
               <tbody>
                 @for (event of rows(); track event.eventId) {
-                  <tr [class.row--attention]="event.outcome !== 'SUCCESS'">
+                  <tr [class.is-attention]="event.outcome !== 'SUCCESS'">
                     <td>
                       <time [attr.datetime]="event.occurredAt">
                         {{ event.occurredAt | date: 'dd/MM/yyyy HH:mm:ss' }}
@@ -303,15 +298,15 @@
                     <td>
                       <!-- El estado no se comunica solo con color: la etiqueta lo dice también. -->
                       <span
-                        class="tag"
-                        [class.tag--success]="event.outcome === 'SUCCESS'"
-                        [class.tag--denied]="event.outcome === 'DENIED'"
-                        [class.tag--failure]="event.outcome === 'FAILURE'"
+                        class="audit-tag"
+                        [class.is-success]="event.outcome === 'SUCCESS'"
+                        [class.is-denied]="event.outcome === 'DENIED'"
+                        [class.is-failure]="event.outcome === 'FAILURE'"
                       >
                         {{ outcomeLabel(event.outcome) }}
                       </span>
                       @if (event.severity === 'CRITICAL') {
-                        <span class="tag tag--critical">Crítico</span>
+                        <span class="audit-tag is-critical">Crítico</span>
                       }
                     </td>
                     <td>
@@ -320,10 +315,10 @@
                         <span class="muted">HTTP {{ event.responseStatus }}</span>
                       }
                     </td>
-                    <td class="table__actions">
+                    <td class="td-actions">
                       <button
                         type="button"
-                        class="button button--link"
+                        class="btn btn-ghost btn-sm"
                         (click)="toggleDetail(event.eventId)"
                         [attr.aria-expanded]="isSelected(event)"
                         [attr.aria-controls]="'detail-' + event.eventId"
@@ -334,9 +329,9 @@
                   </tr>
 
                   @if (isSelected(event)) {
-                    <tr class="detail-row">
+                    <tr class="audit-detail-row">
                       <td colspan="7">
-                        <div class="detail" [attr.id]="'detail-' + event.eventId">
+                        <div class="audit-detail" [attr.id]="'detail-' + event.eventId">
                           <dl>
                             <div>
                               <dt>Identificador del evento</dt>
@@ -371,47 +366,47 @@
                               <dd>{{ event.actorIp ?? '—' }}</dd>
                             </div>
                             @if (event.reason) {
-                              <div class="detail__wide">
+                              <div class="audit-detail-wide">
                                 <dt>Motivo declarado</dt>
                                 <dd>{{ event.reason }}</dd>
                               </div>
                             }
                             @if (event.metadata) {
-                              <div class="detail__wide">
+                              <div class="audit-detail-wide">
                                 <dt>Contexto adicional</dt>
                                 <dd>
                                   <code>{{ event.metadata }}</code>
                                 </dd>
                               </div>
                             }
-                            <div class="detail__wide">
+                            <div class="audit-detail-wide">
                               <dt>Correlation ID</dt>
                               <dd>
                                 <button
                                   type="button"
-                                  class="chip chip--button"
+                                  class="audit-copy"
                                   (click)="copy(event.correlationId)"
                                   [attr.aria-label]="'Copiar correlation ID ' + event.correlationId"
                                 >
                                   {{ event.correlationId }}
                                 </button>
                                 @if (copiedValue() === event.correlationId) {
-                                  <span class="copied" role="status">Copiado</span>
+                                  <span class="audit-copied" role="status">Copiado</span>
                                 }
                               </dd>
                             </div>
                             <!-- Los hashes se muestran para que un revisor externo pueda
                                  recalcular la cadena por su cuenta. -->
-                            <div class="detail__wide">
+                            <div class="audit-detail-wide">
                               <dt>Hash de este asiento</dt>
                               <dd>
-                                <code class="hash">{{ event.recordHash }}</code>
+                                <code class="audit-hash">{{ event.recordHash }}</code>
                               </dd>
                             </div>
-                            <div class="detail__wide">
+                            <div class="audit-detail-wide">
                               <dt>Hash del asiento anterior</dt>
                               <dd>
-                                <code class="hash">
+                                <code class="audit-hash">
                                   {{ event.previousHash ?? 'Primer evento de la cadena' }}
                                 </code>
                               </dd>
@@ -427,10 +422,10 @@
           </div>
 
           @if (totalPages() > 1) {
-            <nav class="pagination" aria-label="Paginación de eventos">
+            <nav class="audit-pagination" aria-label="Paginación de eventos">
               <button
                 type="button"
-                class="button button--secondary"
+                class="btn btn-secondary"
                 (click)="goToPage(currentPage() - 1)"
                 [disabled]="currentPage() === 0"
               >
@@ -439,7 +434,7 @@
               <span aria-live="polite"> Página {{ currentPage() + 1 }} de {{ totalPages() }} </span>
               <button
                 type="button"
-                class="button button--secondary"
+                class="btn btn-secondary"
                 (click)="goToPage(currentPage() + 1)"
                 [disabled]="currentPage() + 1 >= totalPages()"
               >

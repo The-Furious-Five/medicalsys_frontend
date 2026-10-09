@@ -138,7 +138,9 @@ export class CampaignDetailPage {
         confirm:
           current.status === 'PAUSED'
             ? null
-            : 'Al lanzarla se publica el evento «marketing.campana» y ms-notificaciones empieza a entregar los mensajes. La audiencia ya no se podrá recalcular.',
+            : current.channel === 'EMAIL'
+              ? 'Al lanzarla, el backend encolará los correos y los enviará por SMTP. Cada destinatario mostrará el resultado y la audiencia ya no se podrá recalcular.'
+              : 'Al lanzarla se publica el evento «marketing.campana» para iniciar la entrega. La audiencia ya no se podrá recalcular.',
       },
       PAUSED: {
         status: 'PAUSED',
@@ -202,7 +204,10 @@ export class CampaignDetailPage {
       this.lastAudience.set(audience);
       this.toasts.notify(
         `Audiencia congelada: ${audience.reachable} destinatario(s), ` +
-          `${audience.excludedOptOut} excluido(s) por opt-out.`,
+          `${audience.excludedOptOut} excluido(s) por opt-out` +
+          (audience.excludedNoDestination > 0
+            ? ` y ${audience.excludedNoDestination} sin dirección de entrega.`
+            : '.'),
       );
       this.campaign.reload();
       this.recipients.reload();

@@ -25,7 +25,6 @@ import { StatusChip } from '../../shared/status-chip';
 import { TableSkeleton } from '../../shared/table-skeleton';
 import { CatalogsApiService } from './catalogs-api.service';
 import { CatalogsConnection } from './catalogs-connection';
-import { toCatalogsError } from './catalogs-error';
 import { Icd10Entry, Medication, Specialty, StudyType } from './catalogs.models';
 
 type CatalogTab = 'specialties' | 'cie10' | 'medications' | 'studies';
@@ -168,8 +167,22 @@ export class CatalogsPage {
     return label(this.applicableSexes, value, 'Todos');
   }
 
+  /**
+   * Guarda el fallo tal como llegó, no traducido.
+   *
+   * `medsys-error-state` describe el problema con `describeFailure`, que empieza
+   * comprobando `failure instanceof HttpErrorResponse`. Al guardar aquí el
+   * `ApiError` que devuelve `toCatalogsError`, esa comprobación fallaba siempre y
+   * la pantalla caía en el texto genérico «Ocurrió un problema inesperado al
+   * preparar la vista», incluso con el gateway apagado. Pasando la respuesta
+   * original, el usuario lee «El servicio no responde» y qué hacer al respecto.
+   *
+   * Con esto `toCatalogsError` deja de usarse en esta pantalla; el helper y su
+   * prueba siguen en el módulo por si otra vista necesita el `ApiError` ya
+   * traducido, pero hoy no lo consume nadie.
+   */
   private setError(error: HttpErrorResponse): void {
-    this.error.set(toCatalogsError(error));
+    this.error.set(error);
     this.loading.set(false);
     this.cie10Loading.set(false);
     if (error.status === 0) {

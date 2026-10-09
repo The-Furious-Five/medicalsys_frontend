@@ -20,6 +20,7 @@ import { Notice } from '../../shared/notice';
 import { Select, SelectOption } from '../../shared/select';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { MarketingService } from './marketing.service';
+import { NumberField } from '../../shared/number-field';
 
 const CODE = /^[A-Za-z0-9_-]+$/;
 
@@ -34,7 +35,7 @@ const CODE = /^[A-Za-z0-9_-]+$/;
 @Component({
   selector: 'medsys-promotion-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Notice, Select, DateField, ReactiveFormsModule],
+  imports: [Dialog, Notice, Select, DateField, ReactiveFormsModule, NumberField],
   templateUrl: './promotion-sheet.html',
 })
 export class PromotionSheet {

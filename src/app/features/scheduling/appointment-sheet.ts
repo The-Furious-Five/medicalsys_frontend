@@ -31,6 +31,8 @@ import { ProfessionalsService, activeLink } from '../professionals/professionals
 import { TenancyService } from '../tenancy/tenancy.service';
 import { Slot } from './scheduling.models';
 import { SchedulingService, StatusAction } from './scheduling.service';
+import { NumberField } from '../../shared/number-field';
+import { TimeField } from '../../shared/time-field';
 import {
   clinicDate,
   clinicInstant,
@@ -75,6 +77,8 @@ const NEEDS_REASON: readonly StatusAction[] = ['CANCELLED', 'NO_SHOW'];
     DateField,
     PatientName,
     ...FORMAT_PIPES,
+    NumberField,
+    TimeField,
   ],
   templateUrl: './appointment-sheet.html',
 })
@@ -259,7 +263,10 @@ export class AppointmentSheet {
 
   protected async confirmReschedule(): Promise<void> {
     const id = this.appointmentId();
-    if (id === null || !this.newDate()) {
+    // Sin hora no hay reprogramación posible: el control nativo la garantizaba,
+    // el propio permite vaciarla y `new Date()` produciría una fecha inválida
+    // que el backend rechazaría con un 400 poco explicativo.
+    if (id === null || !this.newDate() || (this.chosenSlot() === null && !this.newTime())) {
       return;
     }
     const startsAt = this.chosenSlot()?.startsAt ?? clinicInstant(this.newDate(), this.newTime());

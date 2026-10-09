@@ -1,0 +1,21 @@
+<div class="ms-datetime" [class.is-invalid]="invalid()">
+  <medsys-date-field
+    class="ms-datetime-day"
+    [controlId]="controlId()"
+    [value]="datePart()"
+    [min]="dayLimit().min"
+    [max]="dayLimit().max"
+    [invalid]="invalid()"
+    [ariaLabel]="ariaLabel() ? ariaLabel() + ': fecha' : 'Fecha'"
+    (valueChange)="setDate($event)"
+  />
+  <medsys-time-field
+    class="ms-datetime-time"
+    [value]="timePart()"
+    [invalid]="invalid()"
+    [disabled]="isDisabled() || datePart() === ''"
+    [stepMinutes]="stepMinutes()"
+    [ariaLabel]="ariaLabel() ? ariaLabel() + ': hora' : 'Hora'"
+    (valueChange)="setTime($event)"
+  />
+</div>

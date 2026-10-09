@@ -28,6 +28,7 @@ import { Skeleton } from '../../shared/skeleton';
 import { StatusChip } from '../../shared/status-chip';
 import { PatientsService } from '../patients/patients.service';
 import { RecordsService } from './records.service';
+import { NumberField } from '../../shared/number-field';
 
 /**
  * Jerarquía: una orden es un proceso, así que lo primero es dónde está dentro
@@ -48,6 +49,7 @@ import { RecordsService } from './records.service';
     Icon,
     RouterLink,
     ...FORMAT_PIPES,
+    NumberField,
   ],
   templateUrl: './study-order-detail-page.html',
 })

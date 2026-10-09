@@ -138,7 +138,7 @@
       <button type="button" class="global-search" (click)="paletteOpen.set(true)">
         <medsys-icon name="search" [size]="15" />
         <span class="grow">Buscar paciente, factura o prestación</span>
-        <kbd class="kbd">⌘K</kbd>
+        <kbd class="kbd">{{ searchShortcut }}</kbd>
       </button>
     </header>
 

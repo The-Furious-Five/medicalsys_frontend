@@ -22,18 +22,48 @@
       />
     </ng-container>
     <ng-container headerActions>
+      @if (correctable()) {
+        <button type="button" class="btn btn-secondary" (click)="openNote('CREDIT')">
+          <medsys-icon name="file-plus" [size]="15" /> Nota de crédito
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="openNote('DEBIT')">
+          <medsys-icon name="file-plus" [size]="15" /> Nota de débito
+        </button>
+        <button type="button" class="btn btn-danger" (click)="voidOpen.set(true)">
+          <medsys-icon name="ban" [size]="15" /> Anular
+        </button>
+      }
       <button type="button" class="btn btn-secondary" (click)="print()">
         <medsys-icon name="printer" [size]="15" /> Imprimir
       </button>
     </ng-container>
   </medsys-page-header>
 
-  <div class="card invoice-sheet">
-    <div class="card-body stack gap-5">
-      @if (data.demo) {
-        <medsys-demo-caption />
-      }
+  @if (actionFailureMessage(); as detail) {
+    <div class="section">
+      <medsys-notice
+        [tone]="detail.status >= 500 || detail.status === 0 ? 'err' : 'warn'"
+        heading="No se pudo completar la corrección"
+      >
+        {{ detail.message }}
+      </medsys-notice>
+    </div>
+  }
 
+  @if (data.status === 'VOIDED') {
+    <div class="section">
+      <medsys-notice tone="warn" heading="Factura anulada">
+        {{ cancellationReason(data) }}.
+        @if (data.voidedAt) {
+          Se anuló el {{ data.voidedAt | msDateTime }}.
+        }
+        El comprobante original se conserva para auditoría y ya no admite nuevas correcciones.
+      </medsys-notice>
+    </div>
+  }
+
+  <div class="card invoice-sheet print-sheet">
+    <div class="card-body stack gap-5">
       <header class="row gap-4" style="align-items: flex-start">
         <img src="/brand/msys-horizontal.svg" alt="MSYS" width="120" />
         <div class="grow"></div>
@@ -61,9 +91,66 @@
             <span class="t-micro t-num">{{ customerDocument(data) }}</span>
           </div>
           @if (data.customer?.patientId; as patientId) {
-            <a class="t-sec" [routerLink]="['/pacientes', patientId]">Ver ficha</a>
+            <!-- `no-print`: en pantalla lleva al expediente; en papel es un enlace muerto. -->
+            <a class="t-sec no-print" [routerLink]="['/pacientes', patientId]">Ver ficha</a>
           }
         </div>
+      </section>
+
+      <section class="stack gap-3 no-print">
+        <div class="row gap-2 wrap">
+          <h2 class="t-label grow">Correcciones</h2>
+          @if (notes.value(); as correctionNotes) {
+            <span class="t-micro t-num">{{ correctionNotes.length }} documento(s)</span>
+          }
+        </div>
+
+        @if (notes.isLoading()) {
+          <medsys-skeleton width="100%" height="54px" />
+        } @else if (notes.error()) {
+          <medsys-notice tone="warn" heading="No se pudo cargar el historial">
+            Reintenta para comprobar las notas asociadas a esta factura.
+            <button type="button" class="btn btn-secondary btn-sm" (click)="notes.reload()">
+              Reintentar
+            </button>
+          </medsys-notice>
+        } @else if (notes.value()!.length === 0) {
+          <p class="t-sec">
+            Esta factura no tiene notas de crédito ni débito. Las correcciones se emiten como
+            documentos separados para no alterar el comprobante original.
+          </p>
+        } @else {
+          <div class="table-wrap">
+            <table class="table is-compact">
+              <thead>
+                <tr>
+                  <th scope="col">Documento</th>
+                  <th scope="col">Motivo</th>
+                  <th scope="col">Emitida</th>
+                  <th scope="col" class="th-num">Efecto</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (note of notes.value()!; track note.id) {
+                  <tr>
+                    <td class="t-strong">{{ noteTypes[note.type] }} Nº {{ note.noteNumber }}</td>
+                    <td class="t-sec">{{ note.reason }}</td>
+                    <td class="t-num t-sec">{{ note.issuedAt | msDateTime }}</td>
+                    <td class="td-num t-strong">
+                      {{ note.type === 'CREDIT' ? '−' : '+' }} {{ note.amount | msBob }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="3" scope="row" class="td-num">Saldo corregido</th>
+                  <th class="td-num">{{ correctedBalance() | msBob }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        }
       </section>
 
       <section class="stack gap-3">
@@ -151,19 +238,91 @@
           }
         </dl>
       </section>
-
-      @if (data.demo) {
-        <p
-          class="t-micro"
-          style="
-            text-align: center;
-            padding-top: var(--s-3);
-            border-top: 1px solid var(--border-subtle);
-          "
-        >
-          {{ data.caption ?? 'Documento de demostración — sin validez fiscal.' }}
-        </p>
-      }
     </div>
   </div>
+
+  <medsys-confirm-dialog
+    [open]="voidOpen()"
+    heading="Anular factura"
+    description="La factura quedará anulada de forma permanente. No se elimina: su número, CUF, cliente e importe se conservan para auditoría."
+    confirmLabel="Anular factura"
+    [pending]="actionPending()"
+    (confirmed)="voidInvoice()"
+    (cancelled)="voidOpen.set(false)"
+  >
+    <div class="field">
+      <label class="field-label" for="invoice-void-reason">Motivo de anulación</label>
+      <medsys-select
+        controlId="invoice-void-reason"
+        [options]="cancellationReasons"
+        [allowEmpty]="false"
+        [value]="voidReason()"
+        (valueChange)="voidReason.set($event)"
+      />
+    </div>
+  </medsys-confirm-dialog>
+
+  <medsys-dialog
+    [open]="noteOpen()"
+    [heading]="noteType() === 'CREDIT' ? 'Emitir nota de crédito' : 'Emitir nota de débito'"
+    [description]="
+      noteType() === 'CREDIT'
+        ? 'Disminuye el saldo sin modificar la factura original.'
+        : 'Aumenta el saldo sin modificar la factura original.'
+    "
+    [width]="480"
+    (closed)="noteOpen.set(false)"
+  >
+    <div class="stack gap-3">
+      <medsys-notice tone="neutral">
+        Saldo corregido actual: <strong>{{ correctedBalance() | msBob }}</strong>
+      </medsys-notice>
+      <div class="field">
+        <label class="field-label" for="correction-amount">Importe</label>
+        <medsys-number-field
+          controlId="correction-amount"
+          [min]="0.01"
+          [max]="noteType() === 'CREDIT' ? correctedBalance() : null"
+          [step]="0.01"
+          placeholder="0.00"
+          [value]="noteAmount()"
+          (valueChange)="noteAmount.set($event)"
+        />
+        @if (noteType() === 'CREDIT') {
+          <span class="field-hint">No puede superar el saldo corregido actual.</span>
+        }
+        @if (noteAmountTooHigh()) {
+          <span class="field-error" role="alert">
+            Reduce el importe: el crédito supera el saldo corregido.
+          </span>
+        }
+      </div>
+      <div class="field">
+        <label class="field-label" for="correction-reason">Motivo</label>
+        <textarea
+          id="correction-reason"
+          class="textarea"
+          rows="3"
+          maxlength="300"
+          placeholder="Ej.: se cobró una prestación por duplicado"
+          [value]="noteReason()"
+          (input)="noteReason.set($any($event.target).value)"
+        ></textarea>
+      </div>
+    </div>
+
+    <ng-container dialogFooter>
+      <button type="button" class="btn btn-secondary" (click)="noteOpen.set(false)">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="!noteReady() || actionPending()"
+        (click)="issueNote()"
+      >
+        Emitir {{ noteType() === 'CREDIT' ? 'nota de crédito' : 'nota de débito' }}
+      </button>
+    </ng-container>
+  </medsys-dialog>
 }

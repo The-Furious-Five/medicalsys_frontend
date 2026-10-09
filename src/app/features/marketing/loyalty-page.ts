@@ -21,6 +21,7 @@ import { TableSkeleton } from '../../shared/table-skeleton';
 import { PatientPicker } from '../patients/patient-picker';
 import { MarketingService } from './marketing.service';
 import { LoyaltyMovementInput } from './marketing.models';
+import { NumberField } from '../../shared/number-field';
 
 /**
  * Fidelización: programas del centro y el libro mayor de puntos de un paciente.
@@ -52,6 +53,7 @@ import { LoyaltyMovementInput } from './marketing.models';
     Icon,
     ReactiveFormsModule,
     ...FORMAT_PIPES,
+    NumberField,
   ],
   templateUrl: './loyalty-page.html',
 })

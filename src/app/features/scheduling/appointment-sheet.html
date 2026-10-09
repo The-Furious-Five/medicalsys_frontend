@@ -208,24 +208,20 @@
           <div class="grid-2">
             <div class="field">
               <label class="field-label" for="reschedule-time">Hora</label>
-              <input
-                id="reschedule-time"
-                type="time"
-                class="input input-num"
+              <medsys-time-field
+                controlId="reschedule-time"
                 [value]="newTime()"
-                (change)="newTime.set($any($event.target).value); chosenSlot.set(null)"
+                (valueChange)="newTime.set($event); chosenSlot.set(null)"
               />
             </div>
             <div class="field">
               <label class="field-label" for="reschedule-duration">Duración (minutos)</label>
-              <input
-                id="reschedule-duration"
-                type="number"
-                min="5"
-                step="5"
-                class="input input-num"
+              <medsys-number-field
+                controlId="reschedule-duration"
+                [min]="5"
+                [step]="5"
                 [value]="newDuration()"
-                (change)="newDuration.set(+$any($event.target).value || 30)"
+                (valueChange)="newDuration.set(+$event || 30)"
               />
             </div>
           </div>
