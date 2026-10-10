@@ -149,6 +149,8 @@
         </div>
 
         @for (column of columns(); track column.key) {
+          <!-- Clic en un hueco: atajo de mouse para agendar a esa hora; con teclado, el boton Nueva cita. -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <div
             class="agenda-col"
             [style.background-size]="hourBandSize"

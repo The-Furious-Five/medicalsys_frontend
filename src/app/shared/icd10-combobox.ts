@@ -9,7 +9,15 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, debounceTime, distinctUntilChanged, finalize, of, Subject, switchMap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  of,
+  Subject,
+  switchMap,
+} from 'rxjs';
 import { CatalogsApiService } from '../features/catalogs/catalogs-api.service';
 import { Icd10Entry } from '../features/catalogs/catalogs.models';
 import { Icon } from '../core/ui/icon';
@@ -68,19 +76,30 @@ import { Icon } from '../core/ui/icon';
           }
         </p>
       } @else {
-        <p class="field-hint">Escribe un código o una descripción y elige una opción de la lista.</p>
+        <p class="field-hint">
+          Escribe un código o una descripción y elige una opción de la lista.
+        </p>
       }
 
       @if (open()) {
-        <ul class="ms-select-list popover" [id]="listId()" role="listbox" [attr.aria-label]="placeholder()">
+        <ul
+          class="ms-select-list popover"
+          [id]="listId()"
+          role="listbox"
+          [attr.aria-label]="placeholder()"
+        >
           @if (loading()) {
             <li class="ms-select-option" aria-disabled="true">Buscando…</li>
           } @else if (query().trim().length === 0) {
-            <li class="ms-select-option" aria-disabled="true">Escribe para buscar en el catálogo.</li>
+            <li class="ms-select-option" aria-disabled="true">
+              Escribe para buscar en el catálogo.
+            </li>
           } @else if (results().length === 0) {
             <li class="ms-select-option" aria-disabled="true">Sin coincidencias en el catálogo.</li>
           } @else {
             @for (entry of results(); track entry.code; let i = $index) {
+              <!-- Opcion de listbox: el teclado lo atiende el combobox (onKey); el clic es solo para mouse. -->
+              <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
               <li
                 class="ms-select-option"
                 role="option"
