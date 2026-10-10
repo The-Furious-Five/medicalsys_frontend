@@ -26,6 +26,8 @@ import { Icon } from '../core/ui/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Icon],
   template: `
+    <!-- El clic solo detecta el fondo para cerrar; con teclado, el dialog nativo cierra con Escape. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <dialog
       #layer
       class="layer"

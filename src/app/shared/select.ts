@@ -77,6 +77,8 @@ export interface SelectOption {
           (keydown)="onListKey($event)"
         >
           @if (placeholder() && allowEmpty()) {
+            <!-- Opcion de listbox: el teclado lo atiende la lista con aria-activedescendant; el clic es solo para mouse. -->
+            <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
             <li
               class="ms-select-option"
               role="option"
@@ -94,6 +96,8 @@ export interface SelectOption {
           }
 
           @for (option of options(); track option.value; let i = $index) {
+            <!-- Opcion de listbox: el teclado lo atiende la lista con aria-activedescendant; el clic es solo para mouse. -->
+            <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
             <li
               class="ms-select-option"
               role="option"

@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 import { formatAge, formatDocument } from '../../core/format/format';
 import { DOCUMENT_TYPE_SHORT, label } from '../../core/labels/labels';
 import { Skeleton } from '../../shared/skeleton';
