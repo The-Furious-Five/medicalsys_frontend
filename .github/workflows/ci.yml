@@ -1,0 +1,44 @@
+# Calidad del frontend en cada pull request y en cada push a develop/main.
+# Es el mismo `npm run check` que se corre en local, separado en pasos para ver de un vistazo cual fallo.
+name: CI frontend
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calidad:
+    name: Formato, lint, pruebas y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund
+
+      - name: Formato (Prettier)
+        run: npm run format:check
+
+      - name: Lint (ESLint + angular-eslint, sin avisos)
+        run: npm run lint
+
+      - name: Pruebas unitarias (Vitest, incluye chequeo de tipos de los specs)
+        run: npm run test:ci
+
+      - name: Build de produccion (plantillas estrictas y presupuestos de tamano)
+        run: npm run build

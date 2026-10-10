@@ -194,7 +194,7 @@ export class CatalogsPage {
 function filterBy<T>(
   items: readonly T[],
   query: string,
-  fields: (item: T) => Array<string | null | undefined>,
+  fields: (item: T) => (string | null | undefined)[],
 ): readonly T[] {
   const term = query.trim().toLowerCase();
   if (!term) {
