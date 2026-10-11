@@ -50,7 +50,9 @@ export class ProfessionalsPage {
 
   protected readonly professionalTypes = PROFESSIONAL_TYPE;
   protected readonly linkStatuses = PROFESSIONAL_LINK_STATUS;
-  protected readonly canManage = computed(() => can.manageProfessionals(this.session.roles()));
+  protected readonly canManage = computed(() =>
+    can.manageProfessionals(this.session.permissions()),
+  );
 
   protected readonly term = signal('');
   protected readonly specialty = signal<string | null>(null);

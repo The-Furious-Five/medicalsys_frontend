@@ -16,6 +16,7 @@ agrupar sus páginas, componentes, modelos, acceso HTTP, rutas y pruebas relacio
 - `tenancy` (organización)
 - `catalogs` (referencias clínicas)
 - `audit` (bitácora; a la espera de `ms-auditoria`)
+- `access-control` (roles, matriz de accesos y asignación de roles)
 - `settings`
 
 No se deben crear carpetas globales como `all-components` o `all-services`. Un elemento pasa a

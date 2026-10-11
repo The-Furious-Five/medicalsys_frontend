@@ -66,7 +66,9 @@ export class AdvertisementsPage {
   protected readonly tones = advertisementTone;
   protected readonly placementOptions = options(ADVERTISEMENT_PLACEMENT);
 
-  protected readonly canManage = computed(() => can.manageMarketing(this.session.roles()));
+  protected readonly canManage = computed(() =>
+    can.manageAdvertisements(this.session.permissions()),
+  );
 
   protected readonly page = signal(0);
   protected readonly advertisements = this.marketing.advertisementsResource(this.page);

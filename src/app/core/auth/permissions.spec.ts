@@ -1,29 +1,35 @@
 import { describe, expect, it } from 'vitest';
+import { visibleNav } from '../../layout/nav';
 import { can } from './permissions';
 
+const labels = (granted: readonly string[]) =>
+  visibleNav(granted).flatMap((group) => group.items.map((item) => item.label));
+
 /**
- * La tabla se derivó de los `@RequiresRole` reales de cada controlador. Estas
- * pruebas fijan los casos que se comprobaron contra el backend en ejecución.
+ * La interfaz sigue a los permisos del token, no al nombre del rol: es lo que
+ * hace que un cambio en la matriz de accesos se vea en el próximo inicio de
+ * sesión sin tocar el frontend.
  */
-describe('permisos por rol', () => {
-  it('administración no escribe historia clínica', () => {
-    // Comprobado contra el backend: devuelve 403 en narrativa, signos vitales,
-    // diagnósticos, recetas y órdenes de estudio.
-    expect(can.writeNarrative(['ADMINISTRATOR'])).toBe(false);
-    expect(can.signEncounter(['ADMINISTRATOR'])).toBe(false);
+describe('permisos de la interfaz', () => {
+  it('un rol creado desde la API ve exactamente lo que sus permisos alcanzan', () => {
+    // Un AUDITOR con los permisos de la bitácora: ningún rol de sistema se llama
+    // así, y aun así ve su pantalla y nada más.
+    expect(labels(['audit.log.read', 'audit.log.export'])).toEqual(['Auditoría']);
   });
 
-  it('el profesional de salud escribe y firma', () => {
-    expect(can.writeNarrative(['PHYSICIAN'])).toBe(true);
-    expect(can.signEncounter(['PHYSICIAN'])).toBe(true);
+  it('quitar un permiso en la matriz oculta su pantalla aunque el rol sea de sistema', () => {
+    const reception = ['patients.patient.read', 'patients.patient.create', 'clinical.record.read'];
+    expect(labels(reception)).toContain('Pacientes');
+
+    const withoutPatients = reception.filter((code) => code !== 'patients.patient.read');
+    expect(labels(withoutPatients)).not.toContain('Pacientes');
+    expect(labels(withoutPatients)).toContain('Expedientes');
   });
 
-  it('recepción no ve el consumo del plan', () => {
-    expect(can.viewUsage(['RECEPTIONIST'])).toBe(false);
-  });
-
-  it('recepción sí puede facturar y registrar pacientes', () => {
-    expect(can.issueInvoice(['RECEPTIONIST'])).toBe(true);
-    expect(can.registerPatient(['RECEPTIONIST'])).toBe(true);
+  it('cada acción exige el permiso de su endpoint, no el de su pantalla', () => {
+    // Ver pacientes no da para registrarlos: ms-pacientes rechaza el POST sin
+    // patients.patient.create, que es lo que le faltaba al profesional de salud.
+    expect(can.registerPatient(['patients.patient.read'])).toBe(false);
+    expect(can.registerPatient(['patients.patient.create'])).toBe(true);
   });
 });

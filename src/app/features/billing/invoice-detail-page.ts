@@ -76,7 +76,7 @@ export class InvoiceDetailPage {
     computed(() => this.invoiceId() ?? null),
   );
 
-  protected readonly canCorrect = computed(() => can.correctInvoice(this.session.roles()));
+  protected readonly canCorrect = computed(() => can.correctInvoice(this.session.permissions()));
   protected readonly correctable = computed(() => {
     const status = this.invoice.value()?.status;
     return (

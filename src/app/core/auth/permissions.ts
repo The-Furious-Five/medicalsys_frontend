@@ -1,122 +1,111 @@
 /**
- * Roles del sistema y lo que cada uno puede hacer en esta interfaz.
+ * Qué puede hacer en esta interfaz quien inició sesión.
  *
- * La tabla se derivó de las anotaciones `@RequiresRole` reales de cada
- * controlador. Si la interfaz ofreciera algo que el backend rechaza, el usuario
- * chocaría contra un 403 después de haber hecho el trabajo; por eso se lee del
- * código del servicio y no de la documentación.
+ * Cada regla exige el permiso del catálogo (`modulo.recurso.accion`, RBAC-01)
+ * del endpoint que la pantalla o el botón usa, tomado de la hoja endpoint →
+ * permiso de la plataforma (`docs/seguridad/rbac-01-endpoints-permisos.csv`).
+ * Los servicios autorizan con ese mismo permiso (RBAC-03), así que la interfaz
+ * no ofrece una puerta que el backend vaya a cerrar con un 403.
+ *
+ * Se decide por permisos y no por roles porque los roles se editan desde la
+ * matriz de accesos (RBAC-05): quitarle un permiso a un rol, o crear uno nuevo
+ * como AUDITOR, cambia lo que se ve en el siguiente inicio de sesión sin tocar
+ * este archivo.
+ *
+ * Cuando una pantalla ofrece varias acciones del mismo recurso y la asignación
+ * inicial las da a los mismos roles, la regla usa el permiso de la acción
+ * principal. Si la matriz llega a separarlas, la acción restante la sigue
+ * rechazando el servicio y la interfaz muestra su 403.
  */
-export type Role =
-  | 'PLATFORM_ADMIN'
-  | 'ADMINISTRATOR'
-  | 'MARKETING_MANAGER'
-  | 'PHYSICIAN'
-  | 'RECEPTIONIST'
-  | 'BILLING_CLERK'
-  | 'PATIENT';
+export type Grants = readonly string[];
 
-export type Roles = readonly string[];
-
-const has = (roles: Roles, ...allowed: Role[]): boolean =>
-  roles.some((role) => (allowed as string[]).includes(role));
+const has = (granted: Grants, code: string): boolean => granted.includes(code);
+const anyOf = (granted: Grants, ...codes: string[]): boolean =>
+  codes.some((code) => granted.includes(code));
 
 export const can = {
   /* ms-historial */
-  viewRecords: (r: Roles) => has(r, 'PHYSICIAN', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  openRecord: (r: Roles) => has(r, 'PHYSICIAN', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  openEncounter: (r: Roles) => has(r, 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  writeNarrative: (r: Roles) => has(r, 'PHYSICIAN', 'PLATFORM_ADMIN'),
-  signEncounter: (r: Roles) => has(r, 'PHYSICIAN', 'PLATFORM_ADMIN'),
-  voidEncounter: (r: Roles) => has(r, 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  writeAllergies: (r: Roles) => has(r, 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  writeVitals: (r: Roles) => has(r, 'PHYSICIAN', 'RECEPTIONIST', 'PLATFORM_ADMIN'),
-  manageStudyOrders: (r: Roles) =>
-    has(r, 'PHYSICIAN', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  viewRecords: (g: Grants) => has(g, 'clinical.record.read'),
+  viewEncounters: (g: Grants) => has(g, 'clinical.encounter.read'),
+  openRecord: (g: Grants) => has(g, 'clinical.record.create'),
+  openEncounter: (g: Grants) => has(g, 'clinical.encounter.open'),
+  writeNarrative: (g: Grants) => has(g, 'clinical.encounter.update_notes'),
+  signEncounter: (g: Grants) => has(g, 'clinical.encounter.sign'),
+  voidEncounter: (g: Grants) => has(g, 'clinical.encounter.void'),
+  writeAddendum: (g: Grants) => has(g, 'clinical.addendum.create'),
+  writeAllergies: (g: Grants) => has(g, 'clinical.allergy.create'),
+  writeVitals: (g: Grants) => has(g, 'clinical.vital_sign.create'),
+  viewStudyOrders: (g: Grants) => has(g, 'clinical.study_order.read'),
 
-  /* ms-profesionales.
-     Recepción consulta el directorio para saber a quién citar, pero no da de
-     alta ni desactiva vínculos: eso cambia quién puede atender en el centro y
-     lo decide quien lo organiza. */
-  viewProfessionals: (r: Roles) =>
-    has(r, 'RECEPTIONIST', 'ADMINISTRATOR', 'PHYSICIAN', 'PLATFORM_ADMIN'),
-  manageProfessionals: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  /* ms-profesionales */
+  viewProfessionals: (g: Grants) => has(g, 'professionals.professional.read'),
+  manageProfessionals: (g: Grants) => has(g, 'professionals.professional.create'),
 
-  /* ms-agenda.
-     El servicio no anota roles —el gateway lo publica abierto—, así que aquí la
-     regla es la del mostrador real: recepción y profesionales trabajan con la
-     agenda del día; la disponibilidad y los consultorios los define quien
-     organiza el centro, no quien atiende. */
-  viewSchedule: (r: Roles) =>
-    has(r, 'RECEPTIONIST', 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  manageAppointments: (r: Roles) =>
-    has(r, 'RECEPTIONIST', 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  manageAvailability: (r: Roles) => has(r, 'PHYSICIAN', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  manageResources: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  /* ms-agenda */
+  viewSchedule: (g: Grants) => has(g, 'scheduling.appointment.read'),
+  manageAvailability: (g: Grants) => has(g, 'scheduling.availability.create'),
+  manageResources: (g: Grants) => has(g, 'scheduling.resource.create'),
 
   /* ms-tenencia */
-  viewOrganization: (r: Roles) =>
-    has(r, 'ADMINISTRATOR', 'RECEPTIONIST', 'BILLING_CLERK', 'PHYSICIAN', 'PLATFORM_ADMIN'),
-  manageOrganization: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  viewSubscription: (r: Roles) => has(r, 'ADMINISTRATOR', 'BILLING_CLERK', 'PLATFORM_ADMIN'),
-  viewUsage: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  viewOrganization: (g: Grants) => has(g, 'tenancy.organization.read'),
+  manageOrganization: (g: Grants) => has(g, 'tenancy.organization.update'),
+  viewOfferings: (g: Grants) => has(g, 'tenancy.service_offering.read'),
+  manageOfferings: (g: Grants) => has(g, 'tenancy.service_offering.create'),
+  viewSubscription: (g: Grants) => has(g, 'tenancy.subscription.read'),
+  viewUsage: (g: Grants) => has(g, 'tenancy.usage.read'),
 
-  /* ms-facturacion */
-  viewInvoices: (r: Roles) =>
-    has(r, 'BILLING_CLERK', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  issueInvoice: (r: Roles) =>
-    has(r, 'BILLING_CLERK', 'RECEPTIONIST', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  correctInvoice: (r: Roles) => has(r, 'BILLING_CLERK', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  /* ms-facturacion.
+     La anulación y las notas de crédito y débito todavía no existen en el
+     servicio, que solo publica emitir y consultar. Su permiso no está en el
+     catálogo y por eso nadie ve el botón: cuando el endpoint exista, el permiso
+     entra al catálogo con una migración y la matriz decide quién lo tiene. */
+  viewInvoices: (g: Grants) => has(g, 'billing.invoice.read'),
+  issueInvoice: (g: Grants) => has(g, 'billing.invoice.issue'),
+  correctInvoice: (g: Grants) => has(g, 'billing.invoice.void'),
 
-  /* ms-marketing.
-     El servicio declara `MARKETING_MANAGER` para el día en que ms-identidad lo
-     emita; hoy ningún token lo trae, así que cada permiso acepta además
-     `ADMINISTRATOR`. Si dependiera solo del rol futuro, la sección quedaría
-     inalcanzable para todo el mundo.
+  /* ms-marketing */
+  viewCampaigns: (g: Grants) => has(g, 'marketing.campaign.read'),
+  manageCampaigns: (g: Grants) => has(g, 'marketing.campaign.create'),
+  viewSegments: (g: Grants) => has(g, 'marketing.segment.read'),
+  manageSegments: (g: Grants) => has(g, 'marketing.segment.create'),
+  viewCoupons: (g: Grants) => has(g, 'marketing.promotion.read'),
+  manageCoupons: (g: Grants) => has(g, 'marketing.promotion.create'),
+  redeemCoupons: (g: Grants) => has(g, 'marketing.coupon.redeem'),
+  viewAdvertisements: (g: Grants) => has(g, 'marketing.advertisement.read'),
+  manageAdvertisements: (g: Grants) => has(g, 'marketing.advertisement.create'),
+  /* La pantalla abre con la lista de programas: sin ese permiso no hay nada
+     que mostrar, aunque el saldo de un paciente sí se pudiera consultar. */
+  viewLoyalty: (g: Grants) => has(g, 'marketing.loyalty_program.read'),
+  manageLoyalty: (g: Grants) => has(g, 'marketing.loyalty_program.create'),
+  registerLoyaltyMovement: (g: Grants) => has(g, 'marketing.loyalty_movement.create'),
+  viewCommercialActivity: (g: Grants) => has(g, 'marketing.patient_activity.read'),
+  manageOptOut: (g: Grants) => has(g, 'marketing.opt_out.update'),
 
-     La lectura se abre a recepción porque el mostrador necesita saber qué
-     campaña está corriendo cuando un paciente llama por el mensaje que recibió.
-     Los cupones los consulta y canjea caja, que es quien cobra. */
-  viewMarketing: (r: Roles) =>
-    has(r, 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN', 'RECEPTIONIST'),
-  manageMarketing: (r: Roles) => has(r, 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  viewCoupons: (r: Roles) =>
-    has(r, 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN', 'RECEPTIONIST', 'BILLING_CLERK'),
-  redeemCoupons: (r: Roles) =>
-    has(r, 'BILLING_CLERK', 'RECEPTIONIST', 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  viewLoyalty: (r: Roles) =>
-    has(r, 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN', 'RECEPTIONIST', 'BILLING_CLERK'),
-  /* Acumular no está: llega por evento desde ms-facturacion con su clave de
-     idempotencia, y el servicio rechaza el asiento manual de tipo ACCRUAL. */
-  registerLoyaltyMovement: (r: Roles) =>
-    has(r, 'RECEPTIONIST', 'BILLING_CLERK', 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
-  manageOptOut: (r: Roles) =>
-    has(r, 'RECEPTIONIST', 'MARKETING_MANAGER', 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  /* ms-auditoria */
+  viewAudit: (g: Grants) => has(g, 'audit.log.read'),
 
-  /* ms-auditoria.
-     La bitácora registra quién leyó y quién modificó cada expediente, así que
-     es material de control interno y no de consulta general: la ve quien
-     responde por el centro, no quien atiende en él.
+  /* ms-catalogos. La pantalla reúne los cinco catálogos de referencia. */
+  viewCatalogs: (g: Grants) =>
+    anyOf(
+      g,
+      'catalogs.icd10.read',
+      'catalogs.medication.read',
+      'catalogs.specialty.read',
+      'catalogs.study_type.read',
+      'catalogs.tax.read',
+    ),
 
-     Coincide con el `@RequiresRole({ADMINISTRATOR, PLATFORM_ADMIN})` que
-     declaran los controladores de ms-auditoria, así que la interfaz no ofrece
-     una puerta que el servicio vaya a cerrar con un 403. */
-  viewAudit: (r: Roles) => has(r, 'ADMINISTRATOR', 'PLATFORM_ADMIN'),
+  /* ms-pacientes */
+  viewPatients: (g: Grants) => has(g, 'patients.patient.read'),
+  registerPatient: (g: Grants) => has(g, 'patients.patient.create'),
 
-  /* ms-catalogos.
-     El catálogo es material de referencia de solo lectura —CIE-10, vademécum,
-     tipos de estudio, especialidades— y lo consulta cualquiera que ya haya
-     entrado: el médico busca un código mientras diagnostica, recepción
-     confirma el nombre de un estudio al citar y caja comprueba qué se está
-     cobrando. No hay dato de ninguna persona detrás, así que restringirlo solo
-     obligaría a preguntar a un compañero. */
-  viewCatalogs: (r: Roles) =>
-    has(r, 'ADMINISTRATOR', 'PHYSICIAN', 'RECEPTIONIST', 'BILLING_CLERK', 'PLATFORM_ADMIN'),
-
-  /* ms-pacientes, servicio de apoyo */
-  viewPatients: (r: Roles) =>
-    has(r, 'RECEPTIONIST', 'ADMINISTRATOR', 'PHYSICIAN', 'BILLING_CLERK', 'PLATFORM_ADMIN'),
-  registerPatient: (r: Roles) =>
-    has(r, 'RECEPTIONIST', 'ADMINISTRATOR', 'PHYSICIAN', 'PLATFORM_ADMIN'),
+  /* ms-identidad: roles, matriz de accesos y asignación (RBAC-05).
+     Asignar roles exige además ver las cuentas y los roles, porque la pantalla
+     lista unas y ofrece los otros. */
+  viewRoles: (g: Grants) => has(g, 'identity.role.read'),
+  manageRoles: (g: Grants) => has(g, 'identity.role.manage'),
+  viewRoleAssignments: (g: Grants) => has(g, 'identity.user.read') && has(g, 'identity.role.read'),
+  assignRoles: (g: Grants) => has(g, 'identity.role.assign'),
 } as const;
 
 export type Permission = keyof typeof can;

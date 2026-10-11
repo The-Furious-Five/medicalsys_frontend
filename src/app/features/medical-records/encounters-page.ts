@@ -55,7 +55,7 @@ export class EncountersPage {
   protected readonly encounterStatuses = ENCOUNTER_STATUS;
   protected readonly encounterTones = encounterTone;
   protected readonly statusOptions = options(ENCOUNTER_STATUS);
-  protected readonly canOpen = computed(() => can.openEncounter(this.session.roles()));
+  protected readonly canOpen = computed(() => can.openEncounter(this.session.permissions()));
 
   protected readonly status = signal<string | null>(
     localStorage.getItem('medicalsys.encounters.status') || null,

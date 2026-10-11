@@ -1,4 +1,4 @@
-import { Permission, Roles, can } from '../core/auth/permissions';
+import { Grants, Permission, can } from '../core/auth/permissions';
 import { IconName } from '../core/ui/icon';
 
 export interface NavItem {
@@ -18,7 +18,7 @@ export interface NavGroup {
 /**
  * Modelo de la navegación.
  *
- * El menú muestra únicamente lo que el rol activo puede usar. Nada aparece
+ * El menú muestra únicamente lo que los permisos de la sesión permiten usar. Nada aparece
  * visible y deshabilitado «para que se vea completo»: enseñar puertas cerradas
  * no ayuda a nadie a hacer su trabajo.
  */
@@ -57,12 +57,17 @@ const NAV: readonly NavGroup[] = [
     items: [
       { link: '/pacientes', label: 'Pacientes', icon: 'users', permission: 'viewPatients' },
       { link: '/expedientes', label: 'Expedientes', icon: 'file-text', permission: 'viewRecords' },
-      { link: '/encuentros', label: 'Encuentros', icon: 'stethoscope', permission: 'viewRecords' },
+      {
+        link: '/encuentros',
+        label: 'Encuentros',
+        icon: 'stethoscope',
+        permission: 'viewEncounters',
+      },
       {
         link: '/ordenes-estudio',
         label: 'Órdenes de estudio',
         icon: 'flask',
-        permission: 'manageStudyOrders',
+        permission: 'viewStudyOrders',
       },
     ],
   },
@@ -87,16 +92,21 @@ const NAV: readonly NavGroup[] = [
     id: 'marketing',
     label: 'Marketing',
     items: [
-      { link: '/campanas', label: 'Campañas', icon: 'megaphone', permission: 'viewMarketing' },
-      { link: '/segmentos', label: 'Segmentos', icon: 'target', permission: 'viewMarketing' },
+      { link: '/campanas', label: 'Campañas', icon: 'megaphone', permission: 'viewCampaigns' },
+      { link: '/segmentos', label: 'Segmentos', icon: 'target', permission: 'viewSegments' },
       { link: '/promociones', label: 'Cupones', icon: 'ticket', permission: 'viewCoupons' },
-      { link: '/anuncios', label: 'Anuncios', icon: 'monitor', permission: 'viewMarketing' },
+      {
+        link: '/anuncios',
+        label: 'Anuncios',
+        icon: 'monitor',
+        permission: 'viewAdvertisements',
+      },
       { link: '/fidelidad', label: 'Fidelización', icon: 'gift', permission: 'viewLoyalty' },
       {
         link: '/actividad-comercial',
         label: 'Actividad comercial',
         icon: 'activity',
-        permission: 'viewMarketing',
+        permission: 'viewCommercialActivity',
       },
     ],
   },
@@ -128,7 +138,7 @@ const NAV: readonly NavGroup[] = [
         link: '/prestaciones',
         label: 'Prestaciones',
         icon: 'wallet',
-        permission: 'viewOrganization',
+        permission: 'viewOfferings',
       },
       {
         link: '/suscripcion',
@@ -152,13 +162,26 @@ const NAV: readonly NavGroup[] = [
         icon: 'file-signature',
         permission: 'viewAudit',
       },
+      { link: '/roles', label: 'Roles', icon: 'shield-check', permission: 'viewRoles' },
+      {
+        link: '/matriz-accesos',
+        label: 'Matriz de accesos',
+        icon: 'table',
+        permission: 'viewRoles',
+      },
+      {
+        link: '/asignacion-roles',
+        label: 'Asignación de roles',
+        icon: 'user-check',
+        permission: 'viewRoleAssignments',
+      },
     ],
   },
 ];
 
-export function visibleNav(roles: Roles): readonly NavGroup[] {
+export function visibleNav(granted: Grants): readonly NavGroup[] {
   return NAV.map((group) => ({
     ...group,
-    items: group.items.filter((item) => can[item.permission](roles)),
+    items: group.items.filter((item) => can[item.permission](granted)),
   })).filter((group) => group.items.length > 0);
 }

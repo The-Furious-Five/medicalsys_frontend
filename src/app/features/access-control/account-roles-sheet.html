@@ -1,0 +1,115 @@
+<medsys-dialog
+  [open]="account() !== null"
+  variant="sheet"
+  [width]="560"
+  [heading]="heading()"
+  [description]="current()?.email ?? null"
+  (closed)="closed.emit()"
+>
+  @if (current(); as item) {
+    <div class="stack gap-4">
+      <div class="row gap-2">
+        <span class="t-sec">Estado de la cuenta</span>
+        <medsys-status-chip [value]="item.status" [dictionary]="statuses" [tones]="statusTones" />
+      </div>
+
+      @if (canAssign() && lock(); as reason) {
+        <medsys-notice tone="warn" heading="Solo lectura" icon="lock">{{ reason }}</medsys-notice>
+      }
+      @if (failureMessage(); as message) {
+        <medsys-notice tone="err">{{ message }}</medsys-notice>
+      }
+
+      <section class="stack gap-2">
+        <h3 class="t-section">Roles</h3>
+        @for (assignment of assignments(); track assignment.id) {
+          <div class="row gap-3 assignment">
+            <div class="pair grow">
+              <span class="t-strong">{{ assignment.name }}</span>
+              <span class="t-micro">{{ assignment.role }} · {{ assignment.validity }}</span>
+            </div>
+            <medsys-status-chip [value]="assignment.state" [dictionary]="states" [tones]="tones" />
+            @if (editable() && assignment.revocable) {
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                (click)="revoking.set({ role: assignment.role, name: assignment.name })"
+              >
+                Revocar
+              </button>
+            }
+          </div>
+        } @empty {
+          <p class="t-sec t-measure">
+            Sin roles: la cuenta inicia sesión, pero no puede usar ninguna función.
+          </p>
+        }
+      </section>
+
+      @if (editable()) {
+        <form class="stack gap-3" [formGroup]="form" novalidate (ngSubmit)="assign()">
+          <h3 class="t-section">Asignar un rol</h3>
+          @if (roleOptions().length === 0) {
+            <p class="t-sec t-measure">
+              No queda ningún rol que puedas asignarle. Solo se ofrecen los roles activos que tus
+              roles tienen delegados y que la cuenta todavía no tiene.
+            </p>
+          } @else {
+            <div class="field">
+              <label class="field-label" for="assign-role">Rol</label>
+              <medsys-select
+                formControlName="role"
+                [options]="roleOptions()"
+                [controlId]="'assign-role'"
+                placeholder="Elige el rol"
+              />
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="field-label" for="assign-from">Desde</label>
+                <medsys-date-field [controlId]="'assign-from'" formControlName="validFrom" />
+              </div>
+              <div class="field">
+                <label class="field-label" for="assign-until">
+                  Hasta <span class="field-optional">(opcional)</span>
+                </label>
+                <medsys-date-field
+                  [controlId]="'assign-until'"
+                  formControlName="validUntil"
+                  [min]="form.controls.validFrom.value || null"
+                  [invalid]="datesError() !== null"
+                />
+              </div>
+            </div>
+            @if (datesError(); as message) {
+              <span class="field-error" role="alert">{{ message }}</span>
+            }
+            <span class="field-hint">
+              Un reemplazo, un soporte o una auditoría llevan fecha de fin: al vencer, el acceso
+              deja de existir sin que nadie lo quite.
+            </span>
+            <div class="row gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary btn-sm"
+                [disabled]="form.controls.role.invalid || pending()"
+              >
+                <medsys-icon name="user-check" [size]="14" /> Asignar rol
+              </button>
+            </div>
+          }
+        </form>
+      }
+    </div>
+  }
+</medsys-dialog>
+
+<medsys-confirm-dialog
+  [open]="revoking() !== null"
+  [heading]="'Revocar ' + (revoking()?.name ?? '')"
+  description="La cuenta pierde el rol en este momento y se cierran sus sesiones: al volver a entrar ya no tendrá sus permisos."
+  confirmLabel="Revocar rol"
+  [pending]="pending()"
+  (confirmed)="revoke()"
+  (cancelled)="revoking.set(null)"
+/>

@@ -50,7 +50,7 @@ export class OfferingsPage {
   private readonly session = inject(AuthSession);
   private readonly toasts = inject(ToastService);
 
-  protected readonly editable = computed(() => can.manageOrganization(this.session.roles()));
+  protected readonly editable = computed(() => can.manageOfferings(this.session.permissions()));
 
   protected readonly vigencyOptions: readonly SelectOption[] = [
     { value: 'active', label: 'Solo vigentes' },

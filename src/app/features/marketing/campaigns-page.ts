@@ -46,7 +46,7 @@ export class CampaignsPage {
   protected readonly campaignTones = campaignTone;
   protected readonly statusOptions = options(CAMPAIGN_STATUS);
 
-  protected readonly canManage = computed(() => can.manageMarketing(this.session.roles()));
+  protected readonly canManage = computed(() => can.manageCampaigns(this.session.permissions()));
 
   protected readonly page = signal(0);
   protected readonly status = signal<string | null>(null);

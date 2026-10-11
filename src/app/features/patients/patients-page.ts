@@ -41,7 +41,7 @@ export class PatientsPage {
   private readonly router = inject(Router);
 
   protected readonly patientStatuses = PATIENT_STATUS;
-  protected readonly canRegister = computed(() => can.registerPatient(this.session.roles()));
+  protected readonly canRegister = computed(() => can.registerPatient(this.session.permissions()));
 
   protected readonly term = signal('');
   /** Se busca al dejar de escribir: menos peticiones y menos parpadeo de
