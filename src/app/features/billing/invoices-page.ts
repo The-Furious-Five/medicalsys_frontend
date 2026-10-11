@@ -49,7 +49,7 @@ export class InvoicesPage {
 
   protected readonly invoiceStatuses = INVOICE_STATUS;
   protected readonly invoiceTones = invoiceTone;
-  protected readonly canIssue = computed(() => can.issueInvoice(this.session.roles()));
+  protected readonly canIssue = computed(() => can.issueInvoice(this.session.permissions()));
 
   protected readonly page = signal(0);
   protected readonly patientId = toSignal(

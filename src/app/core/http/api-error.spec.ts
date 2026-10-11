@@ -55,6 +55,25 @@ describe('describeFailure', () => {
     expect(detail.retryable).toBe(true);
   });
 
+  it('lee el motivo de un ProblemDetail, que es como responde ms-identidad', () => {
+    const detail = describeFailure(
+      new HttpErrorResponse({
+        status: 409,
+        error: {
+          type: 'about:blank',
+          title: 'Conflicto',
+          status: 409,
+          detail: 'Segregacion de funciones: el rol BILLING_CLERK es incompatible con PHYSICIAN',
+          service: 'ms-identidad',
+          correlationId: '147c87d8-e5f4-4d24-a760-4974f8897a0c',
+        },
+      }),
+    );
+    // El motivo del servicio, no el «conflicto» genérico: dice qué par choca.
+    expect(detail.message).toContain('es incompatible con PHYSICIAN');
+    expect(detail.correlationId).toBe('147c87d8-e5f4-4d24-a760-4974f8897a0c');
+  });
+
   it('explica la caída de red sin exponer detalles técnicos', () => {
     const detail = describeFailure(new HttpErrorResponse({ status: 0 }));
     expect(detail.title).toBe('El servicio no responde');

@@ -104,8 +104,10 @@ export class RecordDetailPage {
   protected readonly tab = signal<Tab>('encuentros');
   protected readonly openingEncounter = signal(false);
 
-  protected readonly canOpenEncounter = computed(() => can.openEncounter(this.session.roles()));
-  protected readonly canWrite = computed(() => can.writeAllergies(this.session.roles()));
+  protected readonly canOpenEncounter = computed(() =>
+    can.openEncounter(this.session.permissions()),
+  );
+  protected readonly canWrite = computed(() => can.writeAllergies(this.session.permissions()));
 
   protected readonly isActive = computed(() => this.record.value()?.status === 'ACTIVE');
   protected readonly statusLabel = computed(() =>

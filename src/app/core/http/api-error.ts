@@ -39,6 +39,26 @@ export function isApiError(value: unknown): value is ApiError {
   );
 }
 
+/**
+ * ms-identidad no usa el contrato común: responde con ProblemDetail (RFC 9457),
+ * y el texto que explica el rechazo está en `detail`. Sin leerlo, las reglas de
+ * gobierno de roles —nadie edita un rol propio, el par incompatible, la
+ * delegación— llegaban como un conflicto genérico que no dice qué corregir.
+ */
+interface ProblemDetail {
+  readonly status: number;
+  readonly detail: string;
+  readonly correlationId?: string;
+}
+
+function isProblemDetail(value: unknown): value is ProblemDetail {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const candidate = value as Partial<ProblemDetail>;
+  return typeof candidate.status === 'number' && typeof candidate.detail === 'string';
+}
+
 /** Fallo ya interpretado: lo que la interfaz necesita para explicarlo. */
 export interface FailureDetail {
   readonly title: string;
@@ -94,10 +114,18 @@ export function describeFailure(failure: unknown): FailureDetail {
 
   const body: unknown = failure.error;
   const api = isApiError(body) ? body : null;
-  const correlationId = api?.correlationId ?? failure.headers?.get('X-Correlation-Id') ?? null;
+  const problem = api === null && isProblemDetail(body) ? body : null;
+  const correlationId =
+    api?.correlationId ??
+    problem?.correlationId ??
+    failure.headers?.get('X-Correlation-Id') ??
+    null;
   const fieldErrors = api?.details ?? [];
   const message =
-    api?.message ?? DEFAULT_MESSAGES[failure.status] ?? 'No se pudo completar la operación.';
+    api?.message ??
+    problem?.detail ??
+    DEFAULT_MESSAGES[failure.status] ??
+    'No se pudo completar la operación.';
   const code = api?.code ?? `HTTP_${failure.status}`;
 
   const base = { status: failure.status, code, correlationId, fieldErrors };

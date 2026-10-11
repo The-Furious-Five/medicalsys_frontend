@@ -32,6 +32,41 @@ export const routes: Routes = [
         loadComponent: () => import('./features/audit/audit-page').then((m) => m.AuditPage),
       },
 
+      /* ------------------------------------------------- roles y accesos -- */
+      /* Los sirve ms-identidad en `/api/v1/identity/**` (RBAC-05). Ver roles y
+         matriz exige `identity.role.read`; editarlos, `identity.role.manage`,
+         que cada pantalla consulta para ofrecer o no sus controles. */
+      {
+        path: 'roles',
+        title: 'MSYS · Roles',
+        canActivate: [permissionGuard('viewRoles')],
+        loadComponent: () =>
+          import('./features/access-control/roles-page').then((m) => m.RolesPage),
+      },
+      {
+        path: 'roles/:code',
+        title: 'MSYS · Rol',
+        canActivate: [permissionGuard('viewRoles')],
+        loadComponent: () =>
+          import('./features/access-control/role-detail-page').then((m) => m.RoleDetailPage),
+      },
+      {
+        path: 'matriz-accesos',
+        title: 'MSYS · Matriz de accesos',
+        canActivate: [permissionGuard('viewRoles')],
+        loadComponent: () =>
+          import('./features/access-control/access-matrix-page').then((m) => m.AccessMatrixPage),
+      },
+      {
+        path: 'asignacion-roles',
+        title: 'MSYS · Asignación de roles',
+        canActivate: [permissionGuard('viewRoleAssignments')],
+        loadComponent: () =>
+          import('./features/access-control/role-assignments-page').then(
+            (m) => m.RoleAssignmentsPage,
+          ),
+      },
+
       /* -------------------------------------------------------- catálogos -- */
       {
         path: 'catalogos',
@@ -102,28 +137,28 @@ export const routes: Routes = [
       {
         path: 'encuentros',
         title: 'MSYS · Encuentros',
-        canActivate: [permissionGuard('viewRecords')],
+        canActivate: [permissionGuard('viewEncounters')],
         loadComponent: () =>
           import('./features/medical-records/encounters-page').then((m) => m.EncountersPage),
       },
       {
         path: 'encuentros/:encounterId',
         title: 'MSYS · Encuentro clínico',
-        canActivate: [permissionGuard('viewRecords')],
+        canActivate: [permissionGuard('viewEncounters')],
         loadComponent: () =>
           import('./features/medical-records/encounter-page').then((m) => m.EncounterPage),
       },
       {
         path: 'ordenes-estudio',
         title: 'MSYS · Órdenes de estudio',
-        canActivate: [permissionGuard('manageStudyOrders')],
+        canActivate: [permissionGuard('viewStudyOrders')],
         loadComponent: () =>
           import('./features/medical-records/study-orders-page').then((m) => m.StudyOrdersPage),
       },
       {
         path: 'ordenes-estudio/:orderId',
         title: 'MSYS · Orden de estudio',
-        canActivate: [permissionGuard('manageStudyOrders')],
+        canActivate: [permissionGuard('viewStudyOrders')],
         loadComponent: () =>
           import('./features/medical-records/study-order-detail-page').then(
             (m) => m.StudyOrderDetailPage,
@@ -176,28 +211,28 @@ export const routes: Routes = [
         path: 'campanas',
         pathMatch: 'full',
         title: 'MSYS · Campañas',
-        canActivate: [permissionGuard('viewMarketing')],
+        canActivate: [permissionGuard('viewCampaigns')],
         loadComponent: () =>
           import('./features/marketing/campaigns-page').then((m) => m.CampaignsPage),
       },
       {
         path: 'campanas/nueva',
         title: 'MSYS · Nueva campaña',
-        canActivate: [permissionGuard('manageMarketing')],
+        canActivate: [permissionGuard('manageCampaigns')],
         loadComponent: () =>
           import('./features/marketing/new-campaign-page').then((m) => m.NewCampaignPage),
       },
       {
         path: 'campanas/:campaignId',
         title: 'MSYS · Campaña',
-        canActivate: [permissionGuard('viewMarketing')],
+        canActivate: [permissionGuard('viewCampaigns')],
         loadComponent: () =>
           import('./features/marketing/campaign-detail-page').then((m) => m.CampaignDetailPage),
       },
       {
         path: 'segmentos',
         title: 'MSYS · Segmentos',
-        canActivate: [permissionGuard('viewMarketing')],
+        canActivate: [permissionGuard('viewSegments')],
         loadComponent: () =>
           import('./features/marketing/segments-page').then((m) => m.SegmentsPage),
       },
@@ -211,7 +246,7 @@ export const routes: Routes = [
       {
         path: 'anuncios',
         title: 'MSYS · Anuncios',
-        canActivate: [permissionGuard('viewMarketing')],
+        canActivate: [permissionGuard('viewAdvertisements')],
         loadComponent: () =>
           import('./features/marketing/advertisements-page').then((m) => m.AdvertisementsPage),
       },
@@ -224,7 +259,7 @@ export const routes: Routes = [
       {
         path: 'actividad-comercial',
         title: 'MSYS · Actividad comercial',
-        canActivate: [permissionGuard('viewMarketing')],
+        canActivate: [permissionGuard('viewCommercialActivity')],
         loadComponent: () =>
           import('./features/marketing/activity-page').then((m) => m.ActivityPage),
       },
@@ -240,7 +275,7 @@ export const routes: Routes = [
       {
         path: 'prestaciones',
         title: 'MSYS · Prestaciones',
-        canActivate: [permissionGuard('viewOrganization')],
+        canActivate: [permissionGuard('viewOfferings')],
         loadComponent: () =>
           import('./features/tenancy/offerings-page').then((m) => m.OfferingsPage),
       },

@@ -1,0 +1,341 @@
+@if (role.isLoading() && current() === null) {
+  <medsys-page-header heading="Rol" [crumbs]="[{ label: 'Roles', link: '/roles' }]" />
+  <div class="card">
+    <div class="card-body stack gap-3">
+      <medsys-skeleton width="40%" height="24px" />
+      <medsys-skeleton width="100%" height="100px" />
+    </div>
+  </div>
+} @else if (role.error()) {
+  <medsys-page-header heading="Rol" [crumbs]="[{ label: 'Roles', link: '/roles' }]" />
+  <div class="card">
+    <medsys-error-state [failure]="role.error()" (retry)="role.reload()" />
+  </div>
+} @else if (current(); as item) {
+  <medsys-page-header
+    [heading]="item.name"
+    [crumbs]="crumbs()"
+    [description]="item.description || 'Sin descripción.'"
+  >
+    <ng-container headerMeta>
+      <span class="clin-code">{{ item.code }}</span>
+      <span class="chip chip-neutral">{{ scopes[item.scope] }}</span>
+      @if (item.system) {
+        <span class="chip chip-brand">De sistema</span>
+      }
+      <medsys-status-chip [value]="item.active ? 'ACTIVE' : 'INACTIVE'" [dictionary]="states" />
+    </ng-container>
+    <ng-container headerActions>
+      <a class="btn btn-secondary" routerLink="/matriz-accesos" [queryParams]="{ rol: item.code }">
+        <medsys-icon name="table" [size]="15" /> Ver en la matriz
+      </a>
+      @if (editable() && !item.system) {
+        @if (item.active) {
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="confirming.set({ kind: 'deactivate' })"
+          >
+            <medsys-icon name="power" [size]="15" /> Desactivar
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="confirming.set({ kind: 'reactivate' })"
+          >
+            <medsys-icon name="power" [size]="15" /> Reactivar
+          </button>
+        }
+      }
+    </ng-container>
+  </medsys-page-header>
+
+  <div class="stack gap-4">
+    @if (canManage() && lock(); as reason) {
+      <medsys-notice tone="warn" heading="Solo lectura" icon="lock">{{ reason }}</medsys-notice>
+    }
+    @if (failureMessage(); as message) {
+      <medsys-notice tone="err" heading="No se pudo guardar">{{ message }}</medsys-notice>
+    }
+
+    <div class="grid-2">
+      <section class="card">
+        <div class="card-head"><h2 class="t-section">Datos</h2></div>
+        <div class="card-body">
+          @if (editable()) {
+            <form class="stack gap-4" [formGroup]="form" novalidate (ngSubmit)="saveData()">
+              <div class="field">
+                <label class="field-label" for="role-detail-name">Nombre</label>
+                <input
+                  id="role-detail-name"
+                  class="input"
+                  formControlName="name"
+                  [attr.aria-invalid]="errorFor('name') !== null"
+                />
+                @if (errorFor('name'); as message) {
+                  <span class="field-error" role="alert">{{ message }}</span>
+                }
+              </div>
+              <div class="field">
+                <label class="field-label" for="role-detail-description">
+                  Descripción <span class="field-optional">(opcional)</span>
+                </label>
+                <textarea
+                  id="role-detail-description"
+                  class="textarea"
+                  rows="3"
+                  formControlName="description"
+                  [attr.aria-invalid]="errorFor('description') !== null"
+                ></textarea>
+                @if (errorFor('description'); as message) {
+                  <span class="field-error" role="alert">{{ message }}</span>
+                }
+              </div>
+              <div class="row gap-2">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-sm"
+                  [disabled]="form.pristine || savingData()"
+                >
+                  Guardar datos
+                </button>
+              </div>
+            </form>
+          } @else {
+            <dl class="deflist">
+              <div>
+                <dt class="def-term">Código</dt>
+                <dd class="def-value">
+                  <span class="clin-code">{{ item.code }}</span>
+                </dd>
+              </div>
+              <div>
+                <dt class="def-term">Nombre</dt>
+                <dd class="def-value">{{ item.name }}</dd>
+              </div>
+              <div>
+                <dt class="def-term">Alcance</dt>
+                <dd class="def-value">{{ scopes[item.scope] }}</dd>
+              </div>
+            </dl>
+          }
+          @if (item.system) {
+            <p class="t-sec t-measure" style="margin-top: 12px">
+              Es un rol de sistema: no se desactiva. Si le sobra un permiso, se le quita en la
+              matriz.
+            </p>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2 class="t-section">Quién puede asignar con este rol</h2></div>
+        <div class="card-body stack gap-3">
+          @if (item.scope === 'PLATFORM') {
+            <p class="t-sec t-measure">
+              Un rol de plataforma asigna y revoca cualquier rol en cualquier organización. No
+              necesita delegación.
+            </p>
+          } @else {
+            <p class="t-sec t-measure">
+              Quien tiene este rol puede asignar y revocar solo los roles marcados, siempre dentro
+              de su organización y sin otorgar permisos de gestión que no tiene.
+            </p>
+            @if (roles.isLoading()) {
+              <medsys-skeleton width="100%" height="80px" />
+            } @else {
+              <div class="stack gap-2">
+                @for (option of delegationOptions(); track option.code) {
+                  <label class="check-row">
+                    <input
+                      type="checkbox"
+                      class="checkbox"
+                      [checked]="isDelegated(option.code)"
+                      [disabled]="!editable()"
+                      (change)="toggleDelegation(option.code, $any($event.target).checked)"
+                    />
+                    <span class="check-box" aria-hidden="true">
+                      <medsys-icon name="check" [size]="12" />
+                    </span>
+                    <span class="pair">
+                      <span>{{ option.name }}</span>
+                      <span class="t-micro">
+                        {{ option.code }}
+                        @if (!option.active) {
+                          · inactivo
+                        }
+                      </span>
+                    </span>
+                  </label>
+                } @empty {
+                  <p class="t-sec">No hay roles de organización para delegar.</p>
+                }
+              </div>
+              @if (editable()) {
+                <div class="row gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    [disabled]="!delegationDirty() || savingDelegation()"
+                    (click)="saveDelegation()"
+                  >
+                    Guardar delegación
+                  </button>
+                  @if (delegationDirty()) {
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="resetDelegation()">
+                      Descartar
+                    </button>
+                  }
+                </div>
+              }
+            }
+          }
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2 class="t-section">Incompatibilidades</h2>
+      </div>
+      <div class="card-body stack gap-3">
+        <p class="t-sec t-measure">
+          Una cuenta no puede tener este rol y uno de estos a la vez. La plataforma rechaza la
+          asignación que los reuniría (segregación de funciones).
+        </p>
+        @if (pairs.error()) {
+          <medsys-error-state [failure]="pairs.error()" [compact]="true" (retry)="pairs.reload()" />
+        } @else if (rolePairs().length > 0) {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Rol incompatible</th>
+                  <th scope="col">Motivo</th>
+                  <th scope="col">Declarado</th>
+                  @if (editable()) {
+                    <th scope="col"><span class="sr-only">Acciones</span></th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (pair of rolePairs(); track pair.other) {
+                  <tr>
+                    <td>
+                      <div class="pair">
+                        <span>{{ roleName(pair.other) }}</span>
+                        <span class="t-micro">{{ pair.other }}</span>
+                      </div>
+                    </td>
+                    <td class="td-wrap">{{ pair.reason }}</td>
+                    <td class="t-sec">{{ pair.createdAt | msDate }}</td>
+                    @if (editable()) {
+                      <td class="td-tight">
+                        <button
+                          type="button"
+                          class="btn btn-ghost btn-sm"
+                          (click)="confirming.set({ kind: 'unpair', other: pair.other })"
+                        >
+                          Quitar
+                        </button>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="t-sec">No tiene roles incompatibles.</p>
+        }
+
+        @if (editable()) {
+          <form class="grid-2" [formGroup]="pairForm" novalidate (ngSubmit)="declarePair()">
+            <div class="field">
+              <label class="field-label" for="role-pair-other">Rol</label>
+              <medsys-select
+                formControlName="other"
+                [options]="pairOptions()"
+                [controlId]="'role-pair-other'"
+                placeholder="Elige el rol incompatible"
+              />
+            </div>
+            <div class="field">
+              <label class="field-label" for="role-pair-reason">Motivo</label>
+              <input
+                id="role-pair-reason"
+                class="input"
+                placeholder="Quien registra la atención no emite su cobro"
+                formControlName="reason"
+              />
+            </div>
+            <div class="row gap-2">
+              <button
+                type="submit"
+                class="btn btn-secondary btn-sm"
+                [disabled]="pairForm.invalid || savingPair()"
+              >
+                <medsys-icon name="ban" [size]="14" /> Declarar incompatibles
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2 class="t-section">Permisos</h2>
+        <span class="t-sec t-num">{{ item.permissions.length }} del catálogo</span>
+      </div>
+      <div class="card-body stack gap-2">
+        @if (catalog.isLoading()) {
+          <medsys-skeleton width="100%" height="120px" />
+        } @else if (catalog.error()) {
+          <medsys-error-state
+            [failure]="catalog.error()"
+            [compact]="true"
+            (retry)="catalog.reload()"
+          />
+        } @else {
+          @for (group of coverage(); track group.module) {
+            <details class="role-module">
+              <summary class="row gap-2">
+                <medsys-icon name="chevron-right" [size]="14" class="role-module-caret" />
+                <span class="grow">{{ group.label }}</span>
+                <span class="t-sec t-num">{{ group.held.length }} de {{ group.total }}</span>
+              </summary>
+              @if (group.held.length === 0) {
+                <p class="t-sec">Ninguno de este módulo.</p>
+              } @else {
+                <ul class="stack gap-1">
+                  @for (permission of group.held; track permission.code) {
+                    <li class="row gap-2">
+                      <span class="grow">{{ permission.description }}</span>
+                      <span class="clin-code">{{ permission.code }}</span>
+                      @if (permission.sensitive) {
+                        <span class="chip chip-warn">Sensible</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </details>
+          }
+        }
+      </div>
+    </section>
+  </div>
+}
+
+<medsys-confirm-dialog
+  [open]="confirming() !== null"
+  [heading]="confirmText().heading"
+  [description]="confirmText().description"
+  [confirmLabel]="confirmText().action"
+  [danger]="confirming()?.kind !== 'reactivate'"
+  [pending]="confirmPending()"
+  (confirmed)="confirm()"
+  (cancelled)="confirming.set(null)"
+/>

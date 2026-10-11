@@ -74,9 +74,9 @@ export class LoyaltyPage {
     { value: 'EXPIRATION', label: 'Expiración' },
   ];
 
-  protected readonly canManage = computed(() => can.manageMarketing(this.session.roles()));
+  protected readonly canManage = computed(() => can.manageLoyalty(this.session.permissions()));
   protected readonly canRegister = computed(() =>
-    can.registerLoyaltyMovement(this.session.roles()),
+    can.registerLoyaltyMovement(this.session.permissions()),
   );
 
   protected readonly programs = this.marketing.loyaltyProgramsResource();

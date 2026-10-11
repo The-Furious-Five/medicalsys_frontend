@@ -82,9 +82,11 @@ export class PatientDetailPage {
   );
   protected readonly invoices = this.billing.invoicesResource(this.id, signal(0), 5);
 
-  protected readonly canOpenRecord = computed(() => can.openRecord(this.session.roles()));
-  protected readonly canOpenEncounter = computed(() => can.openEncounter(this.session.roles()));
-  protected readonly canViewInvoices = computed(() => can.viewInvoices(this.session.roles()));
+  protected readonly canOpenRecord = computed(() => can.openRecord(this.session.permissions()));
+  protected readonly canOpenEncounter = computed(() =>
+    can.openEncounter(this.session.permissions()),
+  );
+  protected readonly canViewInvoices = computed(() => can.viewInvoices(this.session.permissions()));
 
   /** Un 404 aquí no es un fallo: significa que la persona todavía no tiene
    *  expediente, que es lo normal antes de la primera atención. */

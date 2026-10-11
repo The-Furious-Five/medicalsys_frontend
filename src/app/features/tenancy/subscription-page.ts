@@ -28,7 +28,7 @@ export class SubscriptionPage {
   private readonly session = inject(AuthSession);
 
   protected readonly subscriptionStatuses = SUBSCRIPTION_STATUS;
-  protected readonly showsUsage = computed(() => can.viewUsage(this.session.roles()));
+  protected readonly showsUsage = computed(() => can.viewUsage(this.session.permissions()));
 
   protected readonly subscription = this.tenancy.subscriptionResource();
   protected readonly usage = this.tenancy.usageResource();

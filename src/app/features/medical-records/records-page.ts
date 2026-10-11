@@ -45,7 +45,7 @@ export class RecordsPage {
 
   protected readonly recordStatuses = RECORD_STATUS;
   protected readonly recordTones = recordTone;
-  protected readonly canOpen = computed(() => can.openRecord(this.session.roles()));
+  protected readonly canOpen = computed(() => can.openRecord(this.session.permissions()));
 
   protected readonly page = signal(0);
   protected readonly opening = signal(false);
