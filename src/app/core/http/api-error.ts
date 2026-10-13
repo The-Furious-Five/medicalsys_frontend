@@ -49,6 +49,8 @@ interface ProblemDetail {
   readonly status: number;
   readonly detail: string;
   readonly correlationId?: string;
+  /** Código estable que agrega ms-identidad, p. ej. PASSWORD_CHANGE_REQUIRED (IAM-03). */
+  readonly code?: string;
 }
 
 function isProblemDetail(value: unknown): value is ProblemDetail {
@@ -126,7 +128,7 @@ export function describeFailure(failure: unknown): FailureDetail {
     problem?.detail ??
     DEFAULT_MESSAGES[failure.status] ??
     'No se pudo completar la operación.';
-  const code = api?.code ?? `HTTP_${failure.status}`;
+  const code = api?.code ?? problem?.code ?? `HTTP_${failure.status}`;
 
   const base = { status: failure.status, code, correlationId, fieldErrors };
 
@@ -138,6 +140,25 @@ export function describeFailure(failure: unknown): FailureDetail {
       message: DEFAULT_MESSAGES[0],
       retryable: true,
       icon: 'unplug',
+    };
+  }
+  // Bloqueo al 3er intento (IAM-02): no es pasajero ni un problema del servicio.
+  if (failure.status === 423) {
+    return {
+      ...base,
+      title: 'Cuenta bloqueada',
+      message: sentence(message),
+      retryable: false,
+      icon: 'lock',
+    };
+  }
+  if (failure.status === 403 && code === 'PASSWORD_CHANGE_REQUIRED') {
+    return {
+      ...base,
+      title: 'Cambio de contraseña requerido',
+      message: 'Tu contraseña es temporal o venció. Define una nueva para continuar.',
+      retryable: false,
+      icon: 'lock',
     };
   }
   if (failure.status === 403) {

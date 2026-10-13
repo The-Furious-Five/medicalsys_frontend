@@ -1,0 +1,108 @@
+<medsys-page-header
+  heading="Gestión de usuarios"
+  description="Cuentas del centro con su User ID. El alta entrega una contraseña temporal de un solo uso; la baja deshabilita sin borrar, para conservar la trazabilidad."
+>
+  @if (canCreate()) {
+    <button headerActions type="button" class="btn btn-primary btn-sm" (click)="creating.set(true)">
+      <medsys-icon name="user-plus" [size]="14" /> Nueva cuenta
+    </button>
+  }
+</medsys-page-header>
+
+<div class="card">
+  <div class="filters">
+    <div class="search-field">
+      <medsys-icon name="search" [size]="15" />
+      <input
+        class="input"
+        type="text"
+        autofocus
+        aria-label="Buscar cuenta"
+        placeholder="Buscar por nombre, correo o User ID"
+        [value]="term()"
+        (input)="onTerm($any($event.target).value)"
+      />
+    </div>
+    <medsys-select
+      [options]="statusOptions"
+      [value]="status() ?? ''"
+      (valueChange)="onStatus($event)"
+      ariaLabel="Filtrar por estado"
+      placeholder="Todos los estados"
+    />
+    <span class="grow"></span>
+    @if (accounts.hasValue()) {
+      <span class="t-sec t-num">{{ countLabel() }}</span>
+    }
+  </div>
+
+  @if (accounts.isLoading() && !accounts.hasValue()) {
+    <medsys-table-skeleton [rows]="7" [columns]="4" />
+  } @else if (accounts.error()) {
+    <medsys-error-state [failure]="accounts.error()" [compact]="true" (retry)="accounts.reload()" />
+  } @else if ((accounts.value()?.content ?? []).length === 0) {
+    <medsys-empty-state
+      icon="search-x"
+      heading="No hay cuentas que mostrar"
+      description="Prueba con otro nombre, correo o User ID, o quita el filtro de estado."
+    />
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">User ID</th>
+            <th scope="col">Cuenta</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Último acceso</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (account of accounts.value()?.content ?? []; track account.publicId) {
+            <tr
+              data-clickable="true"
+              tabindex="0"
+              (click)="selected.set(account)"
+              (keydown)="onRowKey($event, account)"
+            >
+              <td class="t-num t-strong">{{ account.userCode }}</td>
+              <td>
+                <div class="pair">
+                  <span class="t-strong">{{ account.fullName }}</span>
+                  <span class="t-micro">{{ account.email }}</span>
+                </div>
+              </td>
+              <td>
+                <medsys-status-chip
+                  [value]="account.status"
+                  [dictionary]="statuses"
+                  [tones]="statusTones"
+                />
+              </td>
+              <td class="t-sec t-num">{{ account.lastAccessAt | msRelative }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (accounts.value(); as result) {
+    <medsys-pager
+      [page]="result.page"
+      [totalPages]="result.totalPages"
+      (pageChange)="page.set($event)"
+    />
+  }
+</div>
+
+<medsys-user-sheet
+  [account]="selected()"
+  [creating]="creating()"
+  [roles]="roles.value() ?? []"
+  (closed)="closeSheet()"
+  (changed)="accounts.reload()"
+  (issued)="issued.set($event)"
+/>
+
+<medsys-temporary-password-dialog [issued]="issued()" (closed)="issued.set(null)" />
