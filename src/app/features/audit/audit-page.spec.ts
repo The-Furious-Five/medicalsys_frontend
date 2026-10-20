@@ -44,6 +44,7 @@ const EVENTS: AuditPageModel = {
       outcome: 'DENIED',
       actorDisplayName: 'Recepcion Demo',
       actorRoles: ['RECEPTIONIST'],
+      actorIp: '10.0.0.7',
       resourceType: 'MEDICAL_RECORD',
       correlationId: '147c87d8-e5f4-4d24-a760-4974f8897a0c',
       responseStatus: 403,
@@ -112,6 +113,8 @@ describe('AuditPage', () => {
     // El resultado no se comunica solo con color: la etiqueta lo dice con palabras.
     expect(element.textContent).toContain('Denegada');
     expect(element.textContent).toContain('MEDICAL_RECORD_VIEWED');
+    expect(element.querySelector('tbody tr')?.textContent).toContain('10.0.0.7');
+    expect(element.textContent).toContain('Verificar integridad');
   });
 
   it('should show an empty state instead of a blank table when nothing matches', async () => {
