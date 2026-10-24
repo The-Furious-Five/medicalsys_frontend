@@ -5,6 +5,8 @@ export interface AuthenticatedUser {
   readonly fullName: string;
   readonly organizationPublicId: string;
   readonly status: string;
+  /** Nivel MAC (ISO-01). Los permisos del token ya vienen filtrados por él. */
+  readonly clearance: string;
   readonly language: string | null;
   readonly roles: readonly string[];
   readonly permissions: readonly string[];

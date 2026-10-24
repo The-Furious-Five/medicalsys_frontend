@@ -188,6 +188,10 @@
     </div>
   </section>
 
+  @if (canViewAccessGrants()) {
+    <medsys-patient-access-panel [patientId]="person.patientId" />
+  }
+
   @if (record.value() && encounters.value()?.content?.length) {
     <section class="section">
       <div class="card">

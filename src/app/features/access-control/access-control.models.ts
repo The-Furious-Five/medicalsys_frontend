@@ -7,12 +7,20 @@ export type RoleScope = 'PLATFORM' | 'ORGANIZATION';
 
 export type AccountStatus = 'PENDING_ACTIVATION' | 'ACTIVE' | 'LOCKED' | 'INACTIVE';
 
+/**
+ * Escala MAC (ISO-01), de menor a mayor: clasificación de cada permiso y nivel
+ * de autorización de cada cuenta. El token solo lleva los permisos que el nivel cubre.
+ */
+export const SECURITY_LEVELS = ['PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'RESTRICTED'] as const;
+export type SecurityLevel = (typeof SECURITY_LEVELS)[number];
+
 /** Un permiso del catálogo, con el formato `modulo.recurso.accion`. */
 export interface CatalogPermission {
   readonly code: string;
   readonly module: string;
   readonly description: string;
   readonly sensitive: boolean;
+  readonly classification: SecurityLevel;
 }
 
 export interface Role {
@@ -20,7 +28,7 @@ export interface Role {
   readonly name: string;
   readonly description: string | null;
   readonly scope: RoleScope;
-  /** Uno de los seis roles base: se puede ajustar, pero no desactivar. */
+  /** Uno de los roles base (V2 y V9): se puede ajustar, pero no desactivar. */
   readonly system: boolean;
   readonly active: boolean;
   readonly permissions: readonly CatalogPermission[];
@@ -68,6 +76,7 @@ export interface IdentityAccount {
   readonly email: string;
   readonly fullName: string;
   readonly status: AccountStatus;
+  readonly clearance: SecurityLevel;
   readonly lastAccessAt: string | null;
   readonly roles: readonly RoleAssignment[];
 }

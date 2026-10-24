@@ -31,7 +31,7 @@ const NAV: readonly NavGroup[] = [
         link: '/',
         label: 'Inicio',
         icon: 'layout-dashboard',
-        permission: 'viewOrganization',
+        permission: 'viewHome',
         exact: true,
       },
     ],

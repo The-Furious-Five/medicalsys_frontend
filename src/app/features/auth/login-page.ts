@@ -18,12 +18,20 @@ interface DemoAccount {
   readonly role: string;
 }
 
+/** Una por rol (ISO-01): cada una ve solo los módulos que sus permisos alcanzan. */
 const DEMO_ACCOUNTS: readonly DemoAccount[] = [
-  { email: 'admin@medicalsys.demo', role: 'Administración' },
+  { email: 'osi@medicalsys.demo', role: 'Oficial de Seguridad (OSI)' },
+  { email: 'admin@medicalsys.demo', role: 'Administración del centro' },
   { email: 'doctor@medicalsys.demo', role: 'Profesional de salud' },
+  { email: 'enfermeria@medicalsys.demo', role: 'Enfermería' },
+  { email: 'laboratorio@medicalsys.demo', role: 'Laboratorio' },
   { email: 'recepcion@medicalsys.demo', role: 'Recepción' },
+  { email: 'caja@medicalsys.demo', role: 'Facturación' },
+  { email: 'marketing@medicalsys.demo', role: 'Marketing' },
+  { email: 'auditor@medicalsys.demo', role: 'Auditoría interna' },
 ];
-const DEMO_PASSWORD = 'Demo1234!';
+/** `IDENTITY_DEMO_PASSWORD` por defecto de ms-identidad. */
+const DEMO_PASSWORD = 'SanGabriel.Demo26!';
 
 interface BrandPoint {
   readonly icon: IconName;

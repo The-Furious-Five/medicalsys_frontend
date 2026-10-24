@@ -7,6 +7,8 @@ import { formatBytes, formatNumber, formatWeekday } from '../../core/format/form
 import {
   ENCOUNTER_STATUS,
   ENCOUNTER_TYPE,
+  ROLE,
+  SECURITY_LEVEL,
   STUDY_ORDER_STATUS,
   USAGE_METRIC,
   label,
@@ -60,7 +62,46 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
     link: '/prestaciones',
     permission: 'manageOfferings',
   },
+  /* ISO-01: el primer paso de cada rol nuevo, para que nadie entre a un inicio vacío. */
+  {
+    icon: 'flask',
+    label: 'Órdenes de estudio',
+    hint: 'Muestras y resultados',
+    link: '/ordenes-estudio',
+    permission: 'viewStudyOrders',
+  },
+  {
+    icon: 'user-check',
+    label: 'Asignar roles',
+    hint: 'Accesos y nivel MAC',
+    link: '/asignacion-roles',
+    permission: 'manageClearance',
+  },
+  {
+    icon: 'table',
+    label: 'Matriz de accesos',
+    hint: 'Roles y permisos',
+    link: '/matriz-accesos',
+    permission: 'manageRoles',
+  },
+  {
+    icon: 'file-signature',
+    label: 'Bitácora',
+    hint: 'Eventos de seguridad',
+    link: '/auditoria',
+    permission: 'viewAudit',
+  },
+  {
+    icon: 'megaphone',
+    label: 'Nueva campaña',
+    hint: 'Segmentos y cupones',
+    link: '/campanas/nueva',
+    permission: 'manageCampaigns',
+  },
 ];
+
+/** Más de seis accesos ya no son rápidos. */
+const MAX_ACTIONS = 6;
 
 /**
  * Jerarquía: el inicio no resume el sistema, resume el trabajo pendiente de
@@ -101,8 +142,21 @@ export class HomePage {
   protected readonly today = formatWeekday(new Date());
 
   protected readonly actions = computed(() =>
-    QUICK_ACTIONS.filter((action) => can[action.permission](this.session.permissions())),
+    QUICK_ACTIONS.filter((action) => can[action.permission](this.session.permissions())).slice(
+      0,
+      MAX_ACTIONS,
+    ),
   );
+
+  /** Quién entra y hasta qué nivel MAC: lo que explica por qué ve lo que ve. */
+  protected readonly identity = computed(() => {
+    const user = this.session.user();
+    if (user === null) {
+      return '';
+    }
+    const roles = user.roles.map((code) => label(ROLE, code)).join(', ') || 'Sin roles';
+    return `${roles} · nivel ${label(SECURITY_LEVEL, user.clearance ?? 'INTERNAL')}`;
+  });
 
   protected readonly showsDrafts = computed(() => can.writeNarrative(this.session.permissions()));
   protected readonly showsOrders = computed(() => can.viewStudyOrders(this.session.permissions()));

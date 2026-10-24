@@ -24,6 +24,9 @@ const anyOf = (granted: Grants, ...codes: string[]): boolean =>
   codes.some((code) => granted.includes(code));
 
 export const can = {
+  /* El inicio se adapta a los permisos de cada uno: lo ve cualquiera con sesión. */
+  viewHome: () => true,
+
   /* ms-historial */
   viewRecords: (g: Grants) => has(g, 'clinical.record.read'),
   viewEncounters: (g: Grants) => has(g, 'clinical.encounter.read'),
@@ -98,6 +101,12 @@ export const can = {
   /* ms-pacientes */
   viewPatients: (g: Grants) => has(g, 'patients.patient.read'),
   registerPatient: (g: Grants) => has(g, 'patients.patient.create'),
+  /* DAC (ISO-01): el paciente, dueño del dato, autoriza con un OTP a otra
+     organización. Aquí solo se pide, se registra el código que él dicta y se revoca. */
+  viewAccessGrants: (g: Grants) => has(g, 'patients.access_grant.read'),
+  requestAccessGrant: (g: Grants) => has(g, 'patients.access_grant.request'),
+  confirmAccessGrant: (g: Grants) => has(g, 'patients.access_grant.confirm'),
+  revokeAccessGrant: (g: Grants) => has(g, 'patients.access_grant.revoke'),
 
   /* ms-identidad: roles, matriz de accesos y asignación (RBAC-05).
      Asignar roles exige además ver las cuentas y los roles, porque la pantalla
@@ -106,6 +115,8 @@ export const can = {
   manageRoles: (g: Grants) => has(g, 'identity.role.manage'),
   viewRoleAssignments: (g: Grants) => has(g, 'identity.user.read') && has(g, 'identity.role.read'),
   assignRoles: (g: Grants) => has(g, 'identity.role.assign'),
+  /* MAC (ISO-01): fijar el nivel de autorización de una cuenta es del OSI. */
+  manageClearance: (g: Grants) => has(g, 'identity.clearance.manage'),
 } as const;
 
 export type Permission = keyof typeof can;

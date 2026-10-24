@@ -11,6 +11,7 @@ import {
   IdentityAccount,
   Role,
   RoleIncompatibility,
+  SecurityLevel,
   UpdateRoleInput,
 } from './access-control.models';
 
@@ -123,6 +124,20 @@ export class AccessControlService {
       this.http.delete<void>(
         `${this.baseUrl}/role-incompatibilities/${encodeURIComponent(roleA)}/${encodeURIComponent(roleB)}`,
       ),
+    );
+  }
+
+  /** MAC (ISO-01): solo el OSI. El servicio cierra las sesiones de la cuenta. */
+  changeClearance(
+    accountId: string,
+    clearance: SecurityLevel,
+    reason: string | null,
+  ): Promise<IdentityAccount> {
+    return firstValueFrom(
+      this.http.put<IdentityAccount>(`${this.accountPath(accountId)}/clearance`, {
+        clearance,
+        reason,
+      }),
     );
   }
 

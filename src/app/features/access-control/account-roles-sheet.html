@@ -21,6 +21,33 @@
       }
 
       <section class="stack gap-2">
+        <h3 class="t-section">Nivel de autorización (MAC)</h3>
+        <div class="row gap-2 wrap">
+          <span class="chip chip-brand"><span class="chip-dot"></span>{{ clearanceLabel() }}</span>
+          @if (canSetClearance()) {
+            <medsys-select
+              [options]="clearanceOptions()"
+              [(value)]="clearance"
+              [allowEmpty]="false"
+              ariaLabel="Nivel de autorización"
+            />
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              [disabled]="pending() || clearance() === item.clearance"
+              (click)="setClearance()"
+            >
+              <medsys-icon name="shield-check" [size]="14" /> Fijar nivel
+            </button>
+          }
+        </div>
+        <span class="field-hint">
+          Los roles conceden permisos, pero la cuenta solo ejerce los que su nivel cubre. Lo fija el
+          Oficial de Seguridad de la Información; al cambiarlo se cierran sus sesiones.
+        </span>
+      </section>
+
+      <section class="stack gap-2">
         <h3 class="t-section">Roles</h3>
         @for (assignment of assignments(); track assignment.id) {
           <div class="row gap-3 assignment">

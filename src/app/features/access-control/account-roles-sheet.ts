@@ -14,7 +14,7 @@ import { AuthSession } from '../../core/auth/auth-session';
 import { can } from '../../core/auth/permissions';
 import { formatDate, todayIso } from '../../core/format/format';
 import { describeFailure } from '../../core/http/api-error';
-import { ACCOUNT_STATUS } from '../../core/labels/labels';
+import { ACCOUNT_STATUS, SECURITY_LEVEL, label } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
 import { Icon } from '../../core/ui/icon';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
@@ -23,7 +23,7 @@ import { Dialog } from '../../shared/dialog';
 import { Notice } from '../../shared/notice';
 import { Select } from '../../shared/select';
 import { StatusChip } from '../../shared/status-chip';
-import { IdentityAccount, Role } from './access-control.models';
+import { IdentityAccount, Role, SECURITY_LEVELS, SecurityLevel } from './access-control.models';
 import { AccessControlService } from './access-control.service';
 import { orderRoles } from './access-matrix';
 import {
@@ -99,6 +99,30 @@ export class AccountRolesSheet {
         );
   });
   protected readonly editable = computed(() => this.canAssign() && this.lock() === null);
+
+  /**
+   * MAC (ISO-01): solo el OSI fija el nivel, nunca el propio ni por encima del
+   * suyo. El nivel acota lo que los roles dan: un rol con permisos restringidos
+   * no los entrega a una cuenta confidencial.
+   */
+  protected readonly canSetClearance = computed(
+    () =>
+      can.manageClearance(this.session.permissions()) &&
+      this.current()?.publicId !== this.session.user()?.publicId,
+  );
+  protected readonly clearanceLabel = computed(() =>
+    label(SECURITY_LEVEL, this.current()?.clearance ?? 'INTERNAL'),
+  );
+  protected readonly clearanceOptions = computed(() => {
+    const own = SECURITY_LEVELS.indexOf(
+      (this.session.user()?.clearance ?? 'PUBLIC') as SecurityLevel,
+    );
+    return SECURITY_LEVELS.slice(0, own + 1).map((level) => ({
+      value: level,
+      label: label(SECURITY_LEVEL, level),
+    }));
+  });
+  protected readonly clearance = linkedSignal<string>(() => this.current()?.clearance ?? '');
 
   private readonly manageable = computed(() =>
     manageableRoles(this.roles(), this.session.roles(), this.session.permissions()),
@@ -190,6 +214,25 @@ export class AccountRolesSheet {
       );
       this.toasts.notify(`${account.fullName} recibió el rol ${value.role}.`);
       this.form.reset({ role: '', validFrom: this.today, validUntil: '' });
+      this.changed.emit();
+    } catch (failure) {
+      this.failure.set(failure);
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected async setClearance(): Promise<void> {
+    const account = this.current();
+    const level = this.clearance() as SecurityLevel;
+    if (account === null || level === account.clearance) {
+      return;
+    }
+    this.pending.set(true);
+    this.failure.set(null);
+    try {
+      this.current.set(await this.access.changeClearance(account.publicId, level, null));
+      this.toasts.notify(`${account.fullName} quedó con nivel ${label(SECURITY_LEVEL, level)}.`);
       this.changed.emit();
     } catch (failure) {
       this.failure.set(failure);

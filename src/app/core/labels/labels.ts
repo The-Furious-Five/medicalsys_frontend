@@ -30,6 +30,18 @@ export const ROLE: Dict = dict({
   RECEPTIONIST: 'Recepción',
   BILLING_CLERK: 'Facturación',
   PATIENT: 'Paciente',
+  OSI: 'Oficial de Seguridad (OSI)',
+  AUDITOR: 'Auditoría interna',
+  NURSE: 'Enfermería',
+  LAB_TECHNICIAN: 'Laboratorio',
+});
+
+/** Escala MAC (ISO-01): clasificación de permisos y nivel de autorización de cuentas. */
+export const SECURITY_LEVEL: Dict = dict({
+  PUBLIC: 'Público',
+  INTERNAL: 'Uso interno',
+  CONFIDENTIAL: 'Confidencial',
+  RESTRICTED: 'Restringido',
 });
 
 /* ----------------------------------------------------- identidad y accesos */
