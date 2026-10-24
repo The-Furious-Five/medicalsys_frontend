@@ -64,6 +64,7 @@
               <medsys-icon name="lock" [size]="18" />
               <input
                 id="login-password"
+                #passwordField
                 class="input"
                 [type]="passwordVisible() ? 'text' : 'password'"
                 name="password"
@@ -206,7 +207,7 @@
           <medsys-icon name="chevron-down" [size]="16" />
         </summary>
         <div class="access-demo-content">
-          <p>Elige un perfil para completar el formulario y luego pulsa «Iniciar sesión».</p>
+          <p>Elige un perfil para completar el correo, escribe la contraseña de demostración y pulsa «Iniciar sesión».</p>
           @for (account of demoAccounts; track account.email) {
             <button
               type="button"

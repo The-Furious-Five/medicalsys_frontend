@@ -423,7 +423,9 @@ documentos ficticios. No registrar JWT, contraseñas, contenido clínico ni dato
 | `nutricion@medicalsys.demo`     | `PHYSICIAN`     | Nutrición                                                                                 |
 | `odontologia@medicalsys.demo`   | `PHYSICIAN`     | Odontología                                                                               |
 
-Contraseña: `Demo1234!`
+Contraseña: la de `IDENTITY_DEMO_PASSWORD` del backend (en un entorno local nuevo,
+`SanGabriel.Demo26!`; en el despliegue público, la que entrega el equipo). El frontend no la
+guarda: el botón de cuenta demo completa solo el correo.
 
 El menú lateral muestra solo lo que el rol activo puede usar. Nada aparece
 deshabilitado «para que se vea completo»: enseñar puertas cerradas no ayuda a

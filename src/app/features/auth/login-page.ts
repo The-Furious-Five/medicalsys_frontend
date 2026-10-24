@@ -27,7 +27,8 @@ const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   { email: 'doctor@medicalsys.demo', role: 'Profesional de salud' },
   { email: 'recepcion@medicalsys.demo', role: 'Recepción' },
 ];
-const DEMO_PASSWORD = 'Demo1234!';
+// La contraseña de las cuentas demo NO va en el código: este archivo viaja completo al navegador y
+// cualquiera podría leerla. Se entrega aparte (IDENTITY_DEMO_PASSWORD del backend).
 
 interface BrandPoint {
   readonly icon: IconName;
@@ -91,11 +92,17 @@ export class LoginPage {
   );
 
   private readonly emailField = viewChild<ElementRef<HTMLInputElement>>('emailField');
+  private readonly passwordField = viewChild<ElementRef<HTMLInputElement>>('passwordField');
   private readonly newPasswordField = viewChild<ElementRef<HTMLInputElement>>('newPasswordField');
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
     this.error.set(null);
+    if (!this.email().trim() || !this.password()) {
+      // Se valida aquí: un envío vacío solo devolvería el mensaje técnico de validación del servicio.
+      this.error.set('Ingresa tu correo y tu contraseña.');
+      return;
+    }
     this.pending.set(true);
     try {
       await this.auth.login(this.email().trim(), this.password());
@@ -153,12 +160,12 @@ export class LoginPage {
     this.error.set(null);
   }
 
-  /** Rellena el formulario; el usuario confirma el inicio de sesión. */
+  /** Completa el correo de la cuenta demo; la contraseña la escribe la persona. */
   protected useDemoAccount(account: DemoAccount): void {
     this.email.set(account.email);
-    this.password.set(DEMO_PASSWORD);
+    this.password.set('');
     this.error.set(null);
     this.locked.set(false);
-    this.emailField()?.nativeElement.focus();
+    this.passwordField()?.nativeElement.focus();
   }
 }
