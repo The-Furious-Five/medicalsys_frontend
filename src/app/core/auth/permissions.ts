@@ -37,6 +37,9 @@ export const can = {
   voidEncounter: (g: Grants) => has(g, 'clinical.encounter.void'),
   writeAddendum: (g: Grants) => has(g, 'clinical.addendum.create'),
   writeAllergies: (g: Grants) => has(g, 'clinical.allergy.create'),
+  writeBackgrounds: (g: Grants) => has(g, 'clinical.background.create'),
+  changeStudyStatus: (g: Grants) => has(g, 'clinical.study_order.change_status'),
+  writeStudyResults: (g: Grants) => has(g, 'clinical.study_result.create'),
   writeVitals: (g: Grants) => has(g, 'clinical.vital_sign.create'),
   viewStudyOrders: (g: Grants) => has(g, 'clinical.study_order.read'),
 
@@ -57,14 +60,12 @@ export const can = {
   viewSubscription: (g: Grants) => has(g, 'tenancy.subscription.read'),
   viewUsage: (g: Grants) => has(g, 'tenancy.usage.read'),
 
-  /* ms-facturacion.
-     La anulación y las notas de crédito y débito todavía no existen en el
-     servicio, que solo publica emitir y consultar. Su permiso no está en el
-     catálogo y por eso nadie ve el botón: cuando el endpoint exista, el permiso
-     entra al catálogo con una migración y la matriz decide quién lo tiene. */
+  /* ms-facturacion: emisión y anulación son funciones separadas. */
   viewInvoices: (g: Grants) => has(g, 'billing.invoice.read'),
   issueInvoice: (g: Grants) => has(g, 'billing.invoice.issue'),
   correctInvoice: (g: Grants) => has(g, 'billing.invoice.void'),
+  viewInvoiceNotes: (g: Grants) => has(g, 'billing.credit_debit_note.read'),
+  issueInvoiceNotes: (g: Grants) => has(g, 'billing.credit_debit_note.issue'),
 
   /* ms-marketing */
   viewCampaigns: (g: Grants) => has(g, 'marketing.campaign.read'),
@@ -74,7 +75,8 @@ export const can = {
   viewCoupons: (g: Grants) => has(g, 'marketing.promotion.read'),
   manageCoupons: (g: Grants) => has(g, 'marketing.promotion.create'),
   redeemCoupons: (g: Grants) => has(g, 'marketing.coupon.redeem'),
-  viewAdvertisements: (g: Grants) => has(g, 'marketing.advertisement.read'),
+  viewAdvertisements: (g: Grants) =>
+    anyOf(g, 'marketing.advertisement.read', 'marketing.advertisement.view'),
   manageAdvertisements: (g: Grants) => has(g, 'marketing.advertisement.create'),
   /* La pantalla abre con la lista de programas: sin ese permiso no hay nada
      que mostrar, aunque el saldo de un paciente sí se pudiera consultar. */
@@ -86,6 +88,8 @@ export const can = {
 
   /* ms-auditoria */
   viewAudit: (g: Grants) => has(g, 'audit.log.read'),
+  verifyAudit: (g: Grants) => has(g, 'audit.log.verify'),
+  exportAudit: (g: Grants) => has(g, 'audit.log.export'),
 
   /* ms-catalogos. La pantalla reúne los cinco catálogos de referencia. */
   viewCatalogs: (g: Grants) =>
@@ -103,6 +107,8 @@ export const can = {
   registerPatient: (g: Grants) => has(g, 'patients.patient.create'),
   /* DAC (ISO-01): el paciente, dueño del dato, autoriza con un OTP a otra
      organización. Aquí solo se pide, se registra el código que él dicta y se revoca. */
+  viewOwnAccess: (g: Grants) => has(g, 'patients.self_access.read'),
+  viewPublishedAdvertisements: (g: Grants) => has(g, 'marketing.advertisement.view'),
   viewAccessGrants: (g: Grants) => has(g, 'patients.access_grant.read'),
   requestAccessGrant: (g: Grants) => has(g, 'patients.access_grant.request'),
   confirmAccessGrant: (g: Grants) => has(g, 'patients.access_grant.confirm'),

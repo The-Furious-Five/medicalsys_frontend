@@ -27,6 +27,7 @@ const role = (code: string, permissions: readonly CatalogPermission[]): Role => 
   name: code,
   description: null,
   scope: 'ORGANIZATION',
+  accessModel: 'MAC',
   system: true,
   active: true,
   permissions,

@@ -224,7 +224,7 @@
         <div class="card" role="tabpanel">
           <div class="card-head">
             <h2 class="t-section">Antecedentes activos</h2>
-            @if (canWrite()) {
+            @if (canWriteBackgrounds()) {
               <button type="button" class="btn btn-secondary btn-sm" (click)="openBackgroundForm()">
                 <medsys-icon name="plus" [size]="14" /> Registrar antecedente
               </button>
@@ -245,7 +245,7 @@
               heading="Sin antecedentes registrados"
               description="Los antecedentes personales, familiares y quirúrgicos acompañan a la persona en cada atención y ayudan a interpretar lo que ocurre hoy."
             >
-              @if (canWrite()) {
+              @if (canWriteBackgrounds()) {
                 <button type="button" class="btn btn-primary" (click)="openBackgroundForm()">
                   <medsys-icon name="plus" [size]="15" /> Registrar un antecedente
                 </button>
@@ -276,7 +276,7 @@
                       Registrado {{ background.recordedAt | msDateTime }}
                     </span>
                   </div>
-                  @if (canWrite()) {
+                  @if (canWriteBackgrounds()) {
                     <button
                       type="button"
                       class="btn btn-ghost btn-sm btn-icon"

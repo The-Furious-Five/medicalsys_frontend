@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { can } from '../../core/auth/permissions';
 import { AuthSession } from '../../core/auth/auth-session';
 import { describeFailure } from '../../core/http/api-error';
 import { FORMAT_PIPES } from '../../core/format/format.pipe';
@@ -78,9 +79,13 @@ export class StudyOrderDetailPage {
     () => this.order.value()?.status ?? 'REQUESTED',
   );
   protected readonly isVoided = computed(() => this.status() === 'VOIDED');
-  protected readonly acceptsResults = computed(() => acceptsStudyResults(this.status()));
+  protected readonly acceptsResults = computed(
+    () => acceptsStudyResults(this.status()) && can.writeStudyResults(this.session.permissions()),
+  );
   /** Solo se ofrecen los destinos válidos según la máquina de estados. */
-  protected readonly transitions = computed(() => studyOrderTransitions(this.status()));
+  protected readonly transitions = computed(() =>
+    can.changeStudyStatus(this.session.permissions()) ? studyOrderTransitions(this.status()) : [],
+  );
   protected readonly currentIndex = computed(() => STUDY_ORDER_TIMELINE.indexOf(this.status()));
 
   protected readonly crumbs = computed(() => [

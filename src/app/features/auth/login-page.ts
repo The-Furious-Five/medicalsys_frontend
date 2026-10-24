@@ -24,15 +24,21 @@ interface DemoAccount {
 
 /** Una por rol (ISO-01): cada una ve solo los módulos que sus permisos alcanzan. */
 const DEMO_ACCOUNTS: readonly DemoAccount[] = [
-  { email: 'osi@medicalsys.demo', role: 'Oficial de Seguridad (OSI)' },
-  { email: 'admin@medicalsys.demo', role: 'Administración del centro' },
-  { email: 'doctor@medicalsys.demo', role: 'Profesional de salud' },
+  { email: 'plataforma@medicalsys.demo', role: 'Admin. de plataforma' },
+  { email: 'osi@medicalsys.demo', role: 'Oficial Seguridad (OSI)' },
+  { email: 'auditor@medicalsys.demo', role: 'Auditor interno' },
+  { email: 'auditor.externo@medicalsys.demo', role: 'Auditor externo' },
+  { email: 'admin@medicalsys.demo', role: 'Admin. de organización' },
+  { email: 'doctor@medicalsys.demo', role: 'Médico' },
+  { email: 'pasante@medicalsys.demo', role: 'Pasante de medicina' },
   { email: 'enfermeria@medicalsys.demo', role: 'Enfermería' },
   { email: 'laboratorio@medicalsys.demo', role: 'Laboratorio' },
   { email: 'recepcion@medicalsys.demo', role: 'Recepción' },
-  { email: 'caja@medicalsys.demo', role: 'Facturación' },
+  { email: 'caja@medicalsys.demo', role: 'Cajero 1' },
+  { email: 'caja2@medicalsys.demo', role: 'Cajero 2' },
   { email: 'marketing@medicalsys.demo', role: 'Marketing' },
-  { email: 'auditor@medicalsys.demo', role: 'Auditoría interna' },
+  { email: 'paciente@medicalsys.demo', role: 'Paciente' },
+  { email: 'devops@medicalsys.demo', role: 'Tecnología (DevOps)' },
 ];
 // La contraseña de las cuentas demo NO va en el código: este archivo viaja completo al navegador y
 // cualquiera podría leerla. Se entrega aparte (IDENTITY_DEMO_PASSWORD del backend).

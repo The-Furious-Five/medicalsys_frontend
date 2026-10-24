@@ -1,6 +1,5 @@
 <main class="audit">
   <section class="audit__intro">
-    <p class="audit-eyebrow">Control interno · Solo auditoría y administración</p>
     <h1 id="audit-title">Bitácora de auditoría</h1>
     <p class="audit__lead">
       Quién hizo qué, sobre qué recurso y cuándo, dentro de esta organización. La bitácora es
@@ -34,50 +33,52 @@
   }
 
   <!-- Integridad: el dato que distingue una bitácora de una tabla de logs cualquiera. -->
-  <section class="audit-integrity" aria-labelledby="integrity-title">
-    <h2 id="integrity-title" class="sr-only">Integridad de la cadena</h2>
-    @switch (integrityState()) {
-      @case ('loading') {
-        <p class="audit-integrity-status" aria-live="polite">Verificando la cadena de hashes…</p>
-      }
-      @case ('error') {
-        <p class="audit-integrity-status is-unknown">
-          No se pudo verificar la cadena en este momento.
-        </p>
-      }
-      @default {
-        @if (integrity(); as report) {
-          <div
-            class="audit-integrity-badge"
-            [class.is-intact]="report.intact"
-            [class.is-broken]="!report.intact"
-          >
-            <span class="audit-integrity-mark" aria-hidden="true">{{
-              report.intact ? '✓' : '!'
-            }}</span>
-            <div>
-              <strong>
-                {{ report.intact ? 'Cadena verificada' : 'Cadena inconsistente' }}
-              </strong>
-              <p>
-                {{ report.detail }}
-                @if (report.verifiedEvents > 0) {
-                  · {{ report.verifiedEvents }} eventos recalculados (posiciones
-                  {{ report.fromSequenceNumber }}–{{ report.toSequenceNumber }})
-                }
-                @if (!report.intact && report.brokenAtSequenceNumber) {
-                  · Primera posición afectada: {{ report.brokenAtSequenceNumber }}
-                }
-              </p>
-            </div>
-          </div>
+  @if (canVerify()) {
+    <section class="audit-integrity" aria-labelledby="integrity-title">
+      <h2 id="integrity-title" class="sr-only">Integridad de la cadena</h2>
+      @switch (integrityState()) {
+        @case ('loading') {
+          <p class="audit-integrity-status" aria-live="polite">Verificando la cadena de hashes…</p>
         }
-        <button type="button" class="btn btn-ghost" (click)="loadIntegrity()">
-          Verificar integridad
-        </button>
+        @case ('error') {
+          <p class="audit-integrity-status is-unknown">
+            No se pudo verificar la cadena en este momento.
+          </p>
+        }
+        @default {
+          @if (integrity(); as report) {
+            <div
+              class="audit-integrity-badge"
+              [class.is-intact]="report.intact"
+              [class.is-broken]="!report.intact"
+            >
+              <span class="audit-integrity-mark" aria-hidden="true">{{
+                report.intact ? '✓' : '!'
+              }}</span>
+              <div>
+                <strong>
+                  {{ report.intact ? 'Cadena verificada' : 'Cadena inconsistente' }}
+                </strong>
+                <p>
+                  {{ report.detail }}
+                  @if (report.verifiedEvents > 0) {
+                    · {{ report.verifiedEvents }} eventos recalculados (posiciones
+                    {{ report.fromSequenceNumber }}–{{ report.toSequenceNumber }})
+                  }
+                  @if (!report.intact && report.brokenAtSequenceNumber) {
+                    · Primera posición afectada: {{ report.brokenAtSequenceNumber }}
+                  }
+                </p>
+              </div>
+            </div>
+          }
+          <button type="button" class="btn btn-ghost" (click)="loadIntegrity()">
+            Verificar integridad
+          </button>
+        }
       }
-    }
-  </section>
+    </section>
+  }
 
   <!-- Resumen: las preguntas con las que empieza toda revisión. -->
   <section class="audit-summary" aria-labelledby="summary-title">
@@ -217,16 +218,18 @@
       <div class="audit-filters-actions">
         <button type="submit" class="btn btn-primary">Aplicar filtros</button>
         <button type="button" class="btn btn-secondary" (click)="clearFilters()">Limpiar</button>
-        <button
-          type="button"
-          class="btn btn-ghost"
-          (click)="exportCsv()"
-          [disabled]="exportState() === 'loading'"
-        >
-          {{ exportState() === 'loading' ? 'Preparando CSV…' : 'Exportar CSV' }}
-        </button>
-        <!-- Sacar la bitácora del sistema es en sí mismo un hecho auditable, y así queda asentado. -->
-        <p class="audit-filters-note">La exportación queda registrada en la propia bitácora.</p>
+        @if (canExport()) {
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="exportCsv()"
+            [disabled]="exportState() === 'loading'"
+          >
+            {{ exportState() === 'loading' ? 'Preparando CSV…' : 'Exportar CSV' }}
+          </button>
+          <!-- Sacar la bitácora del sistema es en sí mismo un hecho auditable, y así queda asentado. -->
+          <p class="audit-filters-note">La exportación queda registrada en la propia bitácora.</p>
+        }
       </div>
     </form>
   </section>

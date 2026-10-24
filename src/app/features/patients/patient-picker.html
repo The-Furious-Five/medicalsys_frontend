@@ -1,4 +1,19 @@
-@if (patientId()) {
+@if (!canSearch()) {
+  <div class="field">
+    <input
+      class="input"
+      type="text"
+      aria-label="Identificador del paciente"
+      placeholder="Identificador del paciente"
+      autocomplete="off"
+      [value]="patientId() ?? term()"
+      (input)="setReference($any($event.target).value)"
+    />
+    <span class="field-hint"
+      >Usa el identificador proporcionado por el centro para consultar cupones o puntos.</span
+    >
+  </div>
+} @else if (patientId()) {
   <div class="patient-chosen">
     <span class="patient-avatar" aria-hidden="true"><medsys-icon name="user" [size]="14" /></span>
     @if (loadingSelected()) {

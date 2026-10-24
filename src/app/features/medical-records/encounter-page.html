@@ -138,7 +138,9 @@
       <medsys-vitals-panel [encounterId]="data.id" [editable]="canWriteVitals()" />
       <medsys-diagnoses-panel [encounterId]="data.id" [editable]="canWrite()" />
       <medsys-prescriptions-panel [encounterId]="data.id" [editable]="canWrite()" />
-      <medsys-study-orders-panel [encounterId]="data.id" [editable]="canWrite()" />
+      @if (canViewStudies()) {
+        <medsys-study-orders-panel [encounterId]="data.id" [editable]="canWrite()" />
+      }
 
       @if (isSigned() || isVoided()) {
         <medsys-addendums-panel

@@ -1,12 +1,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
   model,
   signal,
 } from '@angular/core';
+import { AuthSession } from '../../core/auth/auth-session';
+import { can } from '../../core/auth/permissions';
 import { formatAge, formatDocument } from '../../core/format/format';
 import { DOCUMENT_TYPE_SHORT, label } from '../../core/labels/labels';
 import { Icon } from '../../core/ui/icon';
@@ -33,6 +36,8 @@ export class PatientPicker {
   readonly autoFocus = input(false);
 
   private readonly patients = inject(PatientsService);
+  private readonly session = inject(AuthSession);
+  protected readonly canSearch = computed(() => can.viewPatients(this.session.permissions()));
 
   protected readonly term = signal('');
   protected readonly open = signal(false);
@@ -46,7 +51,7 @@ export class PatientPicker {
   constructor() {
     effect(() => {
       const id = this.patientId();
-      if (id === null) {
+      if (id === null || !this.canSearch()) {
         this.selected.set(null);
         return;
       }
@@ -71,7 +76,17 @@ export class PatientPicker {
     });
   }
 
+  protected setReference(value: string): void {
+    this.term.set(value);
+    this.patientId.set(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.trim())
+        ? value.trim()
+        : null,
+    );
+  }
+
   protected async onInput(value: string): Promise<void> {
+    if (!this.canSearch()) return;
     this.term.set(value);
     this.open.set(true);
     this.highlighted.set(0);

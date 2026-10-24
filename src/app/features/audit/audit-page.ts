@@ -1,5 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
+import { AuthSession } from '../../core/auth/auth-session';
+import { can } from '../../core/auth/permissions';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { AuditApi } from './audit-api';
@@ -36,6 +38,9 @@ const PAGE_SIZE = 25;
 })
 export class AuditPage {
   private readonly api = inject(AuditApi);
+  private readonly session = inject(AuthSession);
+  protected readonly canVerify = computed(() => can.verifyAudit(this.session.permissions()));
+  protected readonly canExport = computed(() => can.exportAudit(this.session.permissions()));
   private readonly formBuilder = inject(FormBuilder);
 
   protected readonly categories = AUDIT_CATEGORIES;
@@ -132,6 +137,7 @@ export class AuditPage {
   }
 
   protected loadIntegrity(): void {
+    if (!this.canVerify()) return;
     this.integrityState.set('loading');
     this.api.integrity().subscribe({
       next: (report) => {
@@ -146,6 +152,7 @@ export class AuditPage {
   }
 
   protected exportCsv(): void {
+    if (!this.canExport()) return;
     this.exportState.set('loading');
     this.api.exportCsv(this.currentFilters()).subscribe({
       next: (blob) => {

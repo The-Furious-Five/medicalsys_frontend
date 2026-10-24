@@ -29,7 +29,7 @@ import { StatusChip } from '../../shared/status-chip';
 import { Role } from './access-control.models';
 import { AccessControlService } from './access-control.service';
 import { groupByModule, orderRoles } from './access-matrix';
-import { ROLE_STATE, roleEditLock } from './access-rules';
+import { ROLE_STATE, roleEditLock, grantsRoleAssignment } from './access-rules';
 
 type Pending =
   | { readonly kind: 'deactivate' }
@@ -103,6 +103,7 @@ export class RoleDetailPage {
   private readonly toasts = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
+  protected readonly grantsRoleAssignment = grantsRoleAssignment;
   protected readonly scopes = ROLE_SCOPE;
   protected readonly states = ROLE_STATE;
 

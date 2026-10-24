@@ -21,6 +21,7 @@ import { Skeleton } from '../../shared/skeleton';
 import { StatusChip } from '../../shared/status-chip';
 import { BillingService } from '../billing/billing.service';
 import { RecordsService } from '../medical-records/records.service';
+import { PatientAccessPanel } from '../patients/patient-access-panel';
 import { PatientName } from '../patients/patient-name';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { PlanUsage } from '../tenancy/tenancy.models';
@@ -117,6 +118,7 @@ const MAX_ACTIONS = 6;
     Skeleton,
     ErrorState,
     PatientName,
+    PatientAccessPanel,
     RouterLink,
     Icon,
     ...FORMAT_PIPES,
@@ -128,6 +130,9 @@ export class HomePage {
   private readonly billing = inject(BillingService);
   private readonly tenancy = inject(TenancyService);
   private readonly session = inject(AuthSession);
+  protected readonly canViewOwnAccess = computed(() =>
+    can.viewOwnAccess(this.session.permissions()),
+  );
   private readonly router = inject(Router);
 
   protected readonly encounterStatuses = ENCOUNTER_STATUS;
@@ -174,16 +179,28 @@ export class HomePage {
     this.firstPage,
     undefined,
     6,
+    this.showsDrafts,
   );
   protected readonly reported = this.records.studyOrdersResource(
     this.reportedStatus,
     this.firstPage,
     6,
+    this.showsOrders,
   );
-  protected readonly invoices = this.billing.invoicesResource(this.noPatient, this.firstPage, 5);
-  protected readonly organization = this.tenancy.organizationResource();
-  protected readonly usage = this.tenancy.usageResource();
-  protected readonly offerings = this.tenancy.offeringsResource(this.activeOnly);
+  protected readonly invoices = this.billing.invoicesResource(
+    this.noPatient,
+    this.firstPage,
+    5,
+    this.showsBilling,
+  );
+  protected readonly organization = this.tenancy.organizationResource(
+    computed(() => can.viewOrganization(this.session.permissions())),
+  );
+  protected readonly usage = this.tenancy.usageResource(this.showsCentre);
+  protected readonly offerings = this.tenancy.offeringsResource(
+    this.activeOnly,
+    computed(() => can.viewOfferings(this.session.permissions())),
+  );
 
   protected typeLabel(type: string): string {
     return label(ENCOUNTER_TYPE, type);

@@ -1,3 +1,6 @@
+> Matriz vigente: 15 roles con nombres y modelos del archivo «Matriz de Roles.xlsx», aplicada por V10 de ms-identidad.
+> Los detalles y las dependencias de lectura están en `medicalsys-platform_v1/docs/seguridad/matriz-roles/README.md`.
+
 # RBAC-05 — Pantallas de roles y matriz de accesos
 
 **Issue:** SINS-43 · **Sección del informe:** 9.2 · **Depende de:** RBAC-02 (API de gestión de roles) y RBAC-03 (autorización por permisos)
