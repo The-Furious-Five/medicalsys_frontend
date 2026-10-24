@@ -90,6 +90,8 @@ export const can = {
   viewAudit: (g: Grants) => has(g, 'audit.log.read'),
   verifyAudit: (g: Grants) => has(g, 'audit.log.verify'),
   exportAudit: (g: Grants) => has(g, 'audit.log.export'),
+  /* El OSI (ISO-01) revisa la bitácora de todas las organizaciones, no solo la de su sesión. */
+  viewPlatformAudit: (g: Grants) => has(g, 'audit.log.read_platform'),
 
   /* ms-catalogos. La pantalla reúne los cinco catálogos de referencia. */
   viewCatalogs: (g: Grants) =>

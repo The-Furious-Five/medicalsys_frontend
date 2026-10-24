@@ -1,4 +1,4 @@
-> Matriz vigente: 15 roles con nombres y modelos del archivo «Matriz de Roles.xlsx», aplicada por V10 de ms-identidad.
+> Matriz vigente: 15 roles con nombres y modelos del archivo «Matriz de Roles.xlsx», aplicada por V11 de ms-identidad.
 > Los detalles y las dependencias de lectura están en `medicalsys-platform_v1/docs/seguridad/matriz-roles/README.md`.
 
 # RBAC-05 — Pantallas de roles y matriz de accesos

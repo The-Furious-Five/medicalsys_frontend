@@ -36,6 +36,7 @@ const EVENTS: AuditPageModel = {
   content: [
     {
       eventId: '11111111-1111-4111-8111-111111111111',
+      organizationId: '00000000-0000-4000-8000-0000000000a1',
       sequenceNumber: 3,
       occurredAt: '2026-09-07T09:00:00Z',
       recordedAt: '2026-09-07T09:00:01Z',
@@ -186,5 +187,36 @@ describe('AuditPage', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).not.toContain('Verificar integridad');
     expect(element.textContent).not.toContain('Exportar CSV');
+  });
+
+  /** ISO-01: el OSI revisa la bitácora de todas las organizaciones y puede acotarla a una. */
+  it('should let the OSI filter by organization and show each event organization', async () => {
+    grants.set(['audit.log.read', 'audit.log.verify', 'audit.log.read_platform']);
+    const fixture = TestBed.createComponent(AuditPage);
+    fixture.detectChanges();
+
+    http.expectOne((request) => request.url === '/api/v1/audit/summary').flush(SUMMARY);
+    http.expectOne((request) => request.url === '/api/v1/audit/events').flush(EVENTS);
+    http.expectOne((request) => request.url === '/api/v1/audit/integrity').flush(INTEGRITY);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('input[formControlName="organizationId"]')).not.toBeNull();
+    expect(element.querySelector('tbody tr')?.textContent).toContain('Org. 00000000');
+  });
+
+  it('should not offer the organization filter to an organization auditor', async () => {
+    const fixture = TestBed.createComponent(AuditPage);
+    fixture.detectChanges();
+
+    http.expectOne((request) => request.url === '/api/v1/audit/summary').flush(SUMMARY);
+    http.expectOne((request) => request.url === '/api/v1/audit/events').flush(EVENTS);
+    http.expectOne((request) => request.url === '/api/v1/audit/integrity').flush(INTEGRITY);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('input[formControlName="organizationId"]')).toBeNull();
   });
 });
