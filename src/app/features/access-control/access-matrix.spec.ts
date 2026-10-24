@@ -61,7 +61,7 @@ describe('matriz de accesos', () => {
       [
         role('RECEPTIONIST', [READ]),
         role('PHYSICIAN', [READ, SIGN]),
-        role('AUDITOR', [], { active: false }),
+        role('COMPRAS', [], { active: false }),
       ],
       [SIGN, ISSUE, READ],
     );
@@ -75,7 +75,7 @@ describe('matriz de accesos', () => {
       'Columna',
       'PHYSICIAN',
       'RECEPTIONIST',
-      'AUDITOR (inactivo)',
+      'COMPRAS (inactivo)',
     ]);
     expect(table.slice(1).map((row) => [row[1], ...row.slice(5)])).toEqual([
       ['clinical.encounter.read', 'X', 'X', ''],
