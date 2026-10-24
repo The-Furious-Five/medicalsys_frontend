@@ -101,10 +101,15 @@ export function groupByModule(permissions: readonly CatalogPermission[]): readon
 /** Los roles de sistema en el orden de la operación; después, los creados desde la API. */
 const SYSTEM_ORDER = [
   'PLATFORM_ADMIN',
+  'OSI',
+  'AUDITOR',
   'ADMINISTRATOR',
   'PHYSICIAN',
+  'NURSE',
+  'LAB_TECHNICIAN',
   'RECEPTIONIST',
   'BILLING_CLERK',
+  'MARKETING_MANAGER',
   'PATIENT',
 ];
 

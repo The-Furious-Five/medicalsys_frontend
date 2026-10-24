@@ -24,9 +24,14 @@ export const DEPARTMENT: Dict = dict({
 
 export const ROLE: Dict = dict({
   PLATFORM_ADMIN: 'Administrador de plataforma',
+  // ISO-01: roles por función que agregó la migración V9 de ms-identidad.
+  OSI: 'Oficial de Seguridad de la Información',
+  AUDITOR: 'Auditoría',
   ADMINISTRATOR: 'Administración',
   MARKETING_MANAGER: 'Marketing',
   PHYSICIAN: 'Profesional de salud',
+  NURSE: 'Enfermería',
+  LAB_TECHNICIAN: 'Laboratorio',
   RECEPTIONIST: 'Recepción',
   BILLING_CLERK: 'Facturación',
   PATIENT: 'Paciente',
