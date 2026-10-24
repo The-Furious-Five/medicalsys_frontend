@@ -115,10 +115,8 @@ export const can = {
   manageRoles: (g: Grants) => has(g, 'identity.role.manage'),
   viewRoleAssignments: (g: Grants) => has(g, 'identity.user.read') && has(g, 'identity.role.read'),
   assignRoles: (g: Grants) => has(g, 'identity.role.assign'),
-<<<<<<< HEAD
   /* MAC (ISO-01): fijar el nivel de autorización de una cuenta es del OSI. */
   manageClearance: (g: Grants) => has(g, 'identity.clearance.manage'),
-=======
 
   /* ms-identidad: gestión de usuarios (IAM-06). El alta ofrece un rol inicial, así que también
      lee los roles; cada botón de la hoja pide el permiso de su endpoint. */
@@ -128,7 +126,6 @@ export const can = {
   changeUserStatus: (g: Grants) => has(g, 'identity.user.change_status'),
   unlockUsers: (g: Grants) => has(g, 'identity.user.unlock'),
   resetPasswords: (g: Grants) => has(g, 'identity.user.reset'),
->>>>>>> 3e3038f9dca69fc01721e42ada38946286c9f1a7
 } as const;
 
 export type Permission = keyof typeof can;
