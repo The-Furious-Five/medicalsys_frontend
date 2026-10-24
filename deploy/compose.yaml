@@ -1,5 +1,5 @@
-# Frontend en el VPS. Se une a la red del backend (proyecto "medicalsys") para que Caddy lo
-# alcance como "frontend" y Nginx llegue al gateway como "ms-gateway".
+# Frontend + HTTPS en el VPS. Se une a la red del backend (medicalsys-interna, definida en su
+# compose.yaml) para llegar al gateway como "ms-gateway". Caddy es el unico que publica 80/443.
 services:
   frontend:
     image: ghcr.io/the-furious-five/medicalsys-frontend:latest
@@ -9,7 +9,27 @@ services:
     networks:
       - medicalsys
 
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - medicalsys
+    depends_on:
+      - frontend
+
 networks:
   medicalsys:
-    name: medicalsys_default
+    name: medicalsys-interna
     external: true
+
+volumes:
+  caddy_data:
+  caddy_config:

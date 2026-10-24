@@ -47,7 +47,7 @@ jobs:
       - name: Copiar compose
         run: |
           ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'mkdir -p /opt/medicalsys-frontend'
-          scp -i ~/.ssh/id_deploy deploy/compose.yaml "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/medicalsys-frontend/compose.yaml"
+          scp -i ~/.ssh/id_deploy deploy/compose.yaml deploy/Caddyfile "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/medicalsys-frontend/"
 
       - name: Pull y up
         run: |
@@ -57,6 +57,7 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           docker compose pull
           docker compose up -d
+          docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile || true
           docker image prune -f
           docker compose ps
           REMOTE

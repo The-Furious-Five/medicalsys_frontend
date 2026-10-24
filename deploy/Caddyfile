@@ -1,0 +1,5 @@
+# TLS automatico (Let's Encrypt). El DNS de este dominio debe apuntar ya al VPS.
+medicalsys.los5furiosos.cloud {
+	encode gzip
+	reverse_proxy frontend:80
+}
