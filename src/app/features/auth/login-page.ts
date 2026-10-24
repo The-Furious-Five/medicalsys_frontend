@@ -34,8 +34,8 @@ const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   { email: 'marketing@medicalsys.demo', role: 'Marketing' },
   { email: 'auditor@medicalsys.demo', role: 'Auditoría interna' },
 ];
-// La contraseña de las cuentas demo NO va en el código: este archivo viaja completo al navegador y
-// cualquiera podría leerla. Se entrega aparte (IDENTITY_DEMO_PASSWORD del backend).
+// Ninguna contraseña va en el código: este archivo viaja completo al navegador. Las cuentas demo
+// no comparten contraseña; el OSI reinicia la que se va a usar y la persona elige la suya.
 
 interface BrandPoint {
   readonly icon: IconName;

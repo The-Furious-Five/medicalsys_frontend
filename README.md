@@ -423,9 +423,10 @@ documentos ficticios. No registrar JWT, contraseñas, contenido clínico ni dato
 | `nutricion@medicalsys.demo`     | `PHYSICIAN`     | Nutrición                                                                                 |
 | `odontologia@medicalsys.demo`   | `PHYSICIAN`     | Odontología                                                                               |
 
-Contraseña: la de `IDENTITY_DEMO_PASSWORD` del backend (en un entorno local nuevo,
-`SanGabriel.Demo26!`; en el despliegue público, la que entrega el equipo). El frontend no la
-guarda: el botón de cuenta demo completa solo el correo.
+Contraseña: no hay una común. Cada cuenta nace en el backend con una temporal aleatoria propia que
+nadie ve. Para usar una, el OSI la reinicia («Reiniciar contraseña» en Usuarios) y la persona elige
+la suya en el primer ingreso. El frontend no guarda contraseñas: el botón de cuenta demo completa
+solo el correo.
 
 El menú lateral muestra solo lo que el rol activo puede usar. Nada aparece
 deshabilitado «para que se vea completo»: enseñar puertas cerradas no ayuda a
