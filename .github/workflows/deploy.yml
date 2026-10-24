@@ -3,9 +3,9 @@
 # La calidad (format/lint/test) la valida ci.yml en los PR.
 name: Deploy frontend
 
+# PAUSADO (oct 2026): el push a main ya no despliega solo, para no gastar minutos. Se lanza a mano
+# desde Actions -> Deploy frontend. Para reactivarlo, devolver:  push: { branches: [main] }
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:

@@ -80,3 +80,35 @@ describe('describeFailure', () => {
     expect(detail.message).toContain('conexión');
   });
 });
+
+describe('describeFailure con los errores de ms-identidad (IAM-03)', () => {
+  const problem = (status: number, detail: string, code?: string) =>
+    new HttpErrorResponse({
+      status,
+      error: { status, title: 'x', detail, correlationId: 'c-1', ...(code ? { code } : {}) },
+    });
+
+  it('lee el code del ProblemDetail', () => {
+    expect(describeFailure(problem(400, 'Muy corta', 'PASSWORD_POLICY_VIOLATION')).code).toBe(
+      'PASSWORD_POLICY_VIOLATION',
+    );
+    expect(describeFailure(problem(409, 'Conflicto')).code).toBe('HTTP_409');
+  });
+
+  it('explica la cuenta bloqueada sin pedir que se reintente ni que se llame a soporte', () => {
+    const detail = describeFailure(
+      problem(423, 'La cuenta esta bloqueada por intentos fallidos', 'ACCOUNT_LOCKED'),
+    );
+    expect(detail.title).toBe('Cuenta bloqueada');
+    expect(detail.retryable).toBe(false);
+    expect(detail.message).not.toContain('soporte');
+  });
+
+  it('no confunde el cambio de contraseña requerido con falta de permiso', () => {
+    const detail = describeFailure(
+      problem(403, 'Debes cambiar tu contrasena', 'PASSWORD_CHANGE_REQUIRED'),
+    );
+    expect(detail.title).toBe('Cambio de contraseña requerido');
+    expect(detail.message).not.toContain('Tu rol');
+  });
+});

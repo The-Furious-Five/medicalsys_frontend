@@ -10,6 +10,7 @@ está programada por dentro. Evita jerga de implementación (interceptores, comp
 píxeles, arquitectura interna) salvo que se indique explícitamente en el prompt.
 
 **Paleta de marca** (tomada de la identidad visual MSYS — ver `tmp/image.png`):
+
 - Verde Jade `#1C7F60` — color principal, usado en títulos, acentos, formas geométricas
   y fondos de bloque destacados.
 - Terracota `#E57833` — color secundario/complementario, usado con moderación para

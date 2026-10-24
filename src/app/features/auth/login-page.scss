@@ -445,3 +445,32 @@
     line-height: 32px;
   }
 }
+
+/* IAM-05: reglas de la nueva contraseña, marcadas mientras se escribe. */
+.access-rules {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+
+  li.met {
+    color: var(--text-primary);
+  }
+
+  li.met medsys-icon {
+    color: var(--brand-solid);
+  }
+}
+
+.access-rules-note {
+  font-size: 0.8125rem;
+}

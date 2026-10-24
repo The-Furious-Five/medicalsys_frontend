@@ -107,6 +107,28 @@ export function accountLock(
   return null;
 }
 
+/**
+ * Por qué quien actúa no puede modificar los datos, el estado o la contraseña de esta cuenta
+ * (IAM-06), o `null` si puede. Es la regla de `RoleGovernance.checkCanManageAccount`: nadie gestiona
+ * una cuenta con permisos de gestión de accesos que no tiene. A diferencia de los roles, los datos de
+ * la propia cuenta sí se editan; la baja y el reinicio de la propia cuenta no se ofrecen.
+ */
+export function accountManagementLock(
+  account: IdentityAccount,
+  roles: readonly Role[],
+  actorPermissions: readonly string[],
+): string | null {
+  const held = new Set(
+    account.roles.filter((assignment) => assignment.active).map((assignment) => assignment.role),
+  );
+  return managementAbove(
+    roles.filter((role) => held.has(role.code)),
+    actorPermissions,
+  )
+    ? 'La cuenta tiene permisos de gestión de accesos que tú no tienes, así que no puedes modificarla.'
+    : null;
+}
+
 /** Estado de un rol, que el servicio expresa como `active`. */
 export const ROLE_STATE: Record<string, string> = { ACTIVE: 'Activo', INACTIVE: 'Inactivo' };
 

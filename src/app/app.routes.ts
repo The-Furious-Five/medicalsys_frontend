@@ -37,6 +37,15 @@ export const routes: Routes = [
          matriz exige `identity.role.read`; editarlos, `identity.role.manage`,
          que cada pantalla consulta para ofrecer o no sus controles. */
       {
+        /* IAM-06: alta, edición, baja, desbloqueo y reinicio de contraseña. Cada botón pide el
+           permiso de su endpoint (identity.user.*); ver la pantalla, leer cuentas y roles. */
+        path: 'usuarios',
+        title: 'MSYS · Gestión de usuarios',
+        canActivate: [permissionGuard('viewUsers')],
+        loadComponent: () =>
+          import('./features/access-control/users-page').then((m) => m.UsersPage),
+      },
+      {
         path: 'roles',
         title: 'MSYS · Roles',
         canActivate: [permissionGuard('viewRoles')],

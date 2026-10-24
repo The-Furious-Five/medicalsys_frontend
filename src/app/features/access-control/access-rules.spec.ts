@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { CatalogPermission, IdentityAccount, Role, RoleAssignment } from './access-control.models';
-import { accountLock, assignmentState, manageableRoles, roleEditLock } from './access-rules';
+import {
+  accountLock,
+  accountManagementLock,
+  assignmentState,
+  manageableRoles,
+  roleEditLock,
+} from './access-rules';
 
 const permission = (code: string, module: string): CatalogPermission => ({
   code,
@@ -85,9 +91,11 @@ describe('reglas de gobierno anticipadas', () => {
   it('la cuenta propia y la de alguien por encima quedan en lectura', () => {
     const account = (roles: readonly RoleAssignment[]): IdentityAccount => ({
       publicId: 'target',
+      userCode: 'MS-26-00001',
       organizationPublicId: 'org',
       email: 'x@medicalsys.bo',
       fullName: 'X',
+      phoneE164: null,
       status: 'ACTIVE',
       clearance: 'CONFIDENTIAL',
       lastAccessAt: null,
@@ -117,5 +125,41 @@ describe('reglas de gobierno anticipadas', () => {
     expect(assignmentState(assignment('PHYSICIAN', { active: false }), today)).toBe(
       'ROLE_INACTIVE',
     );
+  });
+});
+
+describe('accountManagementLock (IAM-06)', () => {
+  const account = (roles: readonly RoleAssignment[]): IdentityAccount => ({
+    publicId: 'target',
+    userCode: 'MS-26-00002',
+    organizationPublicId: 'org',
+    email: 'x@medicalsys.bo',
+    fullName: 'X',
+    phoneE164: null,
+    status: 'ACTIVE',
+    lastAccessAt: null,
+    roles,
+  });
+
+  it('deja gestionar una cuenta sin permisos de gestión por encima de los propios', () => {
+    expect(
+      accountManagementLock(account([assignment('PHYSICIAN')]), ROLES, ['identity.role.assign']),
+    ).toBeNull();
+  });
+
+  it('bloquea una cuenta con permisos de gestión que quien actúa no tiene', () => {
+    expect(
+      accountManagementLock(account([assignment('PLATFORM_ADMIN')]), ROLES, [
+        'identity.role.assign',
+      ]),
+    ).toContain('no puedes modificarla');
+  });
+
+  it('una asignación vencida no cuenta', () => {
+    expect(
+      accountManagementLock(account([assignment('PLATFORM_ADMIN', { active: false })]), ROLES, [
+        'identity.role.assign',
+      ]),
+    ).toBeNull();
   });
 });

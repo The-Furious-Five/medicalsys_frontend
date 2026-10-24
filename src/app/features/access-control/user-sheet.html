@@ -1,0 +1,184 @@
+<medsys-dialog
+  [open]="open()"
+  variant="sheet"
+  [width]="560"
+  [heading]="heading()"
+  [description]="
+    creating()
+      ? 'Se crea en MedicalSys y en Keycloak con una contraseña temporal.'
+      : (current()?.userCode ?? null)
+  "
+  (closed)="closed.emit()"
+>
+  <div class="stack gap-4">
+    @if (!creating() && current(); as item) {
+      <div class="row gap-2 wrap">
+        <span class="t-sec">User ID</span>
+        <span class="chip chip-neutral t-num">{{ item.userCode }}</span>
+        <span class="t-sec">Estado</span>
+        <medsys-status-chip [value]="item.status" [dictionary]="statuses" [tones]="statusTones" />
+      </div>
+      @if (lock(); as reason) {
+        <medsys-notice tone="warn" heading="Solo lectura" icon="lock">{{ reason }}</medsys-notice>
+      }
+    }
+    @if (failureMessage(); as message) {
+      <div role="alert">
+        <medsys-notice tone="err">{{ message }}</medsys-notice>
+      </div>
+    }
+
+    <form class="stack gap-3" [formGroup]="form" novalidate (ngSubmit)="save()">
+      <h3 class="t-section">Datos de la cuenta</h3>
+      <fieldset class="stack gap-3" [disabled]="!creating() && (!canUpdate() || lock() !== null)">
+        <div class="field">
+          <label class="field-label" for="user-name">Nombre completo</label>
+          <input
+            id="user-name"
+            class="input"
+            formControlName="fullName"
+            autocomplete="off"
+            [attr.aria-invalid]="fieldError('fullName') ? 'true' : null"
+          />
+          @if (fieldError('fullName'); as message) {
+            <span class="field-error">{{ message }}</span>
+          }
+        </div>
+        <div class="field">
+          <label class="field-label" for="user-email">Correo</label>
+          <input
+            id="user-email"
+            class="input"
+            type="email"
+            formControlName="email"
+            autocomplete="off"
+            spellcheck="false"
+            [attr.aria-invalid]="fieldError('email') ? 'true' : null"
+          />
+          @if (fieldError('email'); as message) {
+            <span class="field-error">{{ message }}</span>
+          }
+          <span class="field-hint"
+            >Con este correo inicia sesión. El User ID no cambia aunque cambie el correo.</span
+          >
+        </div>
+        <div class="field">
+          <label class="field-label" for="user-phone">
+            Teléfono <span class="field-optional">(opcional)</span>
+          </label>
+          <input
+            id="user-phone"
+            class="input"
+            type="tel"
+            formControlName="phoneE164"
+            placeholder="+59171234567"
+            [attr.aria-invalid]="fieldError('phoneE164') ? 'true' : null"
+          />
+          @if (fieldError('phoneE164'); as message) {
+            <span class="field-error">{{ message }}</span>
+          }
+        </div>
+        @if (creating()) {
+          <div class="field">
+            <label class="field-label" for="user-role">
+              Rol inicial <span class="field-optional">(opcional)</span>
+            </label>
+            <medsys-select
+              formControlName="role"
+              [options]="roleOptions()"
+              [controlId]="'user-role'"
+              placeholder="Sin rol por ahora"
+            />
+            <span class="field-hint"
+              >Más roles, con fechas de vigencia, en «Asignación de roles».</span
+            >
+          </div>
+          <label class="check-row">
+            <input type="checkbox" class="checkbox" formControlName="activate" />
+            <span class="check-box" aria-hidden="true">
+              <medsys-icon name="check" [size]="11" [strokeWidth]="2.6" />
+            </span>
+            <span>Activar la cuenta ahora</span>
+          </label>
+        }
+      </fieldset>
+      @if (creating() || (canUpdate() && lock() === null)) {
+        <div class="row gap-2">
+          <button type="submit" class="btn btn-primary btn-sm" [disabled]="pending()">
+            <medsys-icon [name]="creating() ? 'user-plus' : 'check'" [size]="14" />
+            {{ creating() ? 'Crear cuenta' : 'Guardar cambios' }}
+          </button>
+        </div>
+      }
+    </form>
+
+    @if (!creating() && current(); as item) {
+      @if (lock() === null) {
+        <section class="stack gap-2">
+          <h3 class="t-section">Acceso</h3>
+          <div class="row gap-2 wrap">
+            @if (item.status === 'LOCKED' && canUnlock()) {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="confirming.set('unlock')"
+              >
+                <medsys-icon name="lock" [size]="14" /> Desbloquear
+              </button>
+            }
+            @if (item.status !== 'INACTIVE' && canReset() && !own()) {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="confirming.set('reset')"
+              >
+                <medsys-icon name="refresh" [size]="14" /> Reiniciar contraseña
+              </button>
+            }
+            @if (item.status !== 'INACTIVE' && canChangeStatus() && !own()) {
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                (click)="confirming.set('deactivate')"
+              >
+                <medsys-icon name="ban" [size]="14" /> Dar de baja
+              </button>
+            }
+            @if (item.status === 'INACTIVE' && canChangeStatus()) {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="confirming.set('reactivate')"
+              >
+                <medsys-icon name="power" [size]="14" /> Reactivar
+              </button>
+            }
+          </div>
+          @if (own()) {
+            <span class="field-hint">
+              Es tu propia cuenta: no se ofrecen la baja ni el reinicio de contraseña.
+            </span>
+          } @else if (item.status === 'LOCKED') {
+            <span class="field-hint">
+              Se bloqueó al 3er intento fallido. El bloqueo no vence solo: lo levanta un
+              administrador.
+            </span>
+          }
+        </section>
+      }
+    }
+  </div>
+</medsys-dialog>
+
+@if (confirming(); as action) {
+  <medsys-confirm-dialog
+    [open]="true"
+    [heading]="confirmations[action].heading"
+    [description]="confirmations[action].description"
+    [confirmLabel]="confirmations[action].label"
+    [danger]="confirmations[action].danger"
+    [pending]="pending()"
+    (confirmed)="run(action)"
+    (cancelled)="confirming.set(null)"
+  />
+}

@@ -162,6 +162,7 @@ const NAV: readonly NavGroup[] = [
         icon: 'file-signature',
         permission: 'viewAudit',
       },
+      { link: '/usuarios', label: 'Usuarios', icon: 'users', permission: 'viewUsers' },
       { link: '/roles', label: 'Roles', icon: 'shield-check', permission: 'viewRoles' },
       {
         link: '/matriz-accesos',
