@@ -34,6 +34,7 @@ const EVENTS: AuditPageModel = {
   content: [
     {
       eventId: '11111111-1111-4111-8111-111111111111',
+      organizationId: '00000000-0000-4000-8000-0000000000a1',
       sequenceNumber: 3,
       occurredAt: '2026-09-07T09:00:00Z',
       recordedAt: '2026-09-07T09:00:01Z',
@@ -165,5 +166,45 @@ describe('AuditPage', () => {
     expect(element.querySelector('.audit-banner')?.textContent).toContain(
       '147c87d8-e5f4-4d24-a760-4974f8897a0c',
     );
+  });
+
+  /** ISO-01: el OSI revisa la bitácora de todas las organizaciones y puede acotarla a una. */
+  it('should let the OSI filter by organization and show each event organization', async () => {
+    // AuthSession lee la sesión de sessionStorage al crearse, que es cuando la pide la pantalla.
+    sessionStorage.setItem(
+      'medicalsys.session',
+      JSON.stringify({
+        accessToken: 'token',
+        expiresAt: Date.now() + 60_000,
+        user: { roles: ['OSI'], permissions: ['audit.log.read', 'audit.log.read_platform'] },
+      }),
+    );
+    const fixture = TestBed.createComponent(AuditPage);
+    sessionStorage.removeItem('medicalsys.session');
+    fixture.detectChanges();
+
+    http.expectOne((request) => request.url === '/api/v1/audit/summary').flush(SUMMARY);
+    http.expectOne((request) => request.url === '/api/v1/audit/events').flush(EVENTS);
+    http.expectOne((request) => request.url === '/api/v1/audit/integrity').flush(INTEGRITY);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('input[formControlName="organizationId"]')).not.toBeNull();
+    expect(element.querySelector('tbody tr')?.textContent).toContain('Org. 00000000');
+  });
+
+  it('should not offer the organization filter to an organization auditor', async () => {
+    const fixture = TestBed.createComponent(AuditPage);
+    fixture.detectChanges();
+
+    http.expectOne((request) => request.url === '/api/v1/audit/summary').flush(SUMMARY);
+    http.expectOne((request) => request.url === '/api/v1/audit/events').flush(EVENTS);
+    http.expectOne((request) => request.url === '/api/v1/audit/integrity').flush(INTEGRITY);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('input[formControlName="organizationId"]')).toBeNull();
   });
 });

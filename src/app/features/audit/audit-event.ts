@@ -25,6 +25,7 @@ export type AuditSeverity = 'INFO' | 'NOTICE' | 'WARNING' | 'CRITICAL';
 
 export interface AuditEvent {
   readonly eventId: string;
+  readonly organizationId: string;
   readonly sequenceNumber: number;
   readonly occurredAt: string;
   readonly recordedAt: string;
@@ -100,10 +101,11 @@ export interface AuditIntegrity {
 /**
  * Criterios de búsqueda enviados al backend.
  *
- * No incluye la organización: el tenant sale del JWT y el gateway lo propaga. Ofrecerlo como campo
- * de formulario invitaría a suplantar una clínica desde el navegador.
+ * La organización sale del JWT y el gateway la propaga. `organizationId` solo lo respeta el backend
+ * con alcance de plataforma (OSI, `audit.log.read_platform`); a cualquier otro le responde 403.
  */
 export interface AuditFilters {
+  readonly organizationId?: string;
   readonly from?: string;
   readonly to?: string;
   readonly category?: AuditCategory;

@@ -188,6 +188,12 @@
             placeholder="Todas"
           />
         </label>
+        @if (platformScope()) {
+          <label>
+            <span>Organización (UUID)</span>
+            <input type="text" formControlName="organizationId" placeholder="Todas" />
+          </label>
+        }
         <label>
           <span>Microservicio</span>
           <input type="text" formControlName="serviceName" placeholder="ms-pacientes" />
@@ -319,6 +325,11 @@
                       {{ event.serviceName }}
                       @if (event.responseStatus) {
                         <span class="muted">HTTP {{ event.responseStatus }}</span>
+                      }
+                      @if (platformScope()) {
+                        <span class="muted" [title]="event.organizationId">
+                          Org. {{ event.organizationId.slice(0, 8) }}
+                        </span>
                       }
                     </td>
                     <td class="td-actions">

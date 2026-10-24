@@ -18,6 +18,8 @@ import type {
   AuditPage as AuditPageModel,
   AuditSummary,
 } from './audit-event';
+import { AuthSession } from '../../core/auth/auth-session';
+import { can } from '../../core/auth/permissions';
 import { isApiError } from '../../core/http/api-error';
 import type { ApiError } from '../../core/http/api-error';
 import { DateTimeField } from '../../shared/datetime-field';
@@ -37,6 +39,12 @@ const PAGE_SIZE = 25;
 export class AuditPage {
   private readonly api = inject(AuditApi);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly session = inject(AuthSession);
+
+  /** OSI: ve la bitácora de todas las organizaciones y puede acotarla a una. */
+  protected readonly platformScope = computed(() =>
+    can.viewPlatformAudit(this.session.permissions()),
+  );
 
   protected readonly categories = AUDIT_CATEGORIES;
   protected readonly outcomes = AUDIT_OUTCOMES;
@@ -66,9 +74,10 @@ export class AuditPage {
    * Filtros de la búsqueda.
    *
    * Las fechas se capturan como `datetime-local` —lo que el auditor entiende— y se convierten a
-   * ISO con zona antes de salir. La organización no está aquí a propósito: viene del JWT.
+   * ISO con zona antes de salir. La organización viene del JWT; solo el OSI la puede elegir.
    */
   protected readonly filters = this.formBuilder.nonNullable.group({
+    organizationId: '',
     from: '',
     to: '',
     category: '',
@@ -112,6 +121,7 @@ export class AuditPage {
   protected applyFilters(): void {
     this.loadSummary();
     this.loadEvents(0);
+    this.loadIntegrity();
   }
 
   protected clearFilters(): void {
@@ -133,7 +143,7 @@ export class AuditPage {
 
   protected loadIntegrity(): void {
     this.integrityState.set('loading');
-    this.api.integrity().subscribe({
+    this.api.integrity(undefined, this.currentFilters().organizationId).subscribe({
       next: (report) => {
         this.integrity.set(report);
         this.integrityState.set('loaded');
@@ -191,8 +201,8 @@ export class AuditPage {
 
   private loadSummary(): void {
     this.summaryState.set('loading');
-    const { from, to } = this.currentFilters();
-    this.api.summary(from, to).subscribe({
+    const { from, to, organizationId } = this.currentFilters();
+    this.api.summary(from, to, organizationId).subscribe({
       next: (result) => {
         this.summary.set(result);
         this.summaryState.set('loaded');
@@ -207,6 +217,7 @@ export class AuditPage {
   private currentFilters(): AuditFilters {
     const value = this.filters.getRawValue();
     return {
+      organizationId: this.platformScope() ? blankToUndefined(value.organizationId) : undefined,
       from: toIsoInstant(value.from),
       to: toIsoInstant(value.to),
       category: value.category === '' ? undefined : (value.category as AuditFilters['category']),
