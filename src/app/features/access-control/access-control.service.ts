@@ -5,12 +5,17 @@ import { API_BASE_URL } from '../../core/config/api-url';
 import { EMPTY_PAGE, Page } from '../../core/http/api-error';
 import { dataResource } from '../../core/http/data-resource';
 import {
+  AccountStatus,
   AssignRoleInput,
   CatalogPermission,
+  CreateAccountInput,
   CreateRoleInput,
+  CreatedAccount,
   IdentityAccount,
   Role,
   RoleIncompatibility,
+  TemporaryPassword,
+  UpdateAccountInput,
   UpdateRoleInput,
 } from './access-control.models';
 
@@ -123,6 +128,36 @@ export class AccessControlService {
       this.http.delete<void>(
         `${this.baseUrl}/role-incompatibilities/${encodeURIComponent(roleA)}/${encodeURIComponent(roleB)}`,
       ),
+    );
+  }
+
+  /* ---- Gestión de usuarios (IAM-04/IAM-05). Keycloak guarda la credencial; ms-identidad la
+     sincroniza en cada operación, así que la pantalla nunca toca Keycloak directamente. ---- */
+
+  createAccount(body: CreateAccountInput): Promise<CreatedAccount> {
+    return firstValueFrom(this.http.post<CreatedAccount>(`${this.baseUrl}/users`, body));
+  }
+
+  updateAccount(accountId: string, body: UpdateAccountInput): Promise<IdentityAccount> {
+    return firstValueFrom(this.http.patch<IdentityAccount>(this.accountPath(accountId), body));
+  }
+
+  /** Baja (INACTIVE) o reactivación (ACTIVE). La baja deshabilita, nunca borra. */
+  changeStatus(accountId: string, status: AccountStatus, reason: string): Promise<IdentityAccount> {
+    return firstValueFrom(
+      this.http.patch<IdentityAccount>(`${this.accountPath(accountId)}/status`, { status, reason }),
+    );
+  }
+
+  unlock(accountId: string): Promise<IdentityAccount> {
+    return firstValueFrom(
+      this.http.post<IdentityAccount>(`${this.accountPath(accountId)}/unlock`, {}),
+    );
+  }
+
+  resetPassword(accountId: string): Promise<TemporaryPassword> {
+    return firstValueFrom(
+      this.http.post<TemporaryPassword>(`${this.accountPath(accountId)}/reset-password`, {}),
     );
   }
 

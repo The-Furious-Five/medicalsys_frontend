@@ -21,6 +21,25 @@ export class AuthService {
   }
 
   /**
+   * Primer ingreso con contraseña temporal o contraseña vencida (IAM-05): el login responde 403
+   * PASSWORD_CHANGE_REQUIRED y no hay sesión, así que la cuenta va por su correo. Keycloak valida
+   * la actual y aplica la política a la nueva.
+   */
+  async changeExpiredPassword(
+    email: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    await firstValueFrom(
+      this.http.post(`${this.baseUrl}/identity/auth/change-password`, {
+        email,
+        currentPassword,
+        newPassword,
+      }),
+    );
+  }
+
+  /**
    * Cierra la sesión local siempre. Avisar al servidor es deseable pero no
    * puede ser condición: si esa llamada falla, dejar al usuario dentro sería
    * peor que no haber avisado.

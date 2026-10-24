@@ -64,12 +64,42 @@ export interface RoleAssignment {
 
 export interface IdentityAccount {
   readonly publicId: string;
+  /** User ID estándar MS-AA-NNNNN (IAM-04): único, inmutable, nunca reutilizado. */
+  readonly userCode: string;
   readonly organizationPublicId: string | null;
   readonly email: string;
   readonly fullName: string;
+  readonly phoneE164: string | null;
   readonly status: AccountStatus;
   readonly lastAccessAt: string | null;
   readonly roles: readonly RoleAssignment[];
+}
+
+/** Alta (IAM-04): sin contraseña; el servicio genera una temporal de un solo uso. */
+export interface CreateAccountInput {
+  readonly email: string;
+  readonly fullName: string;
+  readonly phoneE164: string | null;
+  readonly activateImmediately: boolean;
+  readonly roles: readonly AssignRoleInput[];
+}
+
+export interface UpdateAccountInput {
+  readonly fullName: string;
+  readonly email: string;
+  readonly phoneE164: string | null;
+}
+
+/** El alta devuelve la contraseña temporal una sola vez. */
+export interface CreatedAccount extends IdentityAccount {
+  readonly temporaryPassword?: string;
+}
+
+/** Reinicio de contraseña (IAM-05): la temporal se muestra una sola vez. */
+export interface TemporaryPassword {
+  readonly publicId: string;
+  readonly userCode: string;
+  readonly temporaryPassword: string;
 }
 
 export interface AssignRoleInput {
