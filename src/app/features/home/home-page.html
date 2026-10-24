@@ -235,3 +235,7 @@
     </section>
   }
 </div>
+
+@if (canViewOwnAccess()) {
+  <medsys-patient-access-panel [own]="true" />
+}

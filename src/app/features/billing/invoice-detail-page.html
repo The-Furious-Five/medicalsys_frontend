@@ -23,12 +23,14 @@
     </ng-container>
     <ng-container headerActions>
       @if (correctable()) {
-        <button type="button" class="btn btn-secondary" (click)="openNote('CREDIT')">
-          <medsys-icon name="file-plus" [size]="15" /> Nota de crédito
-        </button>
-        <button type="button" class="btn btn-secondary" (click)="openNote('DEBIT')">
-          <medsys-icon name="file-plus" [size]="15" /> Nota de débito
-        </button>
+        @if (canIssueNotes()) {
+          <button type="button" class="btn btn-secondary" (click)="openNote('CREDIT')">
+            <medsys-icon name="file-plus" [size]="15" /> Nota de crédito
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="openNote('DEBIT')">
+            <medsys-icon name="file-plus" [size]="15" /> Nota de débito
+          </button>
+        }
         <button type="button" class="btn btn-danger" (click)="voidOpen.set(true)">
           <medsys-icon name="ban" [size]="15" /> Anular
         </button>
@@ -90,68 +92,70 @@
             }
             <span class="t-micro t-num">{{ customerDocument(data) }}</span>
           </div>
-          @if (data.customer?.patientId; as patientId) {
+          @if (canViewPatients() && data.customer?.patientId; as patientId) {
             <!-- `no-print`: en pantalla lleva al expediente; en papel es un enlace muerto. -->
             <a class="t-sec no-print" [routerLink]="['/pacientes', patientId]">Ver ficha</a>
           }
         </div>
       </section>
 
-      <section class="stack gap-3 no-print">
-        <div class="row gap-2 wrap">
-          <h2 class="t-label grow">Correcciones</h2>
-          @if (notes.value(); as correctionNotes) {
-            <span class="t-micro t-num">{{ correctionNotes.length }} documento(s)</span>
-          }
-        </div>
-
-        @if (notes.isLoading()) {
-          <medsys-skeleton width="100%" height="54px" />
-        } @else if (notes.error()) {
-          <medsys-notice tone="warn" heading="No se pudo cargar el historial">
-            Reintenta para comprobar las notas asociadas a esta factura.
-            <button type="button" class="btn btn-secondary btn-sm" (click)="notes.reload()">
-              Reintentar
-            </button>
-          </medsys-notice>
-        } @else if (notes.value()!.length === 0) {
-          <p class="t-sec">
-            Esta factura no tiene notas de crédito ni débito. Las correcciones se emiten como
-            documentos separados para no alterar el comprobante original.
-          </p>
-        } @else {
-          <div class="table-wrap">
-            <table class="table is-compact">
-              <thead>
-                <tr>
-                  <th scope="col">Documento</th>
-                  <th scope="col">Motivo</th>
-                  <th scope="col">Emitida</th>
-                  <th scope="col" class="th-num">Efecto</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (note of notes.value()!; track note.id) {
-                  <tr>
-                    <td class="t-strong">{{ noteTypes[note.type] }} Nº {{ note.noteNumber }}</td>
-                    <td class="t-sec">{{ note.reason }}</td>
-                    <td class="t-num t-sec">{{ note.issuedAt | msDateTime }}</td>
-                    <td class="td-num t-strong">
-                      {{ note.type === 'CREDIT' ? '−' : '+' }} {{ note.amount | msBob }}
-                    </td>
-                  </tr>
-                }
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th colspan="3" scope="row" class="td-num">Saldo corregido</th>
-                  <th class="td-num">{{ correctedBalance() | msBob }}</th>
-                </tr>
-              </tfoot>
-            </table>
+      @if (canViewNotes()) {
+        <section class="stack gap-3 no-print">
+          <div class="row gap-2 wrap">
+            <h2 class="t-label grow">Correcciones</h2>
+            @if (notes.value(); as correctionNotes) {
+              <span class="t-micro t-num">{{ correctionNotes.length }} documento(s)</span>
+            }
           </div>
-        }
-      </section>
+
+          @if (notes.isLoading()) {
+            <medsys-skeleton width="100%" height="54px" />
+          } @else if (notes.error()) {
+            <medsys-notice tone="warn" heading="No se pudo cargar el historial">
+              Reintenta para comprobar las notas asociadas a esta factura.
+              <button type="button" class="btn btn-secondary btn-sm" (click)="notes.reload()">
+                Reintentar
+              </button>
+            </medsys-notice>
+          } @else if (notes.value()!.length === 0) {
+            <p class="t-sec">
+              Esta factura no tiene notas de crédito ni débito. Las correcciones se emiten como
+              documentos separados para no alterar el comprobante original.
+            </p>
+          } @else {
+            <div class="table-wrap">
+              <table class="table is-compact">
+                <thead>
+                  <tr>
+                    <th scope="col">Documento</th>
+                    <th scope="col">Motivo</th>
+                    <th scope="col">Emitida</th>
+                    <th scope="col" class="th-num">Efecto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (note of notes.value()!; track note.id) {
+                    <tr>
+                      <td class="t-strong">{{ noteTypes[note.type] }} Nº {{ note.noteNumber }}</td>
+                      <td class="t-sec">{{ note.reason }}</td>
+                      <td class="t-num t-sec">{{ note.issuedAt | msDateTime }}</td>
+                      <td class="td-num t-strong">
+                        {{ note.type === 'CREDIT' ? '−' : '+' }} {{ note.amount | msBob }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="3" scope="row" class="td-num">Saldo corregido</th>
+                    <th class="td-num">{{ correctedBalance() | msBob }}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        </section>
+      }
 
       <section class="stack gap-3">
         <h2 class="t-label">Detalle</h2>

@@ -73,9 +73,18 @@ export class InvoiceDetailPage {
     computed(() => this.invoiceId() ?? null),
   );
   protected readonly notes = this.billing.creditDebitNotesResource(
-    computed(() => this.invoiceId() ?? null),
+    computed(() =>
+      can.viewInvoiceNotes(this.session.permissions()) ? (this.invoiceId() ?? null) : null,
+    ),
   );
 
+  protected readonly canViewNotes = computed(() =>
+    can.viewInvoiceNotes(this.session.permissions()),
+  );
+  protected readonly canIssueNotes = computed(() =>
+    can.issueInvoiceNotes(this.session.permissions()),
+  );
+  protected readonly canViewPatients = computed(() => can.viewPatients(this.session.permissions()));
   protected readonly canCorrect = computed(() => can.correctInvoice(this.session.permissions()));
   protected readonly correctable = computed(() => {
     const status = this.invoice.value()?.status;

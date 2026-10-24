@@ -12,7 +12,7 @@ import { TableSkeleton } from '../../shared/table-skeleton';
 import { Role } from './access-control.models';
 import { AccessControlService } from './access-control.service';
 import { orderRoles } from './access-matrix';
-import { ROLE_STATE } from './access-rules';
+import { ROLE_STATE, grantsRoleAssignment } from './access-rules';
 import { NewRoleSheet } from './new-role-sheet';
 
 /**
@@ -57,6 +57,7 @@ export class RolesPage {
   });
 
   protected delegation(role: Role): string {
+    if (!grantsRoleAssignment(role)) return 'Ninguno';
     if (role.scope === 'PLATFORM') {
       return 'Cualquier rol';
     }

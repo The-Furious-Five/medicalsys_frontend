@@ -28,6 +28,7 @@ export interface Role {
   readonly name: string;
   readonly description: string | null;
   readonly scope: RoleScope;
+  readonly accessModel: 'MAC' | 'DAC' | 'RBAC';
   /** Uno de los roles base (V2 y V9): se puede ajustar, pero no desactivar. */
   readonly system: boolean;
   readonly active: boolean;
