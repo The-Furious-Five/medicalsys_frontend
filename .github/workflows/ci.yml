@@ -2,11 +2,11 @@
 # Es el mismo `npm run check` que se corre en local, separado en pasos para ver de un vistazo cual fallo.
 name: CI frontend
 
-# PAUSADO (oct 2026) para no agotar los minutos de GitHub Actions: solo se lanza a mano desde
-# Actions -> Run workflow. Validar en local con `npm run check`. Para reactivarlo, devolver:
-#   pull_request: { branches: [develop, main] }
-#   push: { branches: [develop, main] }
 on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
   workflow_dispatch:
 
 permissions:
