@@ -21,8 +21,11 @@ export class AuditApi {
     return this.http.get<AuditPage>(`${this.baseUrl}/events`, { params });
   }
 
-  summary(from?: string, to?: string): Observable<AuditSummary> {
+  summary(from?: string, to?: string, organizationId?: string): Observable<AuditSummary> {
     let params = new HttpParams();
+    if (organizationId) {
+      params = params.set('organizationId', organizationId);
+    }
     if (from) {
       params = params.set('from', from);
     }
@@ -32,8 +35,11 @@ export class AuditApi {
     return this.http.get<AuditSummary>(`${this.baseUrl}/summary`, { params });
   }
 
-  integrity(window?: number): Observable<AuditIntegrity> {
-    const params = window ? new HttpParams().set('window', window) : new HttpParams();
+  integrity(window?: number, organizationId?: string): Observable<AuditIntegrity> {
+    let params = window ? new HttpParams().set('window', window) : new HttpParams();
+    if (organizationId) {
+      params = params.set('organizationId', organizationId);
+    }
     return this.http.get<AuditIntegrity>(`${this.baseUrl}/integrity`, { params });
   }
 
