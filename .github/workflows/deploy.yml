@@ -1,0 +1,62 @@
+# CD del frontend: en cada push a main construye la imagen (el Dockerfile ya corre `npm run build`),
+# la publica en GHCR y la despliega en el VPS por SSH. Secrets del repo: VPS_HOST, VPS_USER, VPS_SSH_KEY.
+# La calidad (format/lint/test) la valida ci.yml en los PR.
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/the-furious-five/medicalsys-frontend:latest
+            ghcr.io/the-furious-five/medicalsys-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Preparar SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copiar compose
+        run: |
+          ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'mkdir -p /opt/medicalsys-frontend'
+          scp -i ~/.ssh/id_deploy deploy/compose.yaml "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/medicalsys-frontend/compose.yaml"
+
+      - name: Pull y up
+        run: |
+          ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<'REMOTE'
+          set -euo pipefail
+          cd /opt/medicalsys-frontend
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker compose pull
+          docker compose up -d
+          docker image prune -f
+          docker compose ps
+          REMOTE
