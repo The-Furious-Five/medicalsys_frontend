@@ -1,5 +1,11 @@
 # TLS automatico (Let's Encrypt). El DNS de este dominio debe apuntar ya al VPS.
 medicalsys.los5furiosos.cloud {
 	encode gzip
+	header {
+		# HSTS va en la capa que termina HTTPS: el navegador no vuelve a intentar HTTP en un año.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# Sin banner del servidor (OWASP A05).
+		-Server
+	}
 	reverse_proxy frontend:80
 }

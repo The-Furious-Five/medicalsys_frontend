@@ -1,6 +1,8 @@
 server {
     listen 80;
     server_name _;
+    # Sin version de nginx en la cabecera Server ni en las paginas de error (OWASP A05).
+    server_tokens off;
     root /usr/share/nginx/html;
     index index.html;
 
@@ -23,6 +25,15 @@ server {
     # Fallback de SPA: cualquier ruta que no sea un archivo real cae en index.html
     # para que el router de Angular la resuelva en el cliente.
     location / {
+        # Cabeceras de seguridad del HTML y los estaticos. /api no las repite: ya las pone el gateway.
+        # CSP: scripts solo propios (sin inline: angular.json no inyecta el CSS critico con un script);
+        # estilos con 'unsafe-inline' porque Angular inyecta los de cada componente en tiempo de ejecucion.
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+        add_header Cross-Origin-Opener-Policy "same-origin" always;
         try_files $uri $uri/ /index.html;
     }
 }
