@@ -39,7 +39,8 @@ testem.log
 /typings
 __screenshots__/
 
-# System files
+# System files (incluye los ~$archivo.docx/xlsx que deja Office con un documento abierto)
+~$*
 .DS_Store
 Thumbs.db
 

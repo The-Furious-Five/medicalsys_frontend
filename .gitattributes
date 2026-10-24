@@ -1,0 +1,12 @@
+# Finales de linea LF en todas las copias, tambien en Windows (core.autocrlf=true). Prettier exige LF:
+# sin esto, `npm run format:check` falla en todos los archivos al clonar en Windows.
+* text=auto eol=lf
+
+# Binarios: sin conversion.
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.xlsx binary
+*.pdf binary
