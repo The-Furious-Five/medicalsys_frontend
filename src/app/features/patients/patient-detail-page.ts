@@ -25,6 +25,7 @@ import { BillingService } from '../billing/billing.service';
 import { OpenEncounterDialog } from '../medical-records/open-encounter-dialog';
 import { OpenRecordDialog } from '../medical-records/open-record-dialog';
 import { RecordsService } from '../medical-records/records.service';
+import { PatientAccessPanel } from './patient-access-panel';
 import { PatientsService } from './patients.service';
 import { Patient } from './patients.models';
 
@@ -45,6 +46,7 @@ import { Patient } from './patients.models';
     Icon,
     OpenRecordDialog,
     OpenEncounterDialog,
+    PatientAccessPanel,
     ...FORMAT_PIPES,
   ],
   templateUrl: './patient-detail-page.html',
@@ -87,6 +89,9 @@ export class PatientDetailPage {
     can.openEncounter(this.session.permissions()),
   );
   protected readonly canViewInvoices = computed(() => can.viewInvoices(this.session.permissions()));
+  protected readonly canViewAccessGrants = computed(() =>
+    can.viewAccessGrants(this.session.permissions()),
+  );
 
   /** Un 404 aquí no es un fallo: significa que la persona todavía no tiene
    *  expediente, que es lo normal antes de la primera atención. */

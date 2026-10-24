@@ -14,6 +14,7 @@ const permission = (code: string, module: string, sensitive = false): CatalogPer
   module,
   description: `Descripción de ${code}`,
   sensitive,
+  classification: 'INTERNAL',
 });
 
 const SIGN = permission('clinical.encounter.sign', 'CLINICAL', true);

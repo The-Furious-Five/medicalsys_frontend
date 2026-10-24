@@ -11,8 +11,17 @@ import { IdentityAccount, Role, RoleAssignment } from './access-control.models';
 /** Módulos cuyos permisos administran el acceso de otras personas. */
 const MANAGEMENT_MODULES = new Set(['IDENTITY', 'TENANCY']);
 
+/**
+ * El OSI (ISO-01) otorga permisos sin ejercerlos: `identity.permission.grant`
+ * lo saca de la regla de no escalada, como en `RoleGovernance`.
+ */
+export const PERMISSION_GRANT = 'identity.permission.grant';
+
 /** Permisos de gestión de accesos que reúnen estos roles y quien actúa no tiene. */
 function managementAbove(roles: readonly Role[], actorPermissions: readonly string[]): boolean {
+  if (actorPermissions.includes(PERMISSION_GRANT)) {
+    return false;
+  }
   return roles.some((role) =>
     role.permissions.some(
       (permission) =>
@@ -41,7 +50,7 @@ export function roleEditLock(
 
 /** Al editar un rol solo se agregan permisos que quien edita ya tiene. Quitar nunca escala. */
 export function canGrant(code: string, actorPermissions: readonly string[]): boolean {
-  return actorPermissions.includes(code);
+  return actorPermissions.includes(PERMISSION_GRANT) || actorPermissions.includes(code);
 }
 
 /**

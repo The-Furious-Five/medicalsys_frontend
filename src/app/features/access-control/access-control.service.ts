@@ -14,8 +14,12 @@ import {
   IdentityAccount,
   Role,
   RoleIncompatibility,
+<<<<<<< HEAD
+  SecurityLevel,
+=======
   TemporaryPassword,
   UpdateAccountInput,
+>>>>>>> 3e3038f9dca69fc01721e42ada38946286c9f1a7
   UpdateRoleInput,
 } from './access-control.models';
 
@@ -131,6 +135,19 @@ export class AccessControlService {
     );
   }
 
+<<<<<<< HEAD
+  /** MAC (ISO-01): solo el OSI. El servicio cierra las sesiones de la cuenta. */
+  changeClearance(
+    accountId: string,
+    clearance: SecurityLevel,
+    reason: string | null,
+  ): Promise<IdentityAccount> {
+    return firstValueFrom(
+      this.http.put<IdentityAccount>(`${this.accountPath(accountId)}/clearance`, {
+        clearance,
+        reason,
+      }),
+=======
   /* ---- Gestión de usuarios (IAM-04/IAM-05). Keycloak guarda la credencial; ms-identidad la
      sincroniza en cada operación, así que la pantalla nunca toca Keycloak directamente. ---- */
 
@@ -158,6 +175,7 @@ export class AccessControlService {
   resetPassword(accountId: string): Promise<TemporaryPassword> {
     return firstValueFrom(
       this.http.post<TemporaryPassword>(`${this.accountPath(accountId)}/reset-password`, {}),
+>>>>>>> 3e3038f9dca69fc01721e42ada38946286c9f1a7
     );
   }
 

@@ -12,12 +12,14 @@ const READ: CatalogPermission = {
   module: 'CLINICAL',
   description: 'Consultar encuentros',
   sensitive: true,
+  classification: 'CONFIDENTIAL',
 };
 const SIGN: CatalogPermission = {
   code: 'clinical.encounter.sign',
   module: 'CLINICAL',
   description: 'Firmar encuentros',
   sensitive: true,
+  classification: 'CONFIDENTIAL',
 };
 
 const role = (code: string, permissions: readonly CatalogPermission[]): Role => ({

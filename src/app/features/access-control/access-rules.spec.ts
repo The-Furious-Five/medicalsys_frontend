@@ -13,6 +13,7 @@ const permission = (code: string, module: string): CatalogPermission => ({
   module,
   description: code,
   sensitive: false,
+  classification: 'INTERNAL',
 });
 
 const ROLE_MANAGE = permission('identity.role.manage', 'IDENTITY');
@@ -96,6 +97,7 @@ describe('reglas de gobierno anticipadas', () => {
       fullName: 'X',
       phoneE164: null,
       status: 'ACTIVE',
+      clearance: 'CONFIDENTIAL',
       lastAccessAt: null,
       roles,
     });
