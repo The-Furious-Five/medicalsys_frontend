@@ -23,9 +23,9 @@ describe('LoginPage', () => {
     element.querySelector<HTMLButtonElement>('.access-demo-account')!.click();
     fixture.detectChanges();
 
-    expect(element.querySelector<HTMLInputElement>('#login-email, input[name="email"]')!.value).toBe(
-      'admin@medicalsys.demo',
-    );
+    expect(
+      element.querySelector<HTMLInputElement>('#login-email, input[name="email"]')!.value,
+    ).toBe('admin@medicalsys.demo');
     expect(element.querySelector<HTMLInputElement>('#login-password')!.value).toBe('');
   });
 

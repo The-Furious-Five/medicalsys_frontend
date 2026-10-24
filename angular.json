@@ -7,9 +7,7 @@
       "enabled": false
     },
     "analytics": false,
-    "schematicCollections": [
-      "angular-eslint"
-    ]
+    "schematicCollections": ["angular-eslint"]
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -36,9 +34,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -90,9 +86,7 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "allowedHosts": [
-              "habits-released-recorders-creek.trycloudflare.com"
-            ]
+            "allowedHosts": ["habits-released-recorders-creek.trycloudflare.com"]
           }
         },
         "test": {
@@ -101,10 +95,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ],
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"],
             "maxWarnings": 0
           }
         }
