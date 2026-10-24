@@ -137,6 +137,8 @@ describe('accountManagementLock (IAM-06)', () => {
     fullName: 'X',
     phoneE164: null,
     status: 'ACTIVE',
+    // ISO-01: toda cuenta trae su nivel MAC.
+    clearance: 'INTERNAL',
     lastAccessAt: null,
     roles,
   });
