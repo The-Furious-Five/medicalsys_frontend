@@ -64,7 +64,7 @@ export class CommandPalette {
   /** Lista cruda, en el orden en que se descubren los resultados. */
   private readonly rawEntries = computed<readonly Entry[]>(() => {
     const normalized = this.term().trim().toLowerCase();
-    const roles = this.session.roles();
+    const granted = this.session.permissions();
     const result: Entry[] = [...this.patientEntries()];
 
     if (normalized) {
@@ -83,7 +83,7 @@ export class CommandPalette {
       }
     }
 
-    for (const group of visibleNav(roles)) {
+    for (const group of visibleNav(granted)) {
       for (const item of group.items) {
         if (!normalized || item.label.toLowerCase().includes(normalized)) {
           result.push({
@@ -98,7 +98,7 @@ export class CommandPalette {
       }
     }
 
-    if (can.issueInvoice(roles) && (!normalized || 'emitir factura'.includes(normalized))) {
+    if (can.issueInvoice(granted) && (!normalized || 'emitir factura'.includes(normalized))) {
       result.push({
         id: 'action-invoice',
         icon: 'receipt',
@@ -179,7 +179,7 @@ export class CommandPalette {
     this.highlighted.set(0);
 
     const query = value.trim();
-    if (query.length < 2 || !can.viewPatients(this.session.roles())) {
+    if (query.length < 2 || !can.viewPatients(this.session.permissions())) {
       window.clearTimeout(this.debounce);
       this.searching.set(false);
       this.patientEntries.set([]);

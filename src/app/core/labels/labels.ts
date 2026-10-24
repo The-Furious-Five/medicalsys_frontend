@@ -32,6 +32,37 @@ export const ROLE: Dict = dict({
   PATIENT: 'Paciente',
 });
 
+/* ----------------------------------------------------- identidad y accesos */
+export const ROLE_SCOPE: Dict = dict({
+  PLATFORM: 'Plataforma',
+  ORGANIZATION: 'Organización',
+});
+
+export const ACCOUNT_STATUS: Dict = dict({
+  PENDING_ACTIVATION: 'Pendiente de activación',
+  ACTIVE: 'Activa',
+  LOCKED: 'Bloqueada',
+  INACTIVE: 'Inactiva',
+});
+
+/** Módulos del catálogo de permisos, en el orden del enum `PermissionModule` de ms-identidad. */
+export const PERMISSION_MODULE: Dict = dict({
+  IDENTITY: 'Identidad y accesos',
+  TENANCY: 'Organización y suscripción',
+  CATALOGS: 'Catálogos clínicos',
+  CRYPTOGRAPHY: 'Criptografía',
+  PATIENTS: 'Pacientes',
+  PROFESSIONALS: 'Profesionales',
+  SCHEDULING: 'Agenda',
+  CLINICAL: 'Historia clínica',
+  DOCUMENT_MANAGEMENT: 'Gestión documental',
+  BILLING: 'Facturación',
+  ADMINISTRATION: 'Administración',
+  NOTIFICATIONS: 'Notificaciones',
+  AUDIT: 'Auditoría',
+  MARKETING: 'Marketing',
+});
+
 /* --------------------------------------------------------------- pacientes */
 export const DOCUMENT_TYPE: Dict = dict({
   CI: 'Cédula de identidad',

@@ -53,7 +53,7 @@ export class OrganizationPage {
 
   protected readonly branchStatuses = BRANCH_STATUS;
   protected readonly organizationStatuses = ORGANIZATION_STATUS;
-  protected readonly editable = computed(() => can.manageOrganization(this.session.roles()));
+  protected readonly editable = computed(() => can.manageOrganization(this.session.permissions()));
 
   protected readonly organization = this.tenancy.organizationResource();
   protected readonly branches = this.tenancy.branchesResource();

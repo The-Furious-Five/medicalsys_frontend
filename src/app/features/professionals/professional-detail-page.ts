@@ -57,7 +57,9 @@ export class ProfessionalDetailPage {
 
   protected readonly professionalStatuses = PROFESSIONAL_STATUS;
   protected readonly linkStatuses = PROFESSIONAL_LINK_STATUS;
-  protected readonly canManage = computed(() => can.manageProfessionals(this.session.roles()));
+  protected readonly canManage = computed(() =>
+    can.manageProfessionals(this.session.permissions()),
+  );
 
   private readonly id = computed<string | null>(() => this.professionalId() ?? null);
 

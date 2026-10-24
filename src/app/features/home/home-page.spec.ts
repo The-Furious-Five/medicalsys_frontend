@@ -35,7 +35,13 @@ describe('HomePage', () => {
           status: 'ACTIVE',
           language: 'es',
           roles: ['ADMINISTRATOR'],
-          permissions: [],
+          // Los paneles salen de los permisos del token, como en ADMINISTRATOR.
+          permissions: [
+            'clinical.study_order.read',
+            'billing.invoice.read',
+            'tenancy.organization.read',
+            'tenancy.usage.read',
+          ],
         },
       }),
     );

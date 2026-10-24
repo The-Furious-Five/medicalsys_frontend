@@ -1,0 +1,15 @@
+# Frontend en el VPS. Se une a la red del backend (proyecto "medicalsys") para que Caddy lo
+# alcance como "frontend" y Nginx llegue al gateway como "ms-gateway".
+services:
+  frontend:
+    image: ghcr.io/the-furious-five/medicalsys-frontend:latest
+    restart: unless-stopped
+    environment:
+      API_GATEWAY_URL: http://ms-gateway:8080
+    networks:
+      - medicalsys
+
+networks:
+  medicalsys:
+    name: medicalsys_default
+    external: true

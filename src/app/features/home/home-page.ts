@@ -58,7 +58,7 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
     label: 'Prestaciones',
     hint: 'Catálogo y precios',
     link: '/prestaciones',
-    permission: 'manageOrganization',
+    permission: 'manageOfferings',
   },
 ];
 
@@ -101,13 +101,13 @@ export class HomePage {
   protected readonly today = formatWeekday(new Date());
 
   protected readonly actions = computed(() =>
-    QUICK_ACTIONS.filter((action) => can[action.permission](this.session.roles())),
+    QUICK_ACTIONS.filter((action) => can[action.permission](this.session.permissions())),
   );
 
-  protected readonly showsDrafts = computed(() => can.writeNarrative(this.session.roles()));
-  protected readonly showsOrders = computed(() => can.manageStudyOrders(this.session.roles()));
-  protected readonly showsBilling = computed(() => can.viewInvoices(this.session.roles()));
-  protected readonly showsCentre = computed(() => can.viewUsage(this.session.roles()));
+  protected readonly showsDrafts = computed(() => can.writeNarrative(this.session.permissions()));
+  protected readonly showsOrders = computed(() => can.viewStudyOrders(this.session.permissions()));
+  protected readonly showsBilling = computed(() => can.viewInvoices(this.session.permissions()));
+  protected readonly showsCentre = computed(() => can.viewUsage(this.session.permissions()));
 
   private readonly draftStatus = signal<string | null>('DRAFT');
   private readonly reportedStatus = signal<string | null>('REPORTED');

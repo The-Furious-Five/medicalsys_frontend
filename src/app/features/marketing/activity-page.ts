@@ -47,7 +47,7 @@ export class ActivityPage {
   private readonly session = inject(AuthSession);
   private readonly toasts = inject(ToastService);
 
-  protected readonly canManageOptOut = computed(() => can.manageOptOut(this.session.roles()));
+  protected readonly canManageOptOut = computed(() => can.manageOptOut(this.session.permissions()));
 
   protected readonly page = signal(0);
   protected readonly activity = this.marketing.activityResource(this.page);

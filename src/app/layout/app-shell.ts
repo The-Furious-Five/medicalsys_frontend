@@ -40,7 +40,7 @@ export class AppShell {
   protected readonly user = this.session.user;
   protected readonly roles = this.session.roles;
   protected readonly expiringSoon = this.session.expiringSoon;
-  protected readonly groups = computed(() => visibleNav(this.roles()));
+  protected readonly groups = computed(() => visibleNav(this.session.permissions()));
   protected readonly avatar = computed(() => initials(this.user()?.fullName));
 
   /**

@@ -147,20 +147,20 @@ export class EncounterPage {
   protected readonly isVoided = computed(() => this.status() === 'VOIDED');
 
   protected readonly canWrite = computed(
-    () => this.isDraft() && can.writeNarrative(this.session.roles()),
+    () => this.isDraft() && can.writeNarrative(this.session.permissions()),
   );
   protected readonly canWriteVitals = computed(
-    () => this.isDraft() && can.writeVitals(this.session.roles()),
+    () => this.isDraft() && can.writeVitals(this.session.permissions()),
   );
   protected readonly canSign = computed(
-    () => this.isDraft() && can.signEncounter(this.session.roles()),
+    () => this.isDraft() && can.signEncounter(this.session.permissions()),
   );
   protected readonly canVoid = computed(
-    () => !this.isVoided() && can.voidEncounter(this.session.roles()),
+    () => !this.isVoided() && can.voidEncounter(this.session.permissions()),
   );
-  /** Corregir un encuentro firmado exige el mismo permiso que firmarlo. */
+  /** Un encuentro firmado no se edita: se corrige con una adenda, que tiene su propio permiso. */
   protected readonly canAddAddendum = computed(
-    () => this.isSigned() && can.signEncounter(this.session.roles()),
+    () => this.isSigned() && can.writeAddendum(this.session.permissions()),
   );
 
   /* ------------------------------------------------------------ narrativa -- */

@@ -1,0 +1,141 @@
+/* La matriz se desplaza en los dos ejes dentro de la tarjeta: la fila de roles
+   queda arriba y la columna de permisos a la izquierda, para que cada casilla se
+   lea sin perder de vista a qué rol y a qué permiso corresponde. */
+.matrix-scroll {
+  overflow: auto;
+  max-height: calc(100vh - 260px);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.matrix {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+  font-size: 13px;
+}
+
+.matrix th,
+.matrix td {
+  padding: 6px var(--s-3);
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-sunken);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.matrix .matrix-perm {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 300px;
+  max-width: 420px;
+  background: var(--bg-surface);
+  text-align: left;
+  font-weight: 400;
+}
+
+.matrix thead .matrix-perm {
+  z-index: 3;
+  background: var(--bg-sunken);
+}
+
+.matrix-role a {
+  color: inherit;
+  text-decoration: none;
+}
+.matrix-role a:hover {
+  text-decoration: underline;
+}
+.matrix-role .t-micro {
+  display: block;
+}
+
+.matrix-type {
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.matrix-desc {
+  display: block;
+}
+.matrix-code {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: 2px;
+}
+
+.matrix-module th,
+.matrix-module td {
+  background: var(--bg-sunken);
+}
+.matrix-module-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.matrix-cell {
+  min-width: 96px;
+  text-align: center;
+  white-space: nowrap;
+}
+.matrix-cell .t-micro {
+  margin-left: var(--s-1);
+}
+.matrix-cell.is-changed {
+  background: var(--brand-soft);
+}
+
+.matrix-check {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.matrix-check .check-box {
+  margin-top: 0;
+}
+/* Casilla de módulo con parte de sus permisos: se rellena y muestra un guion. */
+.matrix-check .checkbox:indeterminate + .check-box {
+  background: var(--brand-solid);
+  border-color: var(--brand-solid);
+}
+.matrix-check .checkbox:indeterminate + .check-box > * {
+  visibility: visible;
+}
+.matrix-check .checkbox:disabled + .check-box {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.matrix-empty {
+  padding: var(--s-6) var(--s-4);
+}
+
+.matrix-pending {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+}

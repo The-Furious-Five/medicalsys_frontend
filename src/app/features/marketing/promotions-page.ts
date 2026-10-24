@@ -44,8 +44,8 @@ export class PromotionsPage {
   private readonly toasts = inject(ToastService);
 
   protected readonly discountTypes = DISCOUNT_TYPE;
-  protected readonly canManage = computed(() => can.manageMarketing(this.session.roles()));
-  protected readonly canValidate = computed(() => can.redeemCoupons(this.session.roles()));
+  protected readonly canManage = computed(() => can.manageCoupons(this.session.permissions()));
+  protected readonly canValidate = computed(() => can.redeemCoupons(this.session.permissions()));
 
   protected readonly page = signal(0);
   private readonly active = signal<boolean | null>(null);

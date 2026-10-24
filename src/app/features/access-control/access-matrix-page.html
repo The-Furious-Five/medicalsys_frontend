@@ -1,0 +1,266 @@
+<medsys-page-header
+  heading="Matriz de accesos"
+  description="Qué permisos del catálogo tiene cada rol. Lo que se guarda aquí rige desde el próximo inicio de sesión de cada cuenta."
+  [crumbs]="[{ label: 'Roles', link: '/roles' }, { label: 'Matriz de accesos' }]"
+>
+  <ng-container headerActions>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="changeCount() > 0 || !roles.hasValue() || !catalog.hasValue()"
+      [medsysTooltip]="changeCount() > 0 ? 'Guarda o descarta los cambios antes de exportar' : null"
+      tooltipSide="top"
+      (click)="exportCsv()"
+    >
+      <medsys-icon name="download" [size]="15" /> CSV
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="changeCount() > 0 || !roles.hasValue() || !catalog.hasValue()"
+      [medsysTooltip]="changeCount() > 0 ? 'Guarda o descarta los cambios antes de exportar' : null"
+      tooltipSide="top"
+      (click)="exportXlsx()"
+    >
+      <medsys-icon name="download" [size]="15" /> Excel
+    </button>
+  </ng-container>
+</medsys-page-header>
+
+<div class="stack gap-4">
+  @for (failure of failures(); track failure.role) {
+    <medsys-notice tone="err" [heading]="'No se guardaron los permisos de ' + failure.role">
+      {{ failure.message }} Sus cambios siguen marcados.
+    </medsys-notice>
+  }
+
+  <div class="card">
+    <div class="filters">
+      <div class="search-field">
+        <medsys-icon name="search" [size]="15" />
+        <input
+          class="input"
+          type="text"
+          aria-label="Buscar permiso"
+          placeholder="Buscar por código o descripción"
+          [value]="term()"
+          (input)="term.set($any($event.target).value)"
+        />
+      </div>
+      <medsys-select
+        [options]="moduleOptions()"
+        [value]="module() ?? ''"
+        (valueChange)="module.set($event === '' ? null : $event)"
+        ariaLabel="Filtrar por módulo"
+        placeholder="Todos los módulos"
+      />
+      <label class="check-row">
+        <input
+          type="checkbox"
+          class="checkbox"
+          [checked]="onlySensitive()"
+          (change)="onlySensitive.set($any($event.target).checked)"
+        />
+        <span class="check-box" aria-hidden="true"><medsys-icon name="check" [size]="12" /></span>
+        <span>Solo sensibles</span>
+      </label>
+      @if (focusRole(); as focus) {
+        <button type="button" class="btn btn-ghost btn-sm" (click)="clearFocus()">
+          Solo {{ focus }} <medsys-icon name="x" [size]="14" />
+        </button>
+      } @else {
+        <label class="check-row">
+          <input
+            type="checkbox"
+            class="checkbox"
+            [checked]="showInactive()"
+            (change)="showInactive.set($any($event.target).checked)"
+          />
+          <span class="check-box" aria-hidden="true">
+            <medsys-icon name="check" [size]="12" />
+          </span>
+          <span>Roles inactivos</span>
+        </label>
+      }
+      <span class="grow"></span>
+      @if (catalog.hasValue()) {
+        <span class="t-sec t-num">{{ visibleCount() }} permisos</span>
+      }
+    </div>
+
+    @if (roles.isLoading() && !roles.hasValue()) {
+      <medsys-table-skeleton [rows]="10" [columns]="7" />
+    } @else if (roles.error()) {
+      <medsys-error-state [failure]="roles.error()" [compact]="true" (retry)="roles.reload()" />
+    } @else if (catalog.isLoading()) {
+      <medsys-table-skeleton [rows]="10" [columns]="7" />
+    } @else if (catalog.error()) {
+      <medsys-error-state [failure]="catalog.error()" [compact]="true" (retry)="catalog.reload()" />
+    } @else if (groups().length === 0) {
+      <p class="t-sec matrix-empty">Ningún permiso coincide con el filtro.</p>
+    } @else {
+      <div class="matrix-scroll">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th scope="col" class="matrix-perm">Permiso</th>
+              <th scope="col" class="matrix-type">Tipo</th>
+              @for (role of columns(); track role.code) {
+                <th
+                  scope="col"
+                  class="matrix-role"
+                  [medsysTooltip]="
+                    role.name +
+                    (canManage() && locks().get(role.code) ? ' · ' + locks().get(role.code) : '')
+                  "
+                  tooltipSide="top"
+                >
+                  <a [routerLink]="['/roles', role.code]">{{ role.code }}</a>
+                  @if (!role.active) {
+                    <span class="t-micro">inactivo</span>
+                  }
+                  @if (canManage() && locks().get(role.code)) {
+                    <medsys-icon name="lock" [size]="12" />
+                  }
+                </th>
+              }
+            </tr>
+          </thead>
+
+          @for (group of groups(); track group.module) {
+            <tbody>
+              <tr class="matrix-module">
+                <th scope="rowgroup" colspan="2" class="matrix-perm">
+                  <button
+                    type="button"
+                    class="matrix-module-toggle"
+                    [attr.aria-expanded]="!collapsed().has(group.module)"
+                    (click)="toggleCollapsed(group.module)"
+                  >
+                    <medsys-icon
+                      [name]="collapsed().has(group.module) ? 'chevron-right' : 'chevron-down'"
+                      [size]="14"
+                    />
+                    {{ group.label }}
+                    <span class="t-sec t-num">· {{ group.permissions.length }}</span>
+                  </button>
+                </th>
+                @for (role of columns(); track role.code) {
+                  <td class="matrix-cell">
+                    @if (canManage() && !locks().get(role.code)) {
+                      <label class="check-row matrix-check">
+                        <input
+                          type="checkbox"
+                          class="checkbox"
+                          [checked]="moduleState(role.code, group.permissions) === 'all'"
+                          [indeterminate]="moduleState(role.code, group.permissions) === 'some'"
+                          [attr.aria-label]="'Todo ' + group.label + ' para ' + role.code"
+                          (change)="
+                            toggleModule(role.code, group.permissions, $any($event.target).checked)
+                          "
+                        />
+                        <span class="check-box" aria-hidden="true">
+                          <medsys-icon
+                            [name]="
+                              moduleState(role.code, group.permissions) === 'some'
+                                ? 'minus'
+                                : 'check'
+                            "
+                            [size]="12"
+                          />
+                        </span>
+                      </label>
+                    }
+                    <span class="t-micro t-num">{{
+                      moduleCount(role.code, group.permissions)
+                    }}</span>
+                  </td>
+                }
+              </tr>
+
+              @if (!collapsed().has(group.module)) {
+                @for (permission of group.permissions; track permission.code) {
+                  <tr>
+                    <th scope="row" class="matrix-perm">
+                      <span class="matrix-desc">{{ permission.description }}</span>
+                      <span class="matrix-code">
+                        <span class="clin-code">{{ permission.code }}</span>
+                        @if (permission.sensitive) {
+                          <span class="chip chip-warn">Sensible</span>
+                        }
+                      </span>
+                    </th>
+                    <td class="matrix-type">{{ column(permission.code) }}</td>
+                    @for (role of columns(); track role.code) {
+                      <td
+                        class="matrix-cell"
+                        [class.is-changed]="changed(role.code, permission.code)"
+                      >
+                        @if (canManage()) {
+                          <label
+                            class="check-row matrix-check"
+                            [medsysTooltip]="cellLock(role.code, permission.code)"
+                            tooltipSide="top"
+                          >
+                            <input
+                              type="checkbox"
+                              class="checkbox"
+                              [checked]="has(role.code, permission.code)"
+                              [disabled]="cellLock(role.code, permission.code) !== null"
+                              [attr.aria-label]="permission.code + ' para ' + role.code"
+                              (change)="
+                                toggle(role.code, permission.code, $any($event.target).checked)
+                              "
+                            />
+                            <span class="check-box" aria-hidden="true">
+                              <medsys-icon name="check" [size]="12" />
+                            </span>
+                          </label>
+                        } @else if (has(role.code, permission.code)) {
+                          <medsys-icon name="check" [size]="14" />
+                          <span class="sr-only">Sí</span>
+                        } @else {
+                          <span class="sr-only">No</span>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              }
+            </tbody>
+          }
+        </table>
+      </div>
+    }
+
+    @if (changeCount() > 0) {
+      <div class="matrix-pending" role="status">
+        <span class="grow">
+          <strong>{{ changeCount() }} {{ changeCount() === 1 ? 'cambio' : 'cambios' }}</strong>
+          sin guardar en {{ changes().length }} {{ changes().length === 1 ? 'rol' : 'roles' }}.
+        </span>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="discard()">Descartar</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="confirmingSave.set(true)">
+          Guardar cambios
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<medsys-confirm-dialog
+  [open]="confirmingSave()"
+  heading="Guardar la matriz"
+  description="Cada rol modificado recibe su nuevo conjunto de permisos. Quitar un permiso cierra las sesiones de las cuentas con ese rol; lo agregado llega en su próximo inicio de sesión."
+  confirmLabel="Guardar cambios"
+  [danger]="false"
+  [pending]="saving()"
+  (confirmed)="save()"
+  (cancelled)="confirmingSave.set(false)"
+>
+  <ul class="stack gap-1">
+    @for (line of saveSummary(); track line) {
+      <li class="t-body">{{ line }}</li>
+    }
+  </ul>
+</medsys-confirm-dialog>

@@ -22,8 +22,8 @@ export const publicOnlyGuard: CanActivateFn = () => {
 };
 
 /**
- * El menú ya oculta lo que el rol no puede usar; esto cubre la entrada directa
- * por URL, que es la vía por la que alguien llega a una pantalla prohibida.
+ * El menú ya oculta lo que los permisos no alcanzan; esto cubre la entrada
+ * directa por URL, que es la vía por la que alguien llega a una pantalla prohibida.
  */
 export const permissionGuard =
   (permission: Permission): CanActivateFn =>
@@ -31,5 +31,5 @@ export const permissionGuard =
     const session = inject(AuthSession);
     const router = inject(Router);
 
-    return can[permission](session.roles()) ? true : router.createUrlTree(['/sin-permiso']);
+    return can[permission](session.permissions()) ? true : router.createUrlTree(['/sin-permiso']);
   };

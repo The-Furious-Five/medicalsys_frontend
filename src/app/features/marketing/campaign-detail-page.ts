@@ -87,7 +87,7 @@ export class CampaignDetailPage {
   protected readonly recipientTones = recipientTone;
   protected readonly recipientStatusOptions = options(RECIPIENT_STATUS);
 
-  protected readonly canManage = computed(() => can.manageMarketing(this.session.roles()));
+  protected readonly canManage = computed(() => can.manageCampaigns(this.session.permissions()));
 
   protected readonly campaignId = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('campaignId'))),

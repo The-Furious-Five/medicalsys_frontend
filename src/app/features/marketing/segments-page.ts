@@ -43,7 +43,7 @@ export class SegmentsPage {
   private readonly session = inject(AuthSession);
   private readonly toasts = inject(ToastService);
 
-  protected readonly canManage = computed(() => can.manageMarketing(this.session.roles()));
+  protected readonly canManage = computed(() => can.manageSegments(this.session.permissions()));
 
   protected readonly page = signal(0);
   private readonly active = signal<boolean | null>(null);

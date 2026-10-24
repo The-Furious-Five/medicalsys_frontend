@@ -43,6 +43,8 @@ export class AuthSession {
   readonly accessToken = computed(() => this.session()?.accessToken ?? null);
   readonly user = computed(() => this.session()?.user ?? null);
   readonly roles = computed<readonly string[]>(() => this.session()?.user.roles ?? []);
+  /** Permisos efectivos del token: la unión de los de sus roles activos y vigentes. */
+  readonly permissions = computed<readonly string[]>(() => this.session()?.user.permissions ?? []);
   readonly isAuthenticated = computed(() => this.session() !== null);
 
   /** Cierto en los dos minutos previos al vencimiento, salvo que ya se avisara. */

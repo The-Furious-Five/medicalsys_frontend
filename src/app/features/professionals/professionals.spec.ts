@@ -37,14 +37,13 @@ describe('profesionales', () => {
     expect(activeLink(person, CENTRE)).toBe('l-1');
   });
 
-  it('recepción consulta el directorio pero no da de alta ni desactiva', () => {
-    expect(can.viewProfessionals(['RECEPTIONIST'])).toBe(true);
-    expect(can.manageProfessionals(['RECEPTIONIST'])).toBe(false);
-    expect(can.manageProfessionals(['ADMINISTRATOR'])).toBe(true);
-  });
-
-  it('facturación no entra al directorio', () => {
-    expect(can.viewProfessionals(['BILLING_CLERK'])).toBe(false);
+  it('consultar el directorio no basta para dar de alta', () => {
+    // Recepción tiene la lectura y no el alta: ms-profesionales responde 403
+    // al POST, así que la interfaz no le ofrece el botón.
+    const reception = ['professionals.professional.read'];
+    expect(can.viewProfessionals(reception)).toBe(true);
+    expect(can.manageProfessionals(reception)).toBe(false);
+    expect(can.manageProfessionals(['professionals.professional.create'])).toBe(true);
   });
 
   it('las claves de los diccionarios son los enum reales de ms-profesionales', () => {

@@ -1,6 +1,6 @@
 <main class="audit">
   <section class="audit__intro">
-    <p class="audit-eyebrow">Control interno · Solo administración</p>
+    <p class="audit-eyebrow">Control interno · Solo auditoría y administración</p>
     <h1 id="audit-title">Bitácora de auditoría</h1>
     <p class="audit__lead">
       Quién hizo qué, sobre qué recurso y cuándo, dentro de esta organización. La bitácora es
@@ -73,7 +73,7 @@
           </div>
         }
         <button type="button" class="btn btn-ghost" (click)="loadIntegrity()">
-          Volver a verificar
+          Verificar integridad
         </button>
       }
     }
@@ -193,6 +193,10 @@
           <input type="text" formControlName="serviceName" placeholder="ms-pacientes" />
         </label>
         <label>
+          <span>Acción</span>
+          <input type="text" formControlName="action" placeholder="LOGIN_FAILED" />
+        </label>
+        <label>
           <span>Usuario (UUID)</span>
           <input type="text" formControlName="actorUserId" placeholder="20000000-…" />
         </label>
@@ -268,6 +272,7 @@
                   <th scope="col">Actor</th>
                   <th scope="col">Recurso</th>
                   <th scope="col">Resultado</th>
+                  <th scope="col">IP</th>
                   <th scope="col">Origen</th>
                   <th scope="col"><span class="sr-only">Detalle</span></th>
                 </tr>
@@ -309,6 +314,7 @@
                         <span class="audit-tag is-critical">Crítico</span>
                       }
                     </td>
+                    <td>{{ event.actorIp ?? '—' }}</td>
                     <td>
                       {{ event.serviceName }}
                       @if (event.responseStatus) {
@@ -330,7 +336,7 @@
 
                   @if (isSelected(event)) {
                     <tr class="audit-detail-row">
-                      <td colspan="7">
+                      <td colspan="8">
                         <div class="audit-detail" [attr.id]="'detail-' + event.eventId">
                           <dl>
                             <div>
