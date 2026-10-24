@@ -37,11 +37,12 @@ describe('permisos de la interfaz', () => {
     // Enfermería: signos vitales y expediente, sin facturación ni sistema.
     const nurse = ['clinical.record.read', 'clinical.encounter.read', 'patients.patient.read'];
     expect(labels(nurse)).toEqual(['Inicio', 'Pacientes', 'Expedientes', 'Encuentros']);
-    // OSI: administra accesos y lee la bitácora, sin ningún módulo clínico.
+    // OSI: administra accesos y cuentas (IAM-06) y lee la bitácora, sin ningún módulo clínico.
     const osi = ['identity.role.read', 'identity.user.read', 'audit.log.read'];
     expect(labels(osi)).toEqual([
       'Inicio',
       'Auditoría',
+      'Usuarios',
       'Roles',
       'Matriz de accesos',
       'Asignación de roles',

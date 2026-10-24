@@ -20,12 +20,14 @@ describe('LoginPage', () => {
   it('la cuenta demo completa solo el correo: la contraseña no está en el código', () => {
     const { fixture, element } = setup();
 
-    element.querySelector<HTMLButtonElement>('.access-demo-account')!.click();
+    const firstAccount = element.querySelector<HTMLButtonElement>('.access-demo-account')!;
+    const email = firstAccount.querySelector('strong + span')!.textContent!.trim();
+    firstAccount.click();
     fixture.detectChanges();
 
     expect(
       element.querySelector<HTMLInputElement>('#login-email, input[name="email"]')!.value,
-    ).toBe('admin@medicalsys.demo');
+    ).toBe(email);
     expect(element.querySelector<HTMLInputElement>('#login-password')!.value).toBe('');
   });
 
