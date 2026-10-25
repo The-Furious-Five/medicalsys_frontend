@@ -1,0 +1,224 @@
+.access-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-link);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.access-back-link:hover {
+  text-decoration: underline;
+}
+.access-settings-layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  border-top: 1px solid var(--access-line);
+  gap: 38px;
+  padding-top: 28px;
+}
+.access-settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-self: start;
+}
+.access-settings-nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  color: var(--access-muted);
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.access-settings-nav button:hover {
+  background: var(--bg-hover);
+}
+.access-settings-nav button.is-current {
+  color: var(--brand-text);
+  background: var(--brand-soft);
+  font-weight: 600;
+}
+.access-settings-content {
+  max-width: 680px;
+  min-height: 500px;
+  background: var(--access-surface);
+  border: 1px solid var(--access-line);
+  border-radius: 10px;
+  padding: 28px;
+}
+.access-settings-content h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.access-settings-lead {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--access-muted);
+  margin: 8px 0 24px;
+}
+.access-settings-footnote {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid var(--access-line);
+}
+.access-settings-footnote h3 {
+  font-size: 14px;
+  margin: 0;
+  font-weight: 600;
+}
+.access-settings-footnote p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--access-muted);
+  margin: 8px 0 15px;
+}
+.access-deactivation {
+  margin-top: 28px;
+}
+.access-settings-readonly {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--access-muted);
+  margin: 0 0 20px;
+}
+.access-settings-error {
+  padding: 14px;
+  border-radius: 7px;
+  background: var(--err-50);
+  color: var(--err-700);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+.access-profile-summary {
+  display: grid;
+  gap: 20px;
+  margin-block: 26px;
+}
+.access-profile-summary dt {
+  font-size: 12px;
+  color: var(--access-muted);
+  margin-bottom: 5px;
+}
+.access-profile-summary dd {
+  margin: 0;
+  font-size: 14px;
+}
+.access-settings-explanation {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 20px 0;
+  color: var(--access-muted);
+}
+.access-settings-explanation p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 50ch;
+}
+.access-delegation-list {
+  display: grid;
+  margin-bottom: 22px;
+}
+.access-delegation-list label {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--access-line);
+  cursor: pointer;
+}
+.access-delegation-list input {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  accent-color: var(--brand-solid);
+}
+.access-delegation-list strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+.access-delegation-list small {
+  display: block;
+  color: var(--access-muted);
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.access-pair-list {
+  display: grid;
+  margin-bottom: 26px;
+}
+.access-pair-list > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-block: 18px;
+  border-bottom: 1px solid var(--access-line);
+}
+.access-pair-list > div > medsys-icon {
+  color: var(--brand-text);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.access-pair-list > div > div {
+  flex: 1;
+  min-width: 0;
+}
+.access-pair-list strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.access-pair-list p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--access-muted);
+}
+@media (max-width: 880px) {
+  .access-settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  .access-settings-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .access-settings-nav button {
+    padding: 9px 12px;
+  }
+  .access-settings-content {
+    max-width: none;
+  }
+}
+@media (max-width: 600px) {
+  .access-settings-content {
+    padding: 20px 16px;
+  }
+  .access-settings-nav button {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .access-settings-nav button medsys-icon {
+    display: none;
+  }
+  .access-pair-list > div {
+    flex-wrap: wrap;
+  }
+  .access-pair-list .btn {
+    margin-left: 30px;
+  }
+}

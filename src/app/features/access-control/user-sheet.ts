@@ -123,7 +123,7 @@ export class UserSheet {
     const manageable = manageableRoles(this.roles(), this.session.roles(), this.granted());
     return orderRoles(this.roles())
       .filter((role) => role.active && manageable.has(role.code))
-      .map((role) => ({ value: role.code, label: `${role.name} · ${role.code}` }));
+      .map((role) => ({ value: role.code, label: role.name }));
   });
 
   protected readonly form = this.fb.nonNullable.group({

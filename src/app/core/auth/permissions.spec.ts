@@ -58,9 +58,8 @@ describe('permisos de la interfaz', () => {
       'Inicio',
       'Auditoría',
       'Usuarios',
-      'Roles',
-      'Matriz de accesos',
-      'Asignación de roles',
+      'Roles y accesos',
+      'Accesos del personal',
     ]);
   });
 });

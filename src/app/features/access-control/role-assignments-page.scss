@@ -1,0 +1,140 @@
+.access-people {
+  background: var(--access-surface);
+  border: 1px solid var(--access-line);
+  border-radius: 12px;
+}
+.access-people-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+}
+.access-people-toolbar .access-search {
+  width: 340px;
+}
+.access-people-toolbar medsys-select {
+  width: 180px;
+}
+.access-people-count {
+  color: var(--access-muted);
+  font-size: 12px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.access-people-columns,
+.access-people-list li {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.35fr) minmax(180px, 1fr) 120px 155px;
+  gap: 20px;
+  align-items: center;
+}
+.access-people-columns {
+  padding: 12px 22px;
+  background: var(--bg-app);
+  border-block: 1px solid var(--access-line);
+  color: var(--access-muted);
+  font-size: 12px;
+}
+.access-people-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.access-people-list li {
+  padding: 22px;
+  border-bottom: 1px solid var(--access-line);
+}
+.access-people-list li:last-child {
+  border-bottom: none;
+}
+.access-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.access-person > div {
+  min-width: 0;
+}
+.access-person strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 1.5;
+  color: var(--text-heading);
+}
+.access-person > div > span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--access-muted);
+  overflow-wrap: anywhere;
+}
+.access-person-roles {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.access-person-roles > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.access-person-roles strong {
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.5;
+}
+.access-person-roles small,
+.access-person-extra,
+.access-person-no-role {
+  font-size: 12px;
+  color: var(--access-muted);
+}
+.access-people-list .btn {
+  justify-self: end;
+}
+@media (max-width: 1150px) {
+  .access-people-columns,
+  .access-people-list li {
+    grid-template-columns: minmax(180px, 1.2fr) minmax(135px, 1fr) 90px;
+    gap: 14px;
+  }
+  .access-people-columns > span:last-child {
+    display: none;
+  }
+  .access-people-list li > .btn {
+    grid-column: 2 / -1;
+    justify-self: end;
+  }
+}
+@media (max-width: 640px) {
+  .access-people-toolbar {
+    padding: 16px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .access-people-toolbar .access-search {
+    width: 100%;
+  }
+  .access-people-toolbar medsys-select {
+    flex: 1;
+  }
+  .access-people-columns {
+    display: none;
+  }
+  .access-people-list li {
+    padding: 20px 16px;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+  }
+  .access-person {
+    grid-column: 1 / -1;
+  }
+  .access-person-roles {
+    padding-left: 50px;
+  }
+  .access-people-list li > .btn {
+    grid-column: 1 / -1;
+  }
+}

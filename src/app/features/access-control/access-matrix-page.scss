@@ -1,141 +1,491 @@
-/* La matriz se desplaza en los dos ejes dentro de la tarjeta: la fila de roles
-   queda arriba y la columna de permisos a la izquierda, para que cada casilla se
-   lea sin perder de vista a qué rol y a qué permiso corresponde. */
-.matrix-scroll {
+.access-workspace {
+  display: grid;
+  grid-template-columns: 254px minmax(0, 1fr);
+  border: 1px solid var(--access-line);
+  border-radius: 12px;
+  background: var(--access-surface);
+  align-items: start;
+}
+.access-role-rail {
+  min-width: 0;
+  position: sticky;
+  top: 76px;
+  max-height: calc(100dvh - 100px);
   overflow: auto;
-  max-height: calc(100vh - 260px);
-  border-top: 1px solid var(--border-subtle);
+  border-radius: 12px 0 0 12px;
 }
-
-.matrix {
-  border-collapse: separate;
-  border-spacing: 0;
-  min-width: 100%;
+.access-editor {
+  min-width: 0;
+  min-height: 730px;
+  border-left: 1px solid var(--access-line);
+  position: relative;
+}
+.access-role-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 28px 28px 22px;
+}
+.access-role-symbol {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.access-role-intro {
+  flex: 1;
+  min-width: 0;
+}
+.access-role-intro h2 {
+  color: var(--text-heading);
+  font-size: 23px;
+  line-height: 1.3;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.access-role-intro p {
+  margin: 5px 0 9px;
+  color: var(--access-muted);
   font-size: 13px;
+  line-height: 1.6;
 }
-
-.matrix th,
-.matrix td {
-  padding: 6px var(--s-3);
-  border-bottom: 1px solid var(--border-subtle);
-  vertical-align: middle;
+.access-settings-link {
+  flex-shrink: 0;
 }
-
-.matrix thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--bg-sunken);
-  font-size: 11px;
+.access-view-tabs {
+  display: flex;
+  gap: 28px;
+  margin-inline: 28px;
+  border-bottom: 1px solid var(--access-line);
+}
+.access-view-tabs button {
+  padding: 10px 2px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--access-muted);
+  font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.04em;
-  text-align: center;
-  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
 }
-
-.matrix .matrix-perm {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  min-width: 300px;
-  max-width: 420px;
-  background: var(--bg-surface);
-  text-align: left;
-  font-weight: 400;
+.access-view-tabs button:hover {
+  color: var(--text-heading);
 }
-
-.matrix thead .matrix-perm {
-  z-index: 3;
-  background: var(--bg-sunken);
+.access-view-tabs button.is-current {
+  color: var(--brand-text);
+  border-bottom-color: var(--brand-solid);
 }
-
-.matrix-role a {
-  color: inherit;
-  text-decoration: none;
+.access-panel {
+  padding: 24px 28px 30px;
 }
-.matrix-role a:hover {
-  text-decoration: underline;
-}
-.matrix-role .t-micro {
-  display: block;
-}
-
-.matrix-type {
-  color: var(--text-secondary);
-  text-align: center;
-  white-space: nowrap;
-}
-
-.matrix-desc {
-  display: block;
-}
-.matrix-code {
+.access-panel-heading {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  justify-content: space-between;
+  gap: 18px;
+}
+.access-panel-heading h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.5;
+}
+.access-panel-heading p {
+  margin: 3px 0 0;
+  color: var(--access-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.access-panel-heading medsys-select {
+  width: 177px;
+  flex-shrink: 0;
+}
+.access-function-search {
+  margin-block: 18px;
+  background: var(--bg-app);
+}
+.access-function-search input {
+  font-size: 12px;
+  padding-block: 8px;
+}
+.access-readonly {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 18px;
+  color: var(--access-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.access-readonly medsys-icon {
   margin-top: 2px;
+  flex-shrink: 0;
 }
-
-.matrix-module th,
-.matrix-module td {
-  background: var(--bg-sunken);
+.access-areas {
+  border-top: 1px solid var(--access-line);
 }
-.matrix-module-toggle {
+.access-area {
+  border-bottom: 1px solid var(--access-line);
+}
+.access-area-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 19px 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--access-muted);
+}
+.access-area-heading:hover {
+  background: var(--bg-hover);
+}
+.access-area-title {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.access-area-title strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+.access-area-title > span {
+  font-size: 11.5px;
+  color: var(--access-muted);
+  line-height: 1.6;
+}
+.access-area-state {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.access-area-state.has-access {
+  color: var(--brand-text);
+}
+.access-area-functions {
+  padding: 0 3px 13px 32px;
+}
+.access-function {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 8px;
+  min-height: 48px;
+  border-top: 1px solid var(--access-line);
+}
+.access-function.is-changed {
+  background: var(--brand-soft);
+  border-radius: 5px;
+}
+.access-function > div {
+  flex: 1;
+  min-width: 0;
+}
+.access-function-name {
+  font-size: 14px;
+  font-weight: 450;
+  line-height: 1.6;
+  display: block;
+}
+.access-function p {
+  font-size: 11px;
+  color: var(--access-muted);
+  margin: 3px 0 0;
+  line-height: 1.6;
+}
+.access-switch {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--s-2);
-  padding: 0;
-  border: 0;
+  width: 36px;
+  height: 21px;
+  padding: 3px;
+  border: none;
+  border-radius: 14px;
+  background: var(--border-strong);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 160ms ease-out;
+}
+.access-switch::after {
+  content: '';
+  position: absolute;
+  inset: -12px -4px;
+}
+.access-switch > span {
+  display: block;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  box-shadow: 0 1px 2px #0002;
+  transform: translateX(0);
+  transition: transform 160ms ease-out;
+}
+.access-switch.is-on {
+  background: var(--brand-solid);
+}
+.access-switch.is-on > span {
+  transform: translateX(15px);
+}
+.access-switch:disabled {
+  opacity: 0.52;
+  cursor: default;
+}
+.access-switch:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 4px;
+}
+.access-show-more {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 12px 8px 5px;
+  border: none;
   background: none;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-link);
   cursor: pointer;
 }
-
-.matrix-cell {
-  min-width: 96px;
-  text-align: center;
-  white-space: nowrap;
-}
-.matrix-cell .t-micro {
-  margin-left: var(--s-1);
-}
-.matrix-cell.is-changed {
-  background: var(--brand-soft);
-}
-
-.matrix-check {
+.access-read-state {
+  color: var(--access-muted);
   display: inline-flex;
-  vertical-align: middle;
+  justify-content: center;
 }
-.matrix-check .check-box {
-  margin-top: 0;
+.access-read-state.is-allowed {
+  color: var(--brand-text);
 }
-/* Casilla de módulo con parte de sus permisos: se rellena y muestra un guion. */
-.matrix-check .checkbox:indeterminate + .check-box {
-  background: var(--brand-solid);
-  border-color: var(--brand-solid);
+.access-draft-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-600, #ad500f);
+  display: inline-block;
+  flex-shrink: 0;
 }
-.matrix-check .checkbox:indeterminate + .check-box > * {
-  visibility: visible;
-}
-.matrix-check .checkbox:disabled + .check-box {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.matrix-empty {
-  padding: var(--s-6) var(--s-4);
-}
-
-.matrix-pending {
+.access-pending {
   position: sticky;
-  bottom: 0;
+  z-index: 3;
+  bottom: 12px;
+  background: var(--access-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 0 16px 16px;
+  box-shadow: 0 4px 18px #152c2310;
   display: flex;
   align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-3) var(--s-4);
-  border-top: 1px solid var(--border);
-  background: var(--bg-surface);
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+}
+.access-pending > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.access-pending small {
+  font-size: 11px;
+  color: var(--access-muted);
+}
+.access-pending > div {
+  display: flex;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.access-review {
+  display: grid;
+  gap: 20px;
+}
+.access-review > p {
+  margin: 0;
+  color: var(--access-muted);
+  line-height: 1.7;
+  font-size: 13px;
+}
+.access-review section {
+  border-top: 1px solid var(--access-line);
+  padding-top: 16px;
+}
+.access-review h3 {
+  margin: 0 0 12px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.access-review section p {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin: 9px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.access-review section p > medsys-icon {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.access-review .is-added > medsys-icon {
+  color: var(--brand-text);
+}
+.access-review .is-removed > medsys-icon {
+  color: var(--err-text, #942323);
+}
+.access-mobile-selector {
+  display: none;
+}
+@media (min-width: 1500px) {
+  .access-workspace {
+    grid-template-columns: 282px minmax(0, 1fr);
+  }
+}
+@media (max-width: 1150px) {
+  .access-workspace {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .access-role-heading {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .access-settings-link {
+    margin-left: 64px;
+  }
+  .access-role-heading,
+  .access-panel {
+    padding-inline: 22px;
+  }
+  .access-view-tabs {
+    margin-inline: 22px;
+  }
+  .access-area-title > span {
+    display: none;
+  }
+}
+@media (max-width: 740px) {
+  .access-workspace {
+    display: block;
+    border-radius: 10px;
+  }
+  .access-role-rail {
+    display: none;
+  }
+  .access-editor {
+    border-left: none;
+    min-height: 0;
+  }
+  .access-mobile-selector {
+    display: grid;
+    gap: 8px;
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--access-line);
+  }
+  .access-mobile-selector label {
+    font-size: 12px;
+    color: var(--access-muted);
+  }
+  .access-role-heading {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding: 20px 16px 14px;
+    gap: 12px;
+  }
+  .access-role-symbol {
+    width: 42px;
+    height: 42px;
+    border-radius: 9px;
+  }
+  .access-role-intro h2 {
+    font-size: 21px;
+  }
+  .access-role-intro p {
+    font-size: 13px;
+  }
+  .access-settings-link {
+    grid-column: 2;
+    justify-self: start;
+    margin-left: 0;
+  }
+  .access-view-tabs {
+    margin-inline: 16px;
+  }
+  .access-panel {
+    padding: 20px 16px;
+  }
+  .access-panel-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .access-panel-heading h3 {
+    font-size: 17px;
+  }
+  .access-panel-heading p {
+    font-size: 13px;
+  }
+  .access-panel-heading medsys-select {
+    width: 100%;
+  }
+  .access-function-search input {
+    font-size: 16px;
+  }
+  .access-area-heading {
+    gap: 9px;
+    min-height: 64px;
+    padding-block: 16px;
+  }
+  .access-area-heading > medsys-icon:first-child {
+    display: none;
+  }
+  .access-area-title strong {
+    font-size: 14px;
+  }
+  .access-area-state {
+    font-size: 11px;
+  }
+  .access-area-state medsys-icon {
+    display: none;
+  }
+  .access-area-functions {
+    padding-left: 0;
+  }
+  .access-function {
+    padding-block: 15px;
+  }
+  .access-function-name {
+    font-size: 14px;
+  }
+  .access-function p {
+    font-size: 12px;
+  }
+  .access-pending {
+    flex-direction: column;
+    align-items: stretch;
+    bottom: 8px;
+    gap: 10px;
+    margin-inline: 8px;
+    padding: 12px;
+  }
+  .access-pending > div {
+    justify-content: flex-end;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .access-switch,
+  .access-switch > span {
+    transition: none;
+  }
 }
