@@ -1,19 +1,26 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FORMAT_PIPES } from '../../core/format/format.pipe';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { AuthSession } from '../../core/auth/auth-session';
+import { can } from '../../core/auth/permissions';
 import { todayIso } from '../../core/format/format';
 import { ACCOUNT_STATUS, options } from '../../core/labels/labels';
 import { Icon } from '../../core/ui/icon';
-import { EmptyState } from '../../shared/empty-state';
-import { ErrorState } from '../../shared/error-state';
-import { PageHeader } from '../../shared/page-header';
 import { Pager } from '../../shared/pager';
 import { Select } from '../../shared/select';
+import { Skeleton } from '../../shared/skeleton';
 import { StatusChip } from '../../shared/status-chip';
-import { TableSkeleton } from '../../shared/table-skeleton';
 import { IdentityAccount } from './access-control.models';
 import { AccessControlService } from './access-control.service';
 import { ACCOUNT_TONES, ASSIGNMENT_STATE, assignmentState, assignmentTone } from './access-rules';
 import { AccountRolesSheet } from './account-roles-sheet';
+import { roleName } from './access-presentation';
 
 /**
  * Asignación de roles a cuentas.
@@ -27,22 +34,27 @@ import { AccountRolesSheet } from './account-roles-sheet';
 @Component({
   selector: 'medsys-role-assignments-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    PageHeader,
-    Select,
-    StatusChip,
-    ErrorState,
-    EmptyState,
-    TableSkeleton,
-    Pager,
-    AccountRolesSheet,
-    Icon,
-    ...FORMAT_PIPES,
-  ],
+  host: { class: 'access-feature' },
+  imports: [Select, Skeleton, RouterLink, StatusChip, Pager, AccountRolesSheet, Icon],
   templateUrl: './role-assignments-page.html',
+  styleUrl: './role-assignments-page.scss',
 })
 export class RoleAssignmentsPage {
   private readonly access = inject(AccessControlService);
+  private readonly session = inject(AuthSession);
+  protected readonly canAssign = computed(() => can.assignRoles(this.session.permissions()));
+  constructor() {
+    inject(DestroyRef).onDestroy(() => window.clearTimeout(this.debounce));
+  }
+  protected initials(name: string): string {
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((word) => word.charAt(0))
+      .join('')
+      .toLocaleUpperCase('es');
+  }
 
   protected readonly statuses = ACCOUNT_STATUS;
   protected readonly statusTones = ACCOUNT_TONES;
@@ -67,14 +79,14 @@ export class RoleAssignmentsPage {
 
   protected readonly countLabel = computed(() => {
     const total = this.accounts.value()?.totalElements ?? 0;
-    return total === 1 ? '1 cuenta' : `${total} cuentas`;
+    return total === 1 ? '1 persona' : `${total} personas`;
   });
 
   /** Los roles de la cuenta, con por qué cada uno da o no da acceso hoy. */
   protected assignments(account: IdentityAccount) {
     return account.roles.map((assignment) => ({
       id: assignment.id,
-      name: this.roleNames().get(assignment.role) ?? assignment.role,
+      name: this.roleNames().get(assignment.role) ?? roleName(assignment.role),
       state: assignmentState(assignment, this.today),
     }));
   }

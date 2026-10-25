@@ -6,3 +6,5 @@
 @use './styles/tokens';
 @use './styles/base';
 @use './styles/ui';
+
+@use './app/features/access-control/access-control';

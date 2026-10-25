@@ -1,3 +1,4 @@
+import { accessUnsavedGuard } from './features/access-control/access-unsaved.guard';
 import { Routes } from '@angular/router';
 import { authGuard, permissionGuard, publicOnlyGuard } from './core/auth/auth.guard';
 
@@ -47,10 +48,11 @@ export const routes: Routes = [
       },
       {
         path: 'roles',
-        title: 'MSYS · Roles',
+        title: 'MSYS · Roles y accesos',
+        canDeactivate: [accessUnsavedGuard],
         canActivate: [permissionGuard('viewRoles')],
         loadComponent: () =>
-          import('./features/access-control/roles-page').then((m) => m.RolesPage),
+          import('./features/access-control/access-matrix-page').then((m) => m.AccessMatrixPage),
       },
       {
         path: 'roles/:code',
@@ -61,14 +63,15 @@ export const routes: Routes = [
       },
       {
         path: 'matriz-accesos',
-        title: 'MSYS · Matriz de accesos',
+        title: 'MSYS · Comparar accesos',
+        canDeactivate: [accessUnsavedGuard],
         canActivate: [permissionGuard('viewRoles')],
         loadComponent: () =>
           import('./features/access-control/access-matrix-page').then((m) => m.AccessMatrixPage),
       },
       {
         path: 'asignacion-roles',
-        title: 'MSYS · Asignación de roles',
+        title: 'MSYS · Accesos del personal',
         canActivate: [permissionGuard('viewRoleAssignments')],
         loadComponent: () =>
           import('./features/access-control/role-assignments-page').then(

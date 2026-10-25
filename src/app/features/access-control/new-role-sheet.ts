@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,123 +10,96 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { describeFailure } from '../../core/http/api-error';
-import { ROLE_SCOPE, options } from '../../core/labels/labels';
+import { AuthSession } from '../../core/auth/auth-session';
 import { ToastService } from '../../core/toast/toast.service';
 import { Dialog } from '../../shared/dialog';
-import { Notice } from '../../shared/notice';
 import { Select } from '../../shared/select';
-import { RoleScope } from './access-control.models';
+import { Role, RoleScope } from './access-control.models';
 import { AccessControlService } from './access-control.service';
+import { accessFailure, searchText } from './access-presentation';
 
-/** El mismo patrón que valida ms-identidad (y el CHECK de la tabla). */
-const ROLE_CODE = /^[A-Z][A-Z0-9_]{2,29}$/;
-
-/**
- * Alta de un rol.
- *
- * El rol nace activo, sin permisos y sin delegar: nadie lo recibe con acceso
- * por accidente. Los permisos se marcan después en la matriz, y quién puede
- * asignarlo se decide en su ficha.
- *
- * El código se escribe en mayúsculas a medida que se teclea, porque viaja en el
- * token y en `X-Roles` y el servicio no lo deja cambiar después.
- */
 @Component({
   selector: 'medsys-new-role-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Dialog, Notice, Select],
+  host: { class: 'access-feature' },
+  imports: [ReactiveFormsModule, Dialog, Select],
   templateUrl: './new-role-sheet.html',
+  styleUrl: './access-form.scss',
 })
 export class NewRoleSheet {
   readonly open = input(false);
+  readonly existingRoles = input<readonly Role[]>([]);
   readonly closed = output<void>();
   readonly saved = output<void>();
-
   private readonly access = inject(AccessControlService);
+  private readonly session = inject(AuthSession);
   private readonly toasts = inject(ToastService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-
-  protected readonly scopes = options(ROLE_SCOPE);
   protected readonly pending = signal(false);
-  protected readonly failure = signal<unknown>(null);
-  protected readonly duplicated = signal<string | null>(null);
-
+  protected readonly failure = signal<string | null>(null);
+  protected readonly duplicate = signal(false);
+  protected readonly canChooseScope = computed(() =>
+    this.existingRoles().some(
+      (role) => role.scope === 'PLATFORM' && this.session.roles().includes(role.code),
+    ),
+  );
+  protected readonly scopes = [
+    { value: 'ORGANIZATION', label: 'Una organización y sus sucursales' },
+    { value: 'PLATFORM', label: 'Toda la plataforma' },
+  ];
   protected readonly form = this.fb.nonNullable.group({
-    code: ['', [Validators.required, Validators.pattern(ROLE_CODE)]],
-    name: ['', [Validators.required, Validators.maxLength(80)]],
-    description: ['', [Validators.maxLength(300)]],
-    scope: ['ORGANIZATION', [Validators.required]],
+    name: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(80)]],
+    description: ['', Validators.maxLength(300)],
+    scope: ['ORGANIZATION'],
   });
-
-  protected readonly otherError = computed(() => {
-    const failure = this.failure();
-    return failure === null || this.duplicated() !== null ? null : describeFailure(failure).message;
-  });
-
+  private generatedCode = '';
   constructor() {
     effect(() => {
       if (this.open()) {
-        this.form.reset({ scope: 'ORGANIZATION' });
+        this.form.reset({ name: '', description: '', scope: 'ORGANIZATION' });
         this.failure.set(null);
-        this.duplicated.set(null);
+        this.duplicate.set(false);
+        this.generatedCode = '';
       }
     });
   }
-
-  protected onCode(event: Event): void {
-    const field = event.target as HTMLInputElement;
-    const upper = field.value.toUpperCase().replace(/\s+/g, '_');
-    if (upper !== field.value) {
-      this.form.controls.code.setValue(upper);
-    }
-    this.duplicated.set(null);
-  }
-
-  protected errorFor(control: 'code' | 'name' | 'description'): string | null {
+  protected errorFor(control: 'name' | 'description'): string | null {
     const field = this.form.controls[control];
-    if (control === 'code' && this.duplicated() !== null) {
-      return `Ya existe un rol con el código ${this.duplicated()}`;
-    }
-    if (!field.touched || field.valid) {
-      return null;
-    }
-    if (field.hasError('required')) return 'Este campo es obligatorio';
-    if (field.hasError('pattern')) {
-      return 'De 3 a 30 caracteres: mayúsculas, dígitos o guion bajo, empezando por una letra';
-    }
-    if (field.hasError('maxlength')) {
-      return `Máximo ${field.getError('maxlength').requiredLength} caracteres`;
-    }
-    return null;
+    if (control === 'name' && this.duplicate())
+      return 'Ya hay un rol con este nombre. Elige uno que permita distinguirlo.';
+    if (!field.touched || field.valid) return null;
+    if (field.hasError('required') || field.hasError('pattern'))
+      return 'Escribe el nombre del rol.';
+    return control === 'name'
+      ? 'Usa un nombre de hasta 80 caracteres.'
+      : 'La descripción puede tener hasta 300 caracteres.';
   }
-
   protected async submit(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid) {
-      document.querySelector<HTMLElement>('medsys-new-role-sheet [aria-invalid="true"]')?.focus();
-      return;
-    }
+    if (this.form.invalid || this.pending()) return;
     const value = this.form.getRawValue();
+    this.duplicate.set(
+      this.existingRoles().some((role) => searchText(role.name) === searchText(value.name)),
+    );
+    if (this.duplicate()) return;
     this.pending.set(true);
     this.failure.set(null);
+    this.generatedCode ||=
+      'CUSTOM_' + crypto.randomUUID().replaceAll('-', '').slice(0, 16).toUpperCase();
     try {
       const role = await this.access.createRole({
-        code: value.code,
+        code: this.generatedCode,
         name: value.name.trim(),
         description: value.description.trim() || null,
-        scope: value.scope as RoleScope,
+        scope: (this.canChooseScope() ? value.scope : 'ORGANIZATION') as RoleScope,
       });
-      this.toasts.notify(`El rol ${role.code} quedó creado, todavía sin permisos.`);
+      this.toasts.notify(`${role.name} creado. Ahora puedes elegir sus accesos.`);
       this.saved.emit();
       this.closed.emit();
-      await this.router.navigate(['/roles', role.code]);
+      await this.router.navigate(['/roles'], { queryParams: { rol: role.code } });
     } catch (failure) {
-      this.failure.set(failure);
-      if (failure instanceof HttpErrorResponse && failure.status === 409) {
-        this.duplicated.set(value.code);
-      }
+      this.failure.set(accessFailure(failure, this.existingRoles()));
     } finally {
       this.pending.set(false);
     }

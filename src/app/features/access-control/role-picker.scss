@@ -1,0 +1,101 @@
+.access-rail-tools {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--access-surface);
+  padding: 22px 18px 12px;
+}
+.access-rail-tools h2 {
+  font-size: 15px;
+  margin: 0 0 14px;
+  display: flex;
+  justify-content: space-between;
+}
+.access-rail-tools h2 > span {
+  font-size: 12px;
+  color: var(--access-muted);
+  font-weight: 400;
+}
+.access-role-filters {
+  display: flex;
+  gap: 5px;
+  margin-top: 12px;
+}
+.access-role-filters button {
+  padding: 5px 11px;
+  font-size: 12px;
+  line-height: 1.5;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--access-muted);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.access-role-filters button:hover {
+  background: var(--bg-hover);
+}
+.access-role-filters button.is-current {
+  background: var(--brand-solid);
+  color: var(--text-onbrand);
+}
+.access-role-list {
+  display: grid;
+  gap: 3px;
+  padding: 0 10px 18px;
+}
+.access-role-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 12px;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+  color: var(--access-ink);
+  font: inherit;
+}
+.access-role-option:hover {
+  background: var(--bg-hover);
+}
+.access-role-option.is-selected {
+  color: var(--brand-text);
+  background: var(--brand-soft);
+}
+.access-role-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 1.45;
+}
+.access-role-purpose {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--access-muted);
+}
+.access-role-option.is-selected .access-role-purpose {
+  color: var(--brand-text);
+}
+.access-rail-empty {
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 12px;
+  color: var(--access-muted);
+}
+.access-rail-empty button {
+  display: block;
+  margin-top: 10px;
+  border: none;
+  background: none;
+  color: var(--text-link);
+  cursor: pointer;
+  padding: 0;
+}
