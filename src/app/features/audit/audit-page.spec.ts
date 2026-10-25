@@ -1,5 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
+import { AuthSession } from '../../core/auth/auth-session';
 import { TestBed } from '@angular/core/testing';
 import { AuditPage } from './audit-page';
 import type { AuditIntegrity, AuditPage as AuditPageModel, AuditSummary } from './audit-event';
@@ -69,11 +71,17 @@ const EMPTY_EVENTS: AuditPageModel = {
 
 describe('AuditPage', () => {
   let http: HttpTestingController;
+  const grants = signal(['audit.log.read', 'audit.log.verify', 'audit.log.export']);
 
   beforeEach(async () => {
+    grants.set(['audit.log.read', 'audit.log.verify', 'audit.log.export']);
     await TestBed.configureTestingModule({
       imports: [AuditPage],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthSession, useValue: { permissions: grants } },
+      ],
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);
   });
@@ -167,20 +175,24 @@ describe('AuditPage', () => {
       '147c87d8-e5f4-4d24-a760-4974f8897a0c',
     );
   });
+  it('el auditor externo consulta sin peticiones de integridad ni control de exportacion', async () => {
+    grants.set(['audit.log.read']);
+    const fixture = TestBed.createComponent(AuditPage);
+    fixture.detectChanges();
+    http.expectOne((request) => request.url === '/api/v1/audit/summary').flush(SUMMARY);
+    http.expectOne((request) => request.url === '/api/v1/audit/events').flush(EMPTY_EVENTS);
+    http.expectNone((request) => request.url.includes('/integrity'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).not.toContain('Verificar integridad');
+    expect(element.textContent).not.toContain('Exportar CSV');
+  });
 
   /** ISO-01: el OSI revisa la bitácora de todas las organizaciones y puede acotarla a una. */
   it('should let the OSI filter by organization and show each event organization', async () => {
-    // AuthSession lee la sesión de sessionStorage al crearse, que es cuando la pide la pantalla.
-    sessionStorage.setItem(
-      'medicalsys.session',
-      JSON.stringify({
-        accessToken: 'token',
-        expiresAt: Date.now() + 60_000,
-        user: { roles: ['OSI'], permissions: ['audit.log.read', 'audit.log.read_platform'] },
-      }),
-    );
+    grants.set(['audit.log.read', 'audit.log.verify', 'audit.log.read_platform']);
     const fixture = TestBed.createComponent(AuditPage);
-    sessionStorage.removeItem('medicalsys.session');
     fixture.detectChanges();
 
     http.expectOne((request) => request.url === '/api/v1/audit/summary').flush(SUMMARY);

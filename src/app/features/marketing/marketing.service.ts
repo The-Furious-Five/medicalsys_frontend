@@ -221,12 +221,28 @@ export class MarketingService {
 
   /* ------------------------------------------------------------- anuncios -- */
 
-  advertisementsResource(page: Signal<number>, size = 20) {
+  advertisementsResource(page: Signal<number>, size = 20, publishedOnly?: Signal<boolean>) {
     return dataResource(
-      httpResource<Page<Advertisement>>(() => ({
-        url: `${this.baseUrl}/anuncios`,
-        params: { size, page: page() },
-      })),
+      httpResource<Page<Advertisement>>(
+        () => ({
+          url: `${this.baseUrl}/anuncios${publishedOnly?.() ? '/vigentes' : ''}`,
+          params: publishedOnly?.()
+            ? ({ ubicacion: 'PATIENT_PORTAL' } as Record<string, string>)
+            : ({ size, page: page() } as Record<string, number>),
+        }),
+        {
+          parse: (response: unknown): Page<Advertisement> =>
+            Array.isArray(response)
+              ? {
+                  content: response,
+                  page: 0,
+                  size: response.length,
+                  totalElements: response.length,
+                  totalPages: 1,
+                }
+              : (response as Page<Advertisement>),
+        },
+      ),
     );
   }
 

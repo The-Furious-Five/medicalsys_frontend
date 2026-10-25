@@ -19,6 +19,7 @@
   >
     <ng-container headerMeta>
       <span class="clin-code">{{ item.code }}</span>
+      <span class="chip chip-neutral">{{ item.accessModel }}</span>
       <span class="chip chip-neutral">{{ scopes[item.scope] }}</span>
       @if (item.system) {
         <span class="chip chip-brand">De sistema</span>
@@ -108,6 +109,7 @@
                 <dt class="def-term">Código</dt>
                 <dd class="def-value">
                   <span class="clin-code">{{ item.code }}</span>
+                  <span class="chip chip-neutral">{{ item.accessModel }}</span>
                 </dd>
               </div>
               <div>
@@ -132,15 +134,18 @@
       <section class="card">
         <div class="card-head"><h2 class="t-section">Quién puede asignar con este rol</h2></div>
         <div class="card-body stack gap-3">
-          @if (item.scope === 'PLATFORM') {
+          @if (!grantsRoleAssignment(item)) {
+            <p class="t-sec t-measure">Este rol no permite asignar ni revocar roles.</p>
+          } @else if (item.scope === 'PLATFORM') {
             <p class="t-sec t-measure">
-              Un rol de plataforma asigna y revoca cualquier rol en cualquier organización. No
-              necesita delegación.
+              Con el permiso de asignación, este rol de plataforma puede asignar y revocar roles en
+              cualquier organización.
             </p>
           } @else {
             <p class="t-sec t-measure">
-              Quien tiene este rol puede asignar y revocar solo los roles marcados, siempre dentro
-              de su organización y sin otorgar permisos de gestión que no tiene.
+              La delegación limita los roles que puede otorgar dentro de su organización. El permiso
+              de alta solo permite asignarlos al crear la cuenta; cambiar roles existentes requiere
+              el permiso de asignación.
             </p>
             @if (roles.isLoading()) {
               <medsys-skeleton width="100%" height="80px" />

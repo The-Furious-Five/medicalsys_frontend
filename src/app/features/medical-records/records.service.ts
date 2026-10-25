@@ -124,17 +124,22 @@ export class RecordsService {
     page: Signal<number>,
     recordId?: Signal<string | null>,
     size = 20,
+    enabled?: Signal<boolean>,
   ) {
     return dataResource(
-      httpResource<Page<EncounterSummary>>(() => ({
-        url: `${this.baseUrl}/encuentros`,
-        params: {
-          size,
-          page: page(),
-          ...(status() ? { status: status()! } : {}),
-          ...(recordId?.() ? { recordId: recordId()! } : {}),
-        },
-      })),
+      httpResource<Page<EncounterSummary>>(() =>
+        enabled && !enabled()
+          ? undefined
+          : {
+              url: `${this.baseUrl}/encuentros`,
+              params: {
+                size,
+                page: page(),
+                ...(status() ? { status: status()! } : {}),
+                ...(recordId?.() ? { recordId: recordId()! } : {}),
+              },
+            },
+      ),
     );
   }
 
@@ -264,12 +269,21 @@ export class RecordsService {
 
   /* --------------------------------------------------- órdenes de estudio -- */
 
-  studyOrdersResource(status: Signal<string | null>, page: Signal<number>, size = 20) {
+  studyOrdersResource(
+    status: Signal<string | null>,
+    page: Signal<number>,
+    size = 20,
+    enabled?: Signal<boolean>,
+  ) {
     return dataResource(
-      httpResource<Page<StudyOrder>>(() => ({
-        url: `${this.baseUrl}/ordenes-estudio`,
-        params: { size, page: page(), ...(status() ? { status: status()! } : {}) },
-      })),
+      httpResource<Page<StudyOrder>>(() =>
+        enabled && !enabled()
+          ? undefined
+          : {
+              url: `${this.baseUrl}/ordenes-estudio`,
+              params: { size, page: page(), ...(status() ? { status: status()! } : {}) },
+            },
+      ),
     );
   }
 

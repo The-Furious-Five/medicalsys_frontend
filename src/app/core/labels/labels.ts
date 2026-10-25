@@ -23,17 +23,21 @@ export const DEPARTMENT: Dict = dict({
 });
 
 export const ROLE: Dict = dict({
-  PLATFORM_ADMIN: 'Administrador de plataforma',
-  ADMINISTRATOR: 'Administración',
-  MARKETING_MANAGER: 'Marketing',
-  PHYSICIAN: 'Profesional de salud',
-  RECEPTIONIST: 'Recepción',
-  BILLING_CLERK: 'Facturación',
-  PATIENT: 'Paciente',
-  OSI: 'Oficial de Seguridad (OSI)',
-  AUDITOR: 'Auditoría interna',
+  PLATFORM_ADMIN: 'Admin. de plataforma',
+  OSI: 'Oficial Seguridad (OSI)',
+  AUDITOR: 'Auditor interno',
+  EXTERNAL_AUDITOR: 'Auditor externo',
+  ADMINISTRATOR: 'Admin. de organización',
+  PHYSICIAN: 'Médico',
+  MEDICAL_INTERN: 'Pasante de medicina',
   NURSE: 'Enfermería',
   LAB_TECHNICIAN: 'Laboratorio',
+  RECEPTIONIST: 'Recepción',
+  BILLING_CLERK: 'Cajero 1',
+  BILLING_SUPERVISOR: 'Cajero 2',
+  MARKETING_MANAGER: 'Marketing',
+  PATIENT: 'Paciente',
+  DEVOPS: 'Tecnología (DevOps)',
 });
 
 /** Escala MAC (ISO-01): clasificación de permisos y nivel de autorización de cuentas. */
@@ -73,6 +77,7 @@ export const PERMISSION_MODULE: Dict = dict({
   NOTIFICATIONS: 'Notificaciones',
   AUDIT: 'Auditoría',
   MARKETING: 'Marketing',
+  INFRASTRUCTURE: 'Infraestructura',
 });
 
 /* --------------------------------------------------------------- pacientes */

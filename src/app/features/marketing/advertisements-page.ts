@@ -71,7 +71,11 @@ export class AdvertisementsPage {
   );
 
   protected readonly page = signal(0);
-  protected readonly advertisements = this.marketing.advertisementsResource(this.page);
+  protected readonly advertisements = this.marketing.advertisementsResource(
+    this.page,
+    20,
+    computed(() => !this.session.permissions().includes('marketing.advertisement.read')),
+  );
 
   protected readonly sheetOpen = signal(false);
   protected readonly pending = signal(false);

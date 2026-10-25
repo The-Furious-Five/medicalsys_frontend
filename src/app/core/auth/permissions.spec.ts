@@ -33,6 +33,21 @@ describe('permisos de la interfaz', () => {
     expect(can.registerPatient(['patients.patient.create'])).toBe(true);
   });
 
+  it('separa emision y anulacion, consulta y exportacion de auditoria', () => {
+    const cashier1 = ['billing.invoice.read', 'billing.invoice.issue'];
+    const cashier2 = ['billing.invoice.read', 'billing.invoice.void'];
+    expect(can.issueInvoice(cashier1)).toBe(true);
+    expect(can.correctInvoice(cashier1)).toBe(false);
+    expect(can.issueInvoice(cashier2)).toBe(false);
+    expect(can.correctInvoice(cashier2)).toBe(true);
+    expect(can.exportAudit(['audit.log.read'])).toBe(false);
+    expect(can.exportAudit(['audit.log.export'])).toBe(true);
+    expect(can.verifyAudit(['audit.log.read'])).toBe(false);
+    expect(can.viewAdvertisements(['marketing.advertisement.view'])).toBe(true);
+    expect(can.viewPatients(['patients.self_access.read'])).toBe(false);
+    expect(can.viewOwnAccess(['patients.self_access.read'])).toBe(true);
+  });
+
   it('cada rol ISO-01 ve solo sus módulos', () => {
     // Enfermería: signos vitales y expediente, sin facturación ni sistema.
     const nurse = ['clinical.record.read', 'clinical.encounter.read', 'patients.patient.read'];

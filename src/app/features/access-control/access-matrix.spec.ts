@@ -30,6 +30,7 @@ const role = (
   name: code,
   description: null,
   scope: 'ORGANIZATION',
+  accessModel: 'MAC',
   system: false,
   active: true,
   permissions,
@@ -90,7 +91,7 @@ describe('matriz de accesos', () => {
 
     // El apóstrofo convierte la fórmula en texto, y las comillas se duplican (RFC 4180).
     expect(csv.split('\r\n')[1]).toBe(
-      `AUDITOR,"'=HYPERLINK(""http://x"",""clic"")",Organización,Activo,No,0,`,
+      `AUDITOR,"'=HYPERLINK(""http://x"",""clic"")",Organización,MAC,Activo,No,0,`,
     );
   });
 });

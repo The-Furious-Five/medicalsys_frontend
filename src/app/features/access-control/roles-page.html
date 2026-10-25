@@ -33,7 +33,7 @@
     <medsys-empty-state
       icon="shield-check"
       heading="No hay roles"
-      description="Los seis roles de sistema los crea la migración del servicio de identidad. Si no aparecen, la base no está migrada."
+      description="Los quince roles de sistema los crea la migración del servicio de identidad. Si no aparecen, la base no está migrada."
     />
   } @else {
     <div class="table-wrap">
@@ -42,6 +42,7 @@
           <tr>
             <th scope="col">Rol</th>
             <th scope="col">Alcance</th>
+            <th scope="col">Modelo</th>
             <th scope="col" class="th-num">Permisos</th>
             <th scope="col">Puede asignar</th>
             <th scope="col">Estado</th>
@@ -67,6 +68,7 @@
                 </div>
               </td>
               <td>{{ scopes[role.scope] }}</td>
+              <td>{{ role.accessModel }}</td>
               <td class="td-num">{{ role.permissions.length }}</td>
               <td class="t-sec">{{ delegation(role) }}</td>
               <td>
