@@ -1,0 +1,116 @@
+<section id="compare-content" role="tabpanel" aria-labelledby="compare-tab" class="access-panel">
+  <div class="access-panel-heading">
+    <div>
+      <h3>Compara sus funciones</h3>
+      <p>Elige hasta tres roles para ver qué cambia entre ellos.</p>
+    </div>
+  </div>
+  <div class="access-compare-choices">
+    @for (comparedRole of compared(); track $index; let i = $index) {
+      <div class="access-compare-choice">
+        <label [for]="'compare-' + i">{{
+          i === 0 ? 'Primer rol' : i === 1 ? 'Segundo rol' : 'Tercer rol'
+        }}</label>
+        <div>
+          <medsys-select
+            [controlId]="'compare-' + i"
+            [options]="comparisonOptions(i)"
+            [value]="comparedRole.code"
+            [allowEmpty]="false"
+            (valueChange)="changeCompared(i, $event)"
+          />
+          @if (i === 2) {
+            <button
+              class="btn btn-ghost btn-icon"
+              type="button"
+              aria-label="Quitar tercer rol"
+              (click)="removeCompared(i)"
+            >
+              <medsys-icon name="x" [size]="15" />
+            </button>
+          }
+        </div>
+      </div>
+    }
+    @if (compared().length < 3 && ordered().length > compared().length) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="addCompared()">
+        <medsys-icon name="plus" [size]="14" /> Añadir otro rol
+      </button>
+    }
+  </div>
+  <label class="access-difference-filter"
+    ><input
+      type="checkbox"
+      [checked]="differencesOnly()"
+      (change)="differencesOnly.set($any($event.target).checked)"
+    />
+    Mostrar solo las diferencias</label
+  >
+  <div class="access-comparison-wrap">
+    <table class="access-comparison">
+      <caption class="sr-only">
+        Comparación de funciones entre los roles seleccionados
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Área o función</th>
+          @for (comparedRole of compared(); track comparedRole.code) {
+            <th scope="col">{{ comparedRole.name }}</th>
+          }
+        </tr>
+      </thead>
+      @for (area of comparison(); track area.id) {
+        <tbody>
+          <tr class="access-comparison-area">
+            <th scope="row">
+              <button
+                type="button"
+                [attr.aria-expanded]="expandedComparison().has(area.id)"
+                (click)="toggleComparison(area.id)"
+              >
+                <medsys-icon
+                  [name]="expandedComparison().has(area.id) ? 'chevron-down' : 'chevron-right'"
+                  [size]="14"
+                />{{ area.name }}
+              </button>
+            </th>
+            @for (comparedRole of compared(); track comparedRole.code) {
+              <td>
+                {{ allowed(area, comparedRole.code) }}
+                {{ allowed(area, comparedRole.code) === 1 ? 'función' : 'funciones' }}
+              </td>
+            }
+          </tr>
+          @if (expandedComparison().has(area.id)) {
+            @for (permission of area.permissions; track permission.code) {
+              <tr>
+                <th scope="row">{{ permissionLabel(permission) }}</th>
+                @for (comparedRole of compared(); track comparedRole.code) {
+                  <td>
+                    <span
+                      class="access-read-state"
+                      [class.is-allowed]="has(comparedRole.code, permission.code)"
+                      ><medsys-icon
+                        [name]="has(comparedRole.code, permission.code) ? 'check' : 'minus'"
+                        [size]="16"
+                      /><span class="sr-only">{{
+                        has(comparedRole.code, permission.code) ? 'Permitido' : 'Sin acceso'
+                      }}</span></span
+                    >
+                  </td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      }
+    </table>
+  </div>
+  @if (comparison().length === 0) {
+    <div class="access-empty is-compact">
+      <medsys-icon name="check-circle" [size]="24" />
+      <h3>Estos roles tienen los mismos accesos</h3>
+      <p>Desactiva el filtro para ver todas sus funciones.</p>
+    </div>
+  }
+</section>

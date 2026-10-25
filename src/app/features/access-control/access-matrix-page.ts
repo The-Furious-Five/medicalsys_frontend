@@ -12,159 +12,117 @@ import { map } from 'rxjs';
 import { AuthSession } from '../../core/auth/auth-session';
 import { can } from '../../core/auth/permissions';
 import { todayIso } from '../../core/format/format';
-import { describeFailure } from '../../core/http/api-error';
 import { ToastService } from '../../core/toast/toast.service';
 import { Icon } from '../../core/ui/icon';
-import { ConfirmDialog } from '../../shared/confirm-dialog';
-import { ErrorState } from '../../shared/error-state';
-import { Notice } from '../../shared/notice';
-import { PageHeader } from '../../shared/page-header';
+import { Dialog } from '../../shared/dialog';
 import { Select } from '../../shared/select';
-import { TableSkeleton } from '../../shared/table-skeleton';
-import { Tooltip } from '../../shared/tooltip';
+import { Skeleton } from '../../shared/skeleton';
 import { CatalogPermission } from './access-control.models';
 import { AccessControlService } from './access-control.service';
+import { Grid, changesBetween, gridOf, orderRoles, toCsv } from './access-matrix';
 import {
-  Grid,
-  ModuleGroup,
-  changesBetween,
-  gridOf,
-  groupByModule,
-  matrixColumn,
-  matrixTable,
-  orderRoles,
-  rolesTable,
-  toCsv,
-} from './access-matrix';
+  AccessArea,
+  accessAreas,
+  accessFailure,
+  permissionHint,
+  permissionLabel,
+  roleIcon,
+  roleName,
+  rolePurpose,
+  searchText,
+} from './access-presentation';
 import { canGrant, roleEditLock } from './access-rules';
+import { NewRoleSheet } from './new-role-sheet';
+import { RolePicker } from './role-picker';
+import { RoleComparison } from './role-comparison';
 import { workbook } from './xlsx';
 
-type ModuleState = 'all' | 'some' | 'none';
-
+type View = 'access' | 'compare';
 interface SaveFailure {
   readonly role: string;
   readonly message: string;
 }
-
 const sameMembers = (a: ReadonlySet<string> | undefined, b: ReadonlySet<string> | undefined) =>
   (a?.size ?? 0) === (b?.size ?? 0) && [...(a ?? [])].every((code) => b?.has(code));
 
-/**
- * Matriz de roles y accesos: un rol por columna, un permiso del catálogo por
- * fila, agrupados por módulo.
- *
- * Es el registro de quién puede hacer qué. Marcar o desmarcar no cambia nada
- * hasta guardar; al guardar se reemplaza el conjunto de permisos de cada rol
- * modificado, uno por uno. Si el servicio rechaza un rol, ese conserva sus
- * cambios marcados y los demás quedan guardados: el fallo de uno no se lleva el
- * trabajo de los otros.
- *
- * Lo que se exporta es lo guardado, nunca el borrador. Por eso exportar espera
- * a que no haya cambios pendientes: la matriz aprobada (RBAC-06) debe coincidir
- * 1:1 con lo que la plataforma aplica.
- */
 @Component({
   selector: 'medsys-access-matrix-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    PageHeader,
-    ErrorState,
-    TableSkeleton,
-    Notice,
-    ConfirmDialog,
-    Select,
-    Tooltip,
-    RouterLink,
-    Icon,
-  ],
+  imports: [Dialog, Select, Skeleton, RouterLink, Icon, NewRoleSheet, RolePicker, RoleComparison],
   templateUrl: './access-matrix-page.html',
   styleUrl: './access-matrix-page.scss',
+  host: { class: 'access-feature', '(window:beforeunload)': 'beforeUnload($event)' },
 })
 export class AccessMatrixPage {
   private readonly access = inject(AccessControlService);
   private readonly session = inject(AuthSession);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toasts = inject(ToastService);
 
   protected readonly roles = this.access.rolesResource();
   protected readonly catalog = this.access.permissionsResource();
+  protected readonly ordered = computed(() => orderRoles(this.roles.value() ?? []));
   protected readonly canManage = computed(() => can.manageRoles(this.session.permissions()));
-
-  /* ------------------------------------------------------------ filtros -- */
-
-  protected readonly term = signal('');
-  protected readonly module = signal<string | null>(null);
-  protected readonly onlySensitive = signal(false);
-  protected readonly showInactive = signal(false);
-  /** Un solo rol en columnas, cuando se llega desde su ficha. */
-  protected readonly focusRole = toSignal(
-    inject(ActivatedRoute).queryParamMap.pipe(map((params) => params.get('rol'))),
-    { initialValue: null },
+  protected readonly canViewPeople = computed(() =>
+    can.viewRoleAssignments(this.session.permissions()),
   );
-  protected readonly collapsed = signal<ReadonlySet<string>>(new Set());
-
-  protected readonly columns = computed(() => {
-    const focus = this.focusRole();
-    return orderRoles(this.roles.value() ?? []).filter((role) =>
-      focus ? role.code === focus : role.active || this.showInactive(),
-    );
-  });
-
-  protected readonly moduleOptions = computed(() =>
-    groupByModule(this.catalog.value() ?? []).map((group) => ({
-      value: group.module,
-      label: `${group.label} (${group.permissions.length})`,
+  protected readonly permissionLabel = permissionLabel;
+  protected readonly permissionHint = permissionHint;
+  protected readonly rolePurpose = rolePurpose;
+  protected readonly roleIcon = roleIcon;
+  protected readonly nameOfRole = (code: string) => roleName(code, this.ordered());
+  protected readonly term = signal('');
+  protected readonly accessFilter = signal('all');
+  protected readonly showOtherAreas = signal(false);
+  protected readonly filterOptions = [
+    { value: 'all', label: 'Todas las funciones' },
+    { value: 'allowed', label: 'Con acceso' },
+    { value: 'denied', label: 'Sin acceso' },
+  ];
+  protected readonly creating = signal(false);
+  protected readonly activeArea = signal('clinical');
+  protected readonly expandedAreas = signal<ReadonlySet<string>>(new Set());
+  protected readonly focusRole = toSignal(
+    this.route.queryParamMap.pipe(map((params) => params.get('rol'))),
+    { initialValue: this.route.snapshot.queryParamMap.get('rol') },
+  );
+  protected readonly selectedCode = linkedSignal(() => this.focusRole() ?? 'PHYSICIAN');
+  private readonly requestedView = toSignal(
+    this.route.queryParamMap.pipe(map((params) => params.get('vista'))),
+    { initialValue: this.route.snapshot.queryParamMap.get('vista') },
+  );
+  protected readonly view = linkedSignal<View>(() =>
+    this.requestedView() === 'comparar' ||
+    this.route.snapshot.routeConfig?.path === 'matriz-accesos'
+      ? 'compare'
+      : 'access',
+  );
+  protected readonly selected = computed(
+    () =>
+      this.ordered().find((role) => role.code === this.selectedCode()) ?? this.ordered()[0] ?? null,
+  );
+  protected readonly roleOptions = computed(() =>
+    this.ordered().map((role) => ({
+      value: role.code,
+      label: role.name + (role.active ? '' : ' · Inactivo'),
     })),
   );
 
-  protected readonly groups = computed<readonly ModuleGroup[]>(() => {
-    const needle = this.term().trim().toLowerCase();
-    const module = this.module();
-    const sensitive = this.onlySensitive();
-    return groupByModule(this.catalog.value() ?? [])
-      .filter((group) => module === null || group.module === module)
-      .map((group) => ({
-        ...group,
-        permissions: group.permissions.filter(
-          (permission) =>
-            (!sensitive || permission.sensitive) &&
-            (needle === '' ||
-              permission.code.includes(needle) ||
-              permission.description.toLowerCase().includes(needle)),
-        ),
-      }))
-      .filter((group) => group.permissions.length > 0);
-  });
-
-  protected readonly visibleCount = computed(() =>
-    this.groups().reduce((total, group) => total + group.permissions.length, 0),
-  );
-
-  /* ---------------------------------------------------------- borrador -- */
-
-  protected readonly saved = computed<Grid>(() => gridOf(this.roles.value() ?? []));
-
-  /**
-   * Lo marcado en pantalla. Al recargar los roles, cada rol cuyo guardado no
-   * cambió conserva lo que se había marcado; el que sí cambió (porque se guardó,
-   * o porque otra persona lo editó mientras tanto) vuelve a lo guardado.
-   */
+  private readonly saved = computed<Grid>(() => gridOf(this.roles.value() ?? []));
   protected readonly draft = linkedSignal<Grid, Grid>({
     source: this.saved,
-    computation: (saved, previous) => {
-      if (previous === undefined) {
-        return saved;
-      }
-      return new Map(
-        [...saved].map(([role, codes]) =>
-          sameMembers(previous.source.get(role), codes)
-            ? [role, previous.value.get(role) ?? codes]
-            : [role, codes],
-        ),
-      );
-    },
+    computation: (saved, previous) =>
+      previous === undefined
+        ? saved
+        : new Map(
+            [...saved].map(([role, codes]) =>
+              sameMembers(previous.source.get(role), codes)
+                ? [role, previous.value.get(role) ?? codes]
+                : [role, codes],
+            ),
+          ),
   });
-
   protected readonly changes = computed(() => changesBetween(this.saved(), this.draft()));
   protected readonly changeCount = computed(() =>
     this.changes().reduce(
@@ -172,113 +130,150 @@ export class AccessMatrixPage {
       0,
     ),
   );
-
-  /** Por qué cada columna no se puede editar, o `null`. */
-  protected readonly locks = computed(() => {
-    const roles = this.session.roles();
-    const permissions = this.session.permissions();
-    return new Map(
-      this.columns().map((role) => [role.code, roleEditLock(role, roles, permissions)]),
+  protected readonly changedRoles = computed(
+    () => new Set(this.changes().map((change) => change.role)),
+  );
+  protected readonly areas = computed(() => accessAreas(this.catalog.value() ?? []));
+  private readonly matchingGroups = computed(() => {
+    const code = this.selected()?.code;
+    const term = searchText(this.term());
+    return this.areas()
+      .map((area) => ({
+        ...area,
+        permissions: area.permissions.filter(
+          (permission) =>
+            (!term || searchText(area.name + ' ' + permissionLabel(permission)).includes(term)) &&
+            (this.accessFilter() === 'all' ||
+              this.has(code ?? '', permission.code) === (this.accessFilter() === 'allowed')),
+        ),
+      }))
+      .filter((area) => area.permissions.length > 0);
+  });
+  protected readonly groups = computed(() => {
+    const groups = this.matchingGroups();
+    const role = this.selected();
+    if (
+      !role ||
+      this.showOtherAreas() ||
+      this.term().trim() ||
+      this.accessFilter() === 'denied' ||
+      !this.draft().get(role.code)?.size
+    )
+      return groups;
+    return groups.filter(
+      (area) =>
+        this.allowed(area, role.code) > 0 ||
+        area.permissions.some((permission) => this.changed(role.code, permission.code)),
     );
   });
-
-  /* ----------------------------------------------------------- guardado -- */
-
+  protected readonly hiddenAreas = computed(
+    () => this.matchingGroups().length - this.groups().length,
+  );
+  protected readonly selectedLock = computed(() => {
+    const role = this.selected();
+    if (!role || !this.canManage())
+      return 'Puedes consultar estos accesos. Su modificación corresponde al personal autorizado.';
+    if (this.session.roles().includes(role.code))
+      return 'Estás usando este rol. Otra persona autorizada debe revisar sus accesos.';
+    return roleEditLock(role, this.session.roles(), this.session.permissions())
+      ? 'No tienes autorización para modificar los accesos de este rol.'
+      : null;
+  });
+  protected readonly review = computed(() =>
+    this.changes().map((change) => ({
+      name: roleName(change.role, this.ordered()),
+      added: change.added.map((code) => this.labelFor(code)),
+      removed: change.removed.map((code) => this.labelFor(code)),
+    })),
+  );
   protected readonly confirmingSave = signal(false);
   protected readonly saving = signal(false);
   protected readonly failures = signal<readonly SaveFailure[]>([]);
+  protected readonly leaving = signal(false);
+  private leaveResolver: ((leave: boolean) => void) | null = null;
 
-  protected readonly saveSummary = computed(() =>
-    this.changes().map((change) => {
-      const parts = [];
-      if (change.added.length > 0) parts.push(`agrega ${change.added.length}`);
-      if (change.removed.length > 0) parts.push(`quita ${change.removed.length}`);
-      return `${change.role}: ${parts.join(' y ')}`;
-    }),
-  );
-
-  protected column(code: string): string {
-    return matrixColumn(code);
+  protected onViewKey(event: KeyboardEvent): void {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const view: View =
+      event.key === 'Home'
+        ? 'access'
+        : event.key === 'End'
+          ? 'compare'
+          : this.view() === 'access'
+            ? 'compare'
+            : 'access';
+    this.changeView(view);
+    document.getElementById(view === 'access' ? 'access-tab' : 'compare-tab')?.focus();
   }
-
+  protected selectRole(code: string): void {
+    this.selectedCode.set(code);
+    this.failures.set([]);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { rol: code },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+  protected changeView(view: View): void {
+    this.view.set(view);
+  }
   protected has(role: string, code: string): boolean {
     return this.draft().get(role)?.has(code) ?? false;
   }
-
   protected changed(role: string, code: string): boolean {
     return (this.saved().get(role)?.has(code) ?? false) !== this.has(role, code);
   }
-
-  /** Por qué esta casilla no se puede marcar o desmarcar, o `null`. */
-  protected cellLock(role: string, code: string): string | null {
-    const lock = this.locks().get(role) ?? null;
-    if (lock !== null) {
-      return lock;
-    }
-    if (!this.has(role, code) && !canGrant(code, this.session.permissions())) {
-      return 'Solo se agregan permisos que tú tienes.';
-    }
-    return null;
+  protected allowed(area: AccessArea, role: string): number {
+    return area.permissions.filter((permission) => this.has(role, permission.code)).length;
   }
-
-  protected toggle(role: string, code: string, checked: boolean): void {
+  protected areaState(area: AccessArea, role: string): string {
+    const source = this.areas().find((entry) => entry.id === area.id) ?? area;
+    const held = this.allowed(source, role);
+    return held === 0 ? 'Sin acceso' : 'Con acceso';
+  }
+  protected areaOpen(id: string): boolean {
+    return this.term().trim().length > 0 || this.activeArea() === id;
+  }
+  protected toggleArea(id: string): void {
+    this.activeArea.set(this.activeArea() === id ? '' : id);
+  }
+  protected areaPermissions(area: AccessArea): readonly CatalogPermission[] {
+    return this.term().trim() || this.expandedAreas().has(area.id)
+      ? area.permissions
+      : area.permissions.slice(0, 5);
+  }
+  protected expandArea(id: string): void {
+    this.expandedAreas.update((areas) => new Set(areas).add(id));
+  }
+  protected canToggle(permission: CatalogPermission): boolean {
+    const role = this.selected();
+    return (
+      !!role &&
+      this.selectedLock() === null &&
+      !this.saving() &&
+      (this.has(role.code, permission.code) ||
+        canGrant(permission.code, this.session.permissions()))
+    );
+  }
+  protected toggle(permission: CatalogPermission): void {
+    const role = this.selected();
+    if (!role || !this.canToggle(permission)) return;
     this.draft.update((grid) => {
-      const codes = new Set(grid.get(role));
-      if (checked) {
-        codes.add(code);
-      } else {
-        codes.delete(code);
-      }
-      return new Map(grid).set(role, codes);
+      const codes = new Set(grid.get(role.code));
+      if (!codes.delete(permission.code)) codes.add(permission.code);
+      return new Map(grid).set(role.code, codes);
     });
   }
-
-  protected moduleState(role: string, permissions: readonly CatalogPermission[]): ModuleState {
-    const held = permissions.filter((permission) => this.has(role, permission.code)).length;
-    return held === 0 ? 'none' : held === permissions.length ? 'all' : 'some';
-  }
-
-  protected moduleCount(role: string, permissions: readonly CatalogPermission[]): string {
-    const held = permissions.filter((permission) => this.has(role, permission.code)).length;
-    return `${held}/${permissions.length}`;
-  }
-
-  /** Marca o desmarca de una vez lo visible del módulo, salvo lo que no se puede tocar. */
-  protected toggleModule(
-    role: string,
-    permissions: readonly CatalogPermission[],
-    checked: boolean,
-  ): void {
-    for (const permission of permissions) {
-      if (
-        this.has(role, permission.code) !== checked &&
-        this.cellLock(role, permission.code) === null
-      ) {
-        this.toggle(role, permission.code, checked);
-      }
+  protected discard(): void {
+    if (!this.saving()) {
+      this.draft.set(this.saved());
+      this.failures.set([]);
     }
   }
-
-  protected toggleCollapsed(module: string): void {
-    this.collapsed.update((current) => {
-      const next = new Set(current);
-      if (!next.delete(module)) {
-        next.add(module);
-      }
-      return next;
-    });
-  }
-
-  protected clearFocus(): void {
-    void this.router.navigate([], { queryParams: { rol: null }, queryParamsHandling: 'merge' });
-  }
-
-  protected discard(): void {
-    this.draft.set(this.saved());
-    this.failures.set([]);
-  }
-
   protected async save(): Promise<void> {
+    if (this.saving()) return;
     const changes = this.changes();
     const draft = this.draft();
     this.saving.set(true);
@@ -287,59 +282,78 @@ export class AccessMatrixPage {
       try {
         await this.access.replacePermissions(change.role, [...(draft.get(change.role) ?? [])]);
       } catch (failure) {
-        failures.push({ role: change.role, message: describeFailure(failure).message });
+        failures.push({
+          role: change.role,
+          message: accessFailure(failure, this.ordered(), this.catalog.value() ?? []),
+        });
       }
     }
-    this.saving.set(false);
-    this.confirmingSave.set(false);
     this.failures.set(failures);
+    this.confirmingSave.set(false);
+    this.saving.set(false);
     this.roles.reload();
-
-    const savedRoles = changes.length - failures.length;
-    if (savedRoles > 0) {
+    const count = changes.length - failures.length;
+    if (count > 0)
       this.toasts.notify(
-        `Permisos guardados en ${savedRoles} ${savedRoles === 1 ? 'rol' : 'roles'}. ` +
-          'Rigen desde el próximo inicio de sesión de cada cuenta.',
+        count === 1 ? 'Accesos del rol guardados.' : `Accesos guardados en ${count} roles.`,
       );
-    }
   }
-
-  /* --------------------------------------------------------- exportación -- */
-
-  protected exportCsv(): void {
-    const table = matrixTable(this.roles.value() ?? [], this.catalog.value() ?? []);
-    // La marca de orden de bytes hace que Excel lea el CSV como UTF-8 y no rompa las tildes.
-    this.download(
-      new Blob(['﻿', toCsv(table)], { type: 'text/csv;charset=utf-8' }),
-      `medicalsys-matriz-accesos-${todayIso()}.csv`,
-    );
+  protected labelFor(code: string): string {
+    const permission = (this.catalog.value() ?? []).find((entry) => entry.code === code);
+    return permission ? permissionLabel(permission) : 'Función adicional';
   }
-
-  protected exportXlsx(): void {
-    const roles = this.roles.value() ?? [];
-    const matrix = matrixTable(roles, this.catalog.value() ?? []);
-    const book = workbook([
-      {
-        name: 'Matriz',
-        rows: matrix,
-        widths: [24, 38, 52, 9, 10, ...matrix[0].slice(5).map(() => 16)],
-      },
-      { name: 'Roles', rows: rolesTable(roles), widths: [20, 30, 14, 10, 11, 10, 60] },
-    ]);
-    this.download(
-      new Blob([book.slice().buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      }),
-      `medicalsys-matriz-accesos-${todayIso()}.xlsx`,
-    );
-  }
-
-  private download(blob: Blob, filename: string): void {
+  protected exportSummary(format: 'xlsx' | 'csv'): void {
+    if (this.changeCount() || !this.roles.hasValue() || !this.catalog.hasValue()) return;
+    const roles = this.ordered();
+    const rows = [
+      ['Área', 'Función', ...roles.map((role) => role.name)],
+      ...this.areas().flatMap((area) =>
+        area.permissions.map((permission) => [
+          area.name,
+          permissionLabel(permission),
+          ...roles.map((role) =>
+            this.has(role.code, permission.code) ? 'Permitido' : 'Sin acceso',
+          ),
+        ]),
+      ),
+    ];
+    const data =
+      format === 'xlsx'
+        ? workbook([
+            { name: 'Accesos por rol', rows, widths: [28, 54, ...roles.map(() => 25)] },
+          ]).slice().buffer
+        : '\ufeff' + toCsv(rows);
+    const blob = new Blob([data], {
+      type:
+        format === 'xlsx'
+          ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          : 'text/csv;charset=utf-8',
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename;
+    link.download = `medicalsys-accesos-${todayIso()}.${format}`;
     link.click();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  requestLeave(): boolean | Promise<boolean> {
+    if (!this.changeCount()) return true;
+    if (this.saving()) return false;
+    this.leaving.set(true);
+    return new Promise((resolve) => {
+      this.leaveResolver = resolve;
+    });
+  }
+  protected resolveLeave(leave: boolean): void {
+    if (leave) this.discard();
+    this.leaving.set(false);
+    this.leaveResolver?.(leave);
+    this.leaveResolver = null;
+  }
+  protected beforeUnload(event: BeforeUnloadEvent): void {
+    if (this.changeCount()) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
   }
 }

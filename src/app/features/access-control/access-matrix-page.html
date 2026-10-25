@@ -1,266 +1,399 @@
-<medsys-page-header
-  heading="Matriz de accesos"
-  description="Qué permisos del catálogo tiene cada rol. Lo que se guarda aquí rige desde el próximo inicio de sesión de cada cuenta."
-  [crumbs]="[{ label: 'Roles', link: '/roles' }, { label: 'Matriz de accesos' }]"
->
-  <ng-container headerActions>
-    <button
-      type="button"
-      class="btn btn-secondary"
-      [disabled]="changeCount() > 0 || !roles.hasValue() || !catalog.hasValue()"
-      [medsysTooltip]="changeCount() > 0 ? 'Guarda o descarta los cambios antes de exportar' : null"
-      tooltipSide="top"
-      (click)="exportCsv()"
-    >
-      <medsys-icon name="download" [size]="15" /> CSV
-    </button>
-    <button
-      type="button"
-      class="btn btn-secondary"
-      [disabled]="changeCount() > 0 || !roles.hasValue() || !catalog.hasValue()"
-      [medsysTooltip]="changeCount() > 0 ? 'Guarda o descarta los cambios antes de exportar' : null"
-      tooltipSide="top"
-      (click)="exportXlsx()"
-    >
-      <medsys-icon name="download" [size]="15" /> Excel
-    </button>
-  </ng-container>
-</medsys-page-header>
-
-<div class="stack gap-4">
-  @for (failure of failures(); track failure.role) {
-    <medsys-notice tone="err" [heading]="'No se guardaron los permisos de ' + failure.role">
-      {{ failure.message }} Sus cambios siguen marcados.
-    </medsys-notice>
-  }
-
-  <div class="card">
-    <div class="filters">
-      <div class="search-field">
-        <medsys-icon name="search" [size]="15" />
-        <input
-          class="input"
-          type="text"
-          aria-label="Buscar permiso"
-          placeholder="Buscar por código o descripción"
-          [value]="term()"
-          (input)="term.set($any($event.target).value)"
-        />
-      </div>
-      <medsys-select
-        [options]="moduleOptions()"
-        [value]="module() ?? ''"
-        (valueChange)="module.set($event === '' ? null : $event)"
-        ariaLabel="Filtrar por módulo"
-        placeholder="Todos los módulos"
-      />
-      <label class="check-row">
-        <input
-          type="checkbox"
-          class="checkbox"
-          [checked]="onlySensitive()"
-          (change)="onlySensitive.set($any($event.target).checked)"
-        />
-        <span class="check-box" aria-hidden="true"><medsys-icon name="check" [size]="12" /></span>
-        <span>Solo sensibles</span>
-      </label>
-      @if (focusRole(); as focus) {
-        <button type="button" class="btn btn-ghost btn-sm" (click)="clearFocus()">
-          Solo {{ focus }} <medsys-icon name="x" [size]="14" />
+<div class="access-page">
+  <header class="access-page-heading">
+    <div>
+      <h1>Roles y accesos</h1>
+      <p>Define qué puede hacer cada persona según su función.</p>
+    </div>
+    <div class="access-heading-actions">
+      <details class="access-download">
+        <summary class="btn btn-secondary">
+          <medsys-icon name="download" [size]="16" /> Descargar
+        </summary>
+        <div class="access-download-options">
+          <button
+            type="button"
+            [disabled]="changeCount() > 0 || !catalog.hasValue() || !roles.hasValue()"
+            (click)="exportSummary('xlsx')"
+          >
+            Resumen en Excel
+          </button>
+          <button
+            type="button"
+            [disabled]="changeCount() > 0 || !catalog.hasValue() || !roles.hasValue()"
+            (click)="exportSummary('csv')"
+          >
+            Archivo de hoja de cálculo
+          </button>
+          @if (changeCount() > 0) {
+            <p>Guarda tus cambios antes de descargar.</p>
+          }
+        </div>
+      </details>
+      @if (canManage()) {
+        <button type="button" class="btn btn-primary" (click)="creating.set(true)">
+          <medsys-icon name="plus" [size]="16" /> Crear rol
         </button>
-      } @else {
-        <label class="check-row">
-          <input
-            type="checkbox"
-            class="checkbox"
-            [checked]="showInactive()"
-            (change)="showInactive.set($any($event.target).checked)"
-          />
-          <span class="check-box" aria-hidden="true">
-            <medsys-icon name="check" [size]="12" />
-          </span>
-          <span>Roles inactivos</span>
-        </label>
-      }
-      <span class="grow"></span>
-      @if (catalog.hasValue()) {
-        <span class="t-sec t-num">{{ visibleCount() }} permisos</span>
       }
     </div>
+  </header>
+  <nav class="access-section-nav" aria-label="Gestión de accesos">
+    <a routerLink="/roles" aria-current="page">Roles y accesos</a>
+    @if (canViewPeople()) {
+      <a routerLink="/asignacion-roles">Accesos del personal</a>
+    }
+  </nav>
 
-    @if (roles.isLoading() && !roles.hasValue()) {
-      <medsys-table-skeleton [rows]="10" [columns]="7" />
-    } @else if (roles.error()) {
-      <medsys-error-state [failure]="roles.error()" [compact]="true" (retry)="roles.reload()" />
-    } @else if (catalog.isLoading()) {
-      <medsys-table-skeleton [rows]="10" [columns]="7" />
-    } @else if (catalog.error()) {
-      <medsys-error-state [failure]="catalog.error()" [compact]="true" (retry)="catalog.reload()" />
-    } @else if (groups().length === 0) {
-      <p class="t-sec matrix-empty">Ningún permiso coincide con el filtro.</p>
-    } @else {
-      <div class="matrix-scroll">
-        <table class="matrix">
-          <thead>
-            <tr>
-              <th scope="col" class="matrix-perm">Permiso</th>
-              <th scope="col" class="matrix-type">Tipo</th>
-              @for (role of columns(); track role.code) {
-                <th
-                  scope="col"
-                  class="matrix-role"
-                  [medsysTooltip]="
-                    role.name +
-                    (canManage() && locks().get(role.code) ? ' · ' + locks().get(role.code) : '')
-                  "
-                  tooltipSide="top"
-                >
-                  <a [routerLink]="['/roles', role.code]">{{ role.code }}</a>
-                  @if (!role.active) {
-                    <span class="t-micro">inactivo</span>
-                  }
-                  @if (canManage() && locks().get(role.code)) {
-                    <medsys-icon name="lock" [size]="12" />
-                  }
-                </th>
+  @if (roles.isLoading() && ordered().length === 0) {
+    <div class="access-loading" aria-label="Cargando roles">
+      <medsys-skeleton width="28%" height="48px" /><medsys-skeleton width="100%" height="360px" />
+    </div>
+  } @else if (roles.error() || catalog.error()) {
+    <div class="access-empty" role="alert">
+      <medsys-icon name="shield-alert" [size]="28" />
+      <h2>No pudimos cargar los accesos</h2>
+      <p>Comprueba tu conexión y vuelve a intentarlo.</p>
+      <button class="btn btn-secondary" type="button" (click)="roles.reload(); catalog.reload()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (ordered().length === 0) {
+    <div class="access-empty">
+      <medsys-icon name="shield-check" [size]="28" />
+      <h2>Todavía no hay roles disponibles</h2>
+      <p>Los roles permiten organizar las funciones del personal.</p>
+      @if (canManage()) {
+        <button type="button" class="btn btn-primary" (click)="creating.set(true)">
+          Crear un rol
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="access-workspace">
+      <medsys-role-picker
+        class="access-role-rail"
+        [roles]="ordered()"
+        [selectedCode]="selected()?.code ?? null"
+        [changedRoles]="changedRoles()"
+        (roleSelected)="selectRole($event)"
+      />
+
+      <div class="access-editor">
+        <div class="access-mobile-selector">
+          <label for="mobile-role">Rol que quieres revisar</label
+          ><medsys-select
+            controlId="mobile-role"
+            [options]="roleOptions()"
+            [value]="selected()?.code ?? ''"
+            [allowEmpty]="false"
+            (valueChange)="selectRole($event)"
+          />
+        </div>
+        @if (selected(); as role) {
+          <header class="access-role-heading">
+            <span class="access-role-symbol"
+              ><medsys-icon [name]="roleIcon(role)" [size]="27"
+            /></span>
+            <div class="access-role-intro">
+              <h2>{{ role.name }}</h2>
+              <p>{{ rolePurpose(role) }}</p>
+              <span class="access-role-status" [class.is-inactive]="!role.active"
+                ><span></span>{{ role.active ? 'Activo' : 'Inactivo' }}</span
+              >
+            </div>
+            <a
+              class="btn btn-secondary btn-sm access-settings-link"
+              [routerLink]="['/roles', role.code]"
+              ><medsys-icon name="settings" [size]="15" /> Ajustes del rol</a
+            >
+          </header>
+          <div class="access-view-tabs" role="tablist" aria-label="Vista de accesos">
+            <button
+              type="button"
+              role="tab"
+              id="access-tab"
+              (keydown)="onViewKey($event)"
+              [attr.aria-selected]="view() === 'access'"
+              aria-controls="access-content"
+              [attr.tabindex]="view() === 'access' ? 0 : -1"
+              [class.is-current]="view() === 'access'"
+              (click)="changeView('access')"
+            >
+              Accesos
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="compare-tab"
+              (keydown)="onViewKey($event)"
+              [attr.aria-selected]="view() === 'compare'"
+              aria-controls="compare-content"
+              [attr.tabindex]="view() === 'compare' ? 0 : -1"
+              [class.is-current]="view() === 'compare'"
+              (click)="changeView('compare')"
+            >
+              Comparar roles
+            </button>
+          </div>
+          @for (failure of failures(); track failure.role) {
+            <div class="access-feedback is-error" role="alert">
+              <strong>No se guardaron los accesos de {{ nameOfRole(failure.role) }}</strong>
+              <p>{{ failure.message }} Los cambios siguen pendientes.</p>
+            </div>
+          }
+          @if (view() === 'access') {
+            <section
+              id="access-content"
+              role="tabpanel"
+              aria-labelledby="access-tab"
+              class="access-panel"
+            >
+              <div class="access-panel-heading">
+                <div>
+                  <h3>Qué puede hacer este rol</h3>
+                  <p>Abre un área para revisar sus funciones.</p>
+                </div>
+                <medsys-select
+                  [options]="filterOptions"
+                  [allowEmpty]="false"
+                  [value]="accessFilter()"
+                  (valueChange)="accessFilter.set($event)"
+                  ariaLabel="Filtrar funciones por acceso"
+                />
+              </div>
+              <div class="access-search access-function-search">
+                <medsys-icon name="search" [size]="16" /><input
+                  type="search"
+                  aria-label="Buscar una función"
+                  placeholder="Buscar una función, como firmar o anular"
+                  [value]="term()"
+                  (input)="term.set($any($event.target).value)"
+                />
+              </div>
+              @if (selectedLock(); as reason) {
+                <p class="access-readonly"><medsys-icon name="lock" [size]="14" />{{ reason }}</p>
               }
-            </tr>
-          </thead>
-
-          @for (group of groups(); track group.module) {
-            <tbody>
-              <tr class="matrix-module">
-                <th scope="rowgroup" colspan="2" class="matrix-perm">
+              @if (catalog.isLoading()) {
+                <medsys-skeleton width="100%" height="240px" />
+              } @else {
+                <div class="access-areas">
+                  @for (area of groups(); track area.id) {
+                    <section class="access-area" [class.is-open]="areaOpen(area.id)">
+                      <button
+                        type="button"
+                        class="access-area-heading"
+                        [attr.aria-expanded]="areaOpen(area.id)"
+                        [attr.aria-controls]="'area-' + area.id"
+                        (click)="toggleArea(area.id)"
+                      >
+                        <medsys-icon [name]="area.icon" [size]="19" />
+                        <span class="access-area-title"
+                          ><strong>{{ area.name }}</strong
+                          ><span>{{ area.description }}</span></span
+                        >
+                        <span
+                          class="access-area-state"
+                          [class.has-access]="allowed(area, role.code) > 0"
+                        >
+                          @if (allowed(area, role.code) > 0) {
+                            <medsys-icon name="check-circle" [size]="14" />
+                          }
+                          {{ areaState(area, role.code) }}</span
+                        >
+                        <medsys-icon
+                          [name]="areaOpen(area.id) ? 'chevron-down' : 'chevron-right'"
+                          [size]="16"
+                        />
+                      </button>
+                      @if (areaOpen(area.id)) {
+                        <div class="access-area-functions" [id]="'area-' + area.id">
+                          @for (permission of areaPermissions(area); track permission.code) {
+                            <div
+                              class="access-function"
+                              [class.is-changed]="changed(role.code, permission.code)"
+                            >
+                              <div>
+                                <span class="access-function-name">{{
+                                  permissionLabel(permission)
+                                }}</span>
+                                @if (permissionHint(permission); as hint) {
+                                  <p>{{ hint }}</p>
+                                }
+                              </div>
+                              @if (canManage()) {
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  class="access-switch"
+                                  [class.is-on]="has(role.code, permission.code)"
+                                  [attr.aria-checked]="has(role.code, permission.code)"
+                                  [attr.aria-label]="
+                                    permissionLabel(permission) + ' para ' + role.name
+                                  "
+                                  [disabled]="!canToggle(permission)"
+                                  (click)="toggle(permission)"
+                                >
+                                  <span></span>
+                                </button>
+                              } @else {
+                                <span
+                                  class="access-read-state"
+                                  [class.is-allowed]="has(role.code, permission.code)"
+                                  ><medsys-icon
+                                    [name]="has(role.code, permission.code) ? 'check' : 'minus'"
+                                    [size]="17"
+                                  /><span class="sr-only">{{
+                                    has(role.code, permission.code) ? 'Permitido' : 'Sin acceso'
+                                  }}</span></span
+                                >
+                              }
+                            </div>
+                          }
+                          @if (areaPermissions(area).length < area.permissions.length) {
+                            <button
+                              class="access-show-more"
+                              type="button"
+                              (click)="expandArea(area.id)"
+                            >
+                              Ver las {{ area.permissions.length }} funciones de esta
+                              área<medsys-icon name="chevron-down" [size]="14" />
+                            </button>
+                          }
+                        </div>
+                      }
+                    </section>
+                  } @empty {
+                    <div class="access-empty is-compact">
+                      <medsys-icon name="search-x" [size]="24" />
+                      <h3>No hay funciones con este filtro</h3>
+                      <p>Prueba otra palabra o muestra todas las funciones.</p>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        (click)="term.set(''); accessFilter.set('all')"
+                      >
+                        Limpiar filtros
+                      </button>
+                    </div>
+                  }
+                </div>
+                @if (hiddenAreas() > 0) {
                   <button
                     type="button"
-                    class="matrix-module-toggle"
-                    [attr.aria-expanded]="!collapsed().has(group.module)"
-                    (click)="toggleCollapsed(group.module)"
+                    class="access-show-more access-other-areas"
+                    (click)="showOtherAreas.set(true)"
                   >
-                    <medsys-icon
-                      [name]="collapsed().has(group.module) ? 'chevron-right' : 'chevron-down'"
-                      [size]="14"
-                    />
-                    {{ group.label }}
-                    <span class="t-sec t-num">· {{ group.permissions.length }}</span>
+                    Ver otras áreas ({{ hiddenAreas() }})<medsys-icon name="plus" [size]="14" />
                   </button>
-                </th>
-                @for (role of columns(); track role.code) {
-                  <td class="matrix-cell">
-                    @if (canManage() && !locks().get(role.code)) {
-                      <label class="check-row matrix-check">
-                        <input
-                          type="checkbox"
-                          class="checkbox"
-                          [checked]="moduleState(role.code, group.permissions) === 'all'"
-                          [indeterminate]="moduleState(role.code, group.permissions) === 'some'"
-                          [attr.aria-label]="'Todo ' + group.label + ' para ' + role.code"
-                          (change)="
-                            toggleModule(role.code, group.permissions, $any($event.target).checked)
-                          "
-                        />
-                        <span class="check-box" aria-hidden="true">
-                          <medsys-icon
-                            [name]="
-                              moduleState(role.code, group.permissions) === 'some'
-                                ? 'minus'
-                                : 'check'
-                            "
-                            [size]="12"
-                          />
-                        </span>
-                      </label>
-                    }
-                    <span class="t-micro t-num">{{
-                      moduleCount(role.code, group.permissions)
-                    }}</span>
-                  </td>
-                }
-              </tr>
-
-              @if (!collapsed().has(group.module)) {
-                @for (permission of group.permissions; track permission.code) {
-                  <tr>
-                    <th scope="row" class="matrix-perm">
-                      <span class="matrix-desc">{{ permission.description }}</span>
-                      <span class="matrix-code">
-                        <span class="clin-code">{{ permission.code }}</span>
-                        @if (permission.sensitive) {
-                          <span class="chip chip-warn">Sensible</span>
-                        }
-                      </span>
-                    </th>
-                    <td class="matrix-type">{{ column(permission.code) }}</td>
-                    @for (role of columns(); track role.code) {
-                      <td
-                        class="matrix-cell"
-                        [class.is-changed]="changed(role.code, permission.code)"
-                      >
-                        @if (canManage()) {
-                          <label
-                            class="check-row matrix-check"
-                            [medsysTooltip]="cellLock(role.code, permission.code)"
-                            tooltipSide="top"
-                          >
-                            <input
-                              type="checkbox"
-                              class="checkbox"
-                              [checked]="has(role.code, permission.code)"
-                              [disabled]="cellLock(role.code, permission.code) !== null"
-                              [attr.aria-label]="permission.code + ' para ' + role.code"
-                              (change)="
-                                toggle(role.code, permission.code, $any($event.target).checked)
-                              "
-                            />
-                            <span class="check-box" aria-hidden="true">
-                              <medsys-icon name="check" [size]="12" />
-                            </span>
-                          </label>
-                        } @else if (has(role.code, permission.code)) {
-                          <medsys-icon name="check" [size]="14" />
-                          <span class="sr-only">Sí</span>
-                        } @else {
-                          <span class="sr-only">No</span>
-                        }
-                      </td>
-                    }
-                  </tr>
+                } @else if (showOtherAreas()) {
+                  <button
+                    type="button"
+                    class="access-show-more access-other-areas"
+                    (click)="showOtherAreas.set(false)"
+                  >
+                    Mostrar solo las áreas con acceso
+                  </button>
                 }
               }
-            </tbody>
+            </section>
+          } @else {
+            <medsys-role-comparison
+              [roles]="ordered()"
+              [areas]="areas()"
+              [grants]="draft()"
+              [selectedRole]="selected()?.code ?? null"
+            />
           }
-        </table>
+        }
+        @if (changeCount() > 0) {
+          <div class="access-pending" role="status">
+            <span
+              ><span class="access-draft-dot"></span
+              ><strong
+                >{{ changeCount() }}
+                {{ changeCount() === 1 ? 'cambio sin guardar' : 'cambios sin guardar' }}</strong
+              >
+              @if (changes().length > 1) {
+                <small>en {{ changes().length }} roles</small>
+              }
+            </span>
+            <div>
+              <button type="button" class="btn btn-ghost" [disabled]="saving()" (click)="discard()">
+                Descartar</button
+              ><button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="saving()"
+                (click)="confirmingSave.set(true)"
+              >
+                Revisar y guardar
+              </button>
+            </div>
+          </div>
+        }
       </div>
-    }
-
-    @if (changeCount() > 0) {
-      <div class="matrix-pending" role="status">
-        <span class="grow">
-          <strong>{{ changeCount() }} {{ changeCount() === 1 ? 'cambio' : 'cambios' }}</strong>
-          sin guardar en {{ changes().length }} {{ changes().length === 1 ? 'rol' : 'roles' }}.
-        </span>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="discard()">Descartar</button>
-        <button type="button" class="btn btn-primary btn-sm" (click)="confirmingSave.set(true)">
-          Guardar cambios
-        </button>
-      </div>
-    }
-  </div>
+    </div>
+  }
 </div>
 
-<medsys-confirm-dialog
+<medsys-new-role-sheet
+  [open]="creating()"
+  [existingRoles]="ordered()"
+  (closed)="creating.set(false)"
+  (saved)="roles.reload()"
+/>
+<medsys-dialog
   [open]="confirmingSave()"
-  heading="Guardar la matriz"
-  description="Cada rol modificado recibe su nuevo conjunto de permisos. Quitar un permiso cierra las sesiones de las cuentas con ese rol; lo agregado llega en su próximo inicio de sesión."
-  confirmLabel="Guardar cambios"
-  [danger]="false"
-  [pending]="saving()"
-  (confirmed)="save()"
-  (cancelled)="confirmingSave.set(false)"
+  heading="Revisar los cambios"
+  description="Estos cambios se aplicarán a las personas que tengan cada rol."
+  [width]="620"
+  (closed)="!saving() && confirmingSave.set(false)"
 >
-  <ul class="stack gap-1">
-    @for (line of saveSummary(); track line) {
-      <li class="t-body">{{ line }}</li>
+  <div class="access-review">
+    <p>Si retiras un acceso, las personas afectadas deberán volver a iniciar sesión.</p>
+    @for (change of review(); track change.name) {
+      <section>
+        <h3>{{ change.name }}</h3>
+        @for (label of change.added; track label) {
+          <p class="is-added">
+            <medsys-icon name="plus" [size]="15" /><span
+              ><strong>Permitir</strong> {{ label }}</span
+            >
+          </p>
+        }
+        @for (label of change.removed; track label) {
+          <p class="is-removed">
+            <medsys-icon name="minus" [size]="15" /><span
+              ><strong>Retirar</strong> {{ label }}</span
+            >
+          </p>
+        }
+      </section>
     }
-  </ul>
-</medsys-confirm-dialog>
+  </div>
+  <ng-container dialogFooter
+    ><button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="saving()"
+      (click)="confirmingSave.set(false)"
+    >
+      Seguir editando</button
+    ><button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar accesos' }}
+    </button></ng-container
+  >
+</medsys-dialog>
+<medsys-dialog
+  [open]="leaving()"
+  heading="Tienes cambios sin guardar"
+  description="Puedes seguir revisándolos o descartarlos antes de salir."
+  [width]="460"
+  (closed)="resolveLeave(false)"
+  ><ng-container dialogFooter
+    ><button type="button" class="btn btn-secondary" (click)="resolveLeave(false)">
+      Seguir editando</button
+    ><button type="button" class="btn btn-danger" (click)="resolveLeave(true)">
+      Descartar y salir
+    </button></ng-container
+  ></medsys-dialog
+>

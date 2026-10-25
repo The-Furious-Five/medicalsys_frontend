@@ -59,7 +59,10 @@ export class CommandPalette {
   private readonly patientEntries = signal<readonly Entry[]>([]);
   private debounce = 0;
 
-  private readonly offerings = this.tenancy.offeringsResource();
+  private readonly offerings = this.tenancy.offeringsResource(
+    undefined,
+    computed(() => this.open() && can.viewOfferings(this.session.permissions())),
+  );
 
   /** Lista cruda, en el orden en que se descubren los resultados. */
   private readonly rawEntries = computed<readonly Entry[]>(() => {

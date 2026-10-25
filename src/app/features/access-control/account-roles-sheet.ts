@@ -9,23 +9,23 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthSession } from '../../core/auth/auth-session';
 import { can } from '../../core/auth/permissions';
 import { formatDate, todayIso } from '../../core/format/format';
-import { describeFailure } from '../../core/http/api-error';
 import { ACCOUNT_STATUS, SECURITY_LEVEL, label } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
 import { Icon } from '../../core/ui/icon';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { DateField } from '../../shared/date-field';
 import { Dialog } from '../../shared/dialog';
-import { Notice } from '../../shared/notice';
 import { Select } from '../../shared/select';
 import { StatusChip } from '../../shared/status-chip';
 import { IdentityAccount, Role, SECURITY_LEVELS, SecurityLevel } from './access-control.models';
 import { AccessControlService } from './access-control.service';
 import { orderRoles } from './access-matrix';
+import { accessAreas, accessFailure, rolePurpose, roleName } from './access-presentation';
 import {
   ACCOUNT_TONES,
   ASSIGNMENT_STATE,
@@ -47,23 +47,10 @@ import {
 @Component({
   selector: 'medsys-account-roles-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    Dialog,
-    ConfirmDialog,
-    Notice,
-    Select,
-    DateField,
-    StatusChip,
-    ReactiveFormsModule,
-    Icon,
-  ],
+  host: { class: 'access-feature' },
+  imports: [Dialog, ConfirmDialog, Select, DateField, StatusChip, ReactiveFormsModule, Icon],
   templateUrl: './account-roles-sheet.html',
-  styles: `
-    .assignment {
-      padding: var(--s-2) 0;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-  `,
+  styleUrl: './access-form.scss',
 })
 export class AccountRolesSheet {
   readonly account = input<IdentityAccount | null>(null);
@@ -78,6 +65,21 @@ export class AccountRolesSheet {
   private readonly fb = inject(FormBuilder);
 
   protected readonly statuses = ACCOUNT_STATUS;
+  protected readonly purpose = rolePurpose;
+  protected readonly adding = signal(false);
+  protected readonly showAuthorization = signal(false);
+  protected readonly ownAccount = computed(
+    () => this.current()?.publicId === this.session.user()?.publicId,
+  );
+  protected readonly hasProtectedRoles = computed(() =>
+    this.roles().some(
+      (role) =>
+        role.accessModel === 'MAC' &&
+        this.current()?.roles.some(
+          (assignment) => assignment.active && assignment.role === role.code,
+        ),
+    ),
+  );
   protected readonly statusTones = ACCOUNT_TONES;
   protected readonly states = ASSIGNMENT_STATE;
   protected readonly tones = assignmentTone;
@@ -134,7 +136,7 @@ export class AccountRolesSheet {
       .sort((a, b) => a.role.localeCompare(b.role) || a.validFrom.localeCompare(b.validFrom))
       .map((assignment) => ({
         ...assignment,
-        name: names.get(assignment.role) ?? assignment.role,
+        name: names.get(assignment.role) ?? roleName(assignment.role),
         state: assignmentState(assignment, this.today),
         validity: this.validity(assignment.validFrom, assignment.validUntil),
         revocable: this.manageable().has(assignment.role),
@@ -150,7 +152,7 @@ export class AccountRolesSheet {
     const held = new Set((this.current()?.roles ?? []).map((assignment) => assignment.role));
     return orderRoles(this.roles())
       .filter((role) => role.active && this.manageable().has(role.code) && !held.has(role.code))
-      .map((role) => ({ value: role.code, label: `${role.name} · ${role.code}` }));
+      .map((role) => ({ value: role.code, label: role.name }));
   });
 
   protected readonly form = this.fb.nonNullable.group({
@@ -158,11 +160,30 @@ export class AccountRolesSheet {
     validFrom: [this.today, [Validators.required]],
     validUntil: [''],
   });
+  private readonly chosenCode = toSignal(this.form.controls.role.valueChanges, {
+    initialValue: '',
+  });
+  protected readonly selectedRole = computed(
+    () => this.roles().find((role) => role.code === this.chosenCode()) ?? null,
+  );
+  protected readonly previewAreas = computed(() =>
+    accessAreas(this.selectedRole()?.permissions ?? []).map((area) => area.name),
+  );
+  protected readonly needsAuthorization = computed(() => {
+    const role = this.selectedRole();
+    const level = SECURITY_LEVELS.indexOf(this.current()?.clearance ?? 'INTERNAL');
+    return (
+      role?.accessModel === 'MAC' &&
+      role.permissions.some(
+        (permission) => SECURITY_LEVELS.indexOf(permission.classification) > level,
+      )
+    );
+  });
   protected readonly pending = signal(false);
   protected readonly failure = signal<unknown>(null);
   protected readonly failureMessage = computed(() => {
     const failure = this.failure();
-    return failure === null ? null : describeFailure(failure).message;
+    return failure === null ? null : accessFailure(failure, this.roles());
   });
   protected readonly datesError = signal<string | null>(null);
 
@@ -176,6 +197,8 @@ export class AccountRolesSheet {
         this.form.reset({ role: '', validFrom: this.today, validUntil: '' });
         this.failure.set(null);
         this.datesError.set(null);
+        this.adding.set(false);
+        this.showAuthorization.set(false);
       }
     });
   }
@@ -212,8 +235,11 @@ export class AccountRolesSheet {
           validUntil: value.validUntil || null,
         }),
       );
-      this.toasts.notify(`${account.fullName} recibió el rol ${value.role}.`);
+      this.toasts.notify(
+        `${account.fullName} recibió el rol ${roleName(value.role, this.roles())}.`,
+      );
       this.form.reset({ role: '', validFrom: this.today, validUntil: '' });
+      this.adding.set(false);
       this.changed.emit();
     } catch (failure) {
       this.failure.set(failure);
@@ -251,7 +277,7 @@ export class AccountRolesSheet {
     this.failure.set(null);
     try {
       this.current.set(await this.access.revokeRole(account.publicId, target.role));
-      this.toasts.notify(`${account.fullName} ya no tiene el rol ${target.role}.`);
+      this.toasts.notify(`${account.fullName} ya no tiene el rol ${target.name}.`);
       this.changed.emit();
     } catch (failure) {
       this.failure.set(failure);

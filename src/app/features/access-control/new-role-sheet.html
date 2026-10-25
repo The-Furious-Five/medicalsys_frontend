@@ -1,86 +1,76 @@
 <medsys-dialog
   [open]="open()"
   variant="sheet"
-  [width]="520"
-  heading="Nuevo rol"
-  description="El rol nace activo, sin permisos y sin delegar. Los permisos se marcan después en la matriz y quién puede asignarlo, en su ficha."
-  (closed)="closed.emit()"
+  [width]="500"
+  heading="Crear un rol"
+  description="Dale un nombre que el personal reconozca. Después elegirás sus funciones."
+  (closed)="!pending() && closed.emit()"
 >
-  <form class="stack gap-4" [formGroup]="form" novalidate (ngSubmit)="submit()">
-    @if (otherError(); as message) {
-      <medsys-notice tone="err">{{ message }}</medsys-notice>
+  <form
+    id="create-role-form"
+    class="access-form"
+    [formGroup]="form"
+    novalidate
+    (ngSubmit)="submit()"
+  >
+    @if (failure(); as message) {
+      <div class="access-form-error" role="alert">{{ message }}</div>
     }
-
     <div class="field">
-      <label class="field-label" for="role-code">Código</label>
-      <input
-        id="role-code"
+      <label class="field-label" for="new-role-name">Nombre del rol</label
+      ><input
         class="input"
-        autocomplete="off"
-        spellcheck="false"
-        placeholder="AUDITOR"
-        formControlName="code"
-        (input)="onCode($event)"
-        [attr.aria-invalid]="errorFor('code') !== null"
-      />
-      <span class="field-hint">
-        Viaja en el token de cada sesión, así que no se puede cambiar después.
-      </span>
-      @if (errorFor('code'); as message) {
-        <span class="field-error" role="alert">{{ message }}</span>
-      }
-    </div>
-
-    <div class="field">
-      <label class="field-label" for="role-name">Nombre</label>
-      <input
-        id="role-name"
-        class="input"
-        placeholder="Auditor"
+        id="new-role-name"
         formControlName="name"
+        placeholder="Por ejemplo, Coordinación de enfermería"
+        maxlength="80"
         [attr.aria-invalid]="errorFor('name') !== null"
+        (input)="duplicate.set(false)"
       />
       @if (errorFor('name'); as message) {
         <span class="field-error" role="alert">{{ message }}</span>
       }
     </div>
-
     <div class="field">
-      <label class="field-label" for="role-description">
-        Descripción <span class="field-optional">(opcional)</span>
-      </label>
-      <textarea
-        id="role-description"
+      <label class="field-label" for="new-role-description"
+        >Qué función cumple <span class="field-optional">(opcional)</span></label
+      ><textarea
         class="textarea"
-        rows="3"
-        placeholder="Qué función de trabajo cubre"
+        id="new-role-description"
         formControlName="description"
+        rows="3"
+        maxlength="300"
+        placeholder="Una descripción breve de su trabajo."
         [attr.aria-invalid]="errorFor('description') !== null"
       ></textarea>
       @if (errorFor('description'); as message) {
         <span class="field-error" role="alert">{{ message }}</span>
       }
     </div>
-
-    <div class="field">
-      <label class="field-label" for="role-scope">Alcance</label>
-      <medsys-select
-        formControlName="scope"
-        [options]="scopes"
-        [controlId]="'role-scope'"
-        [allowEmpty]="false"
-      />
-      <span class="field-hint">
-        Un rol de organización trabaja dentro de un centro. Uno de plataforma opera sobre todos y
-        solo lo asigna otro rol de plataforma.
-      </span>
-    </div>
+    @if (canChooseScope()) {
+      <details class="access-progressive">
+        <summary>Dónde se puede utilizar</summary>
+        <div class="field">
+          <label class="field-label" for="new-role-scope">Disponibilidad</label
+          ><medsys-select
+            controlId="new-role-scope"
+            formControlName="scope"
+            [options]="scopes"
+            [allowEmpty]="false"
+          />
+        </div>
+      </details>
+    }
+    <p class="access-form-note">
+      El rol se crea sin accesos. Nadie podrá realizar funciones nuevas hasta que las elijas y
+      guardes.
+    </p>
   </form>
-
-  <ng-container dialogFooter>
-    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Cancelar</button>
-    <button type="button" class="btn btn-primary" [disabled]="pending()" (click)="submit()">
-      Crear rol
-    </button>
-  </ng-container>
+  <ng-container dialogFooter
+    ><button type="button" class="btn btn-secondary" [disabled]="pending()" (click)="closed.emit()">
+      Cancelar</button
+    ><button type="submit" form="create-role-form" class="btn btn-primary" [disabled]="pending()">
+      {{ pending() ? 'Creando…' : 'Crear y elegir accesos' }}
+    </button></ng-container
+  >
 </medsys-dialog>
