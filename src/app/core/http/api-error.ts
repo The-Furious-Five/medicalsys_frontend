@@ -152,6 +152,16 @@ export function describeFailure(failure: unknown): FailureDetail {
       icon: 'lock',
     };
   }
+  // Contraseña o código incorrectos (IAM-03, IAM-07): se corrige al reintentar, no es un fallo del servicio.
+  if (failure.status === 401) {
+    return {
+      ...base,
+      title: 'No se pudo verificar',
+      message: sentence(message),
+      retryable: false,
+      icon: 'lock',
+    };
+  }
   if (failure.status === 403 && code === 'PASSWORD_CHANGE_REQUIRED') {
     return {
       ...base,

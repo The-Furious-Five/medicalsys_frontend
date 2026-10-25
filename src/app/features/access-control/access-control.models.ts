@@ -74,6 +74,8 @@ export interface IdentityAccount {
   readonly publicId: string;
   /** User ID estándar MS-AA-NNNNN (IAM-04): único, inmutable, nunca reutilizado. */
   readonly userCode: string;
+  /** Usuario de inicio de sesión (IAM-07): nombre.apellido.inicial, generado al crear y no editable. */
+  readonly username: string;
   readonly organizationPublicId: string | null;
   readonly email: string;
   readonly fullName: string;
@@ -84,10 +86,15 @@ export interface IdentityAccount {
   readonly roles: readonly RoleAssignment[];
 }
 
-/** Alta (IAM-04): sin contraseña; el servicio genera una temporal de un solo uso. */
+/**
+ * Alta (IAM-04): sin contraseña; el servicio genera una temporal de un solo uso. Nombres y apellidos
+ * van por separado porque de ellos sale el usuario (IAM-07).
+ */
 export interface CreateAccountInput {
   readonly email: string;
-  readonly fullName: string;
+  readonly givenNames: string;
+  readonly firstSurname: string;
+  readonly secondSurname: string | null;
   readonly phoneE164: string | null;
   readonly activateImmediately: boolean;
   readonly roles: readonly AssignRoleInput[];
@@ -108,6 +115,7 @@ export interface CreatedAccount extends IdentityAccount {
 export interface TemporaryPassword {
   readonly publicId: string;
   readonly userCode: string;
+  readonly username: string;
   readonly temporaryPassword: string;
 }
 

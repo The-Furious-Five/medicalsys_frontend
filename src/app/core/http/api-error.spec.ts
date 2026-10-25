@@ -111,4 +111,13 @@ describe('describeFailure con los errores de ms-identidad (IAM-03)', () => {
     expect(detail.title).toBe('Cambio de contraseña requerido');
     expect(detail.message).not.toContain('Tu rol');
   });
+
+  it('un código o una contraseña incorrectos no se presentan como falla del servicio', () => {
+    const detail = describeFailure(
+      problem(401, 'El codigo no es valido o ya se uso.', 'MFA_INVALID_CODE'),
+    );
+    expect(detail.title).toBe('No se pudo verificar');
+    expect(detail.message).toBe('El codigo no es valido o ya se uso.');
+    expect(detail.message).not.toContain('soporte');
+  });
 });

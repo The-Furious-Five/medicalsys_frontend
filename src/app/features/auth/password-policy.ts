@@ -18,7 +18,9 @@ export const POLICY_SERVER_RULES: readonly string[] = [
   'Vence a los 90 días; Keycloak te pedirá cambiarla.',
 ];
 
-export function passwordRules(password: string, email: string): readonly PolicyRule[] {
+/** `username` es el usuario de inicio de sesión (IAM-07): la contraseña no puede contenerlo. */
+export function passwordRules(password: string, username: string): readonly PolicyRule[] {
+  const account = username.trim().toLowerCase();
   const length = [...password].length;
   return [
     { id: 'length', label: 'Entre 12 y 64 caracteres', met: length >= 12 && length <= 64 },
@@ -31,13 +33,13 @@ export function passwordRules(password: string, email: string): readonly PolicyR
       met: /[^\p{L}\d]/u.test(password),
     },
     {
-      id: 'email',
-      label: 'Distinta de tu correo',
-      met: password.length > 0 && password.trim().toLowerCase() !== email.trim().toLowerCase(),
+      id: 'username',
+      label: 'Que no contenga tu usuario',
+      met: password.length > 0 && (account === '' || !password.toLowerCase().includes(account)),
     },
   ];
 }
 
-export function meetsPolicy(password: string, email: string): boolean {
-  return passwordRules(password, email).every((rule) => rule.met);
+export function meetsPolicy(password: string, username: string): boolean {
+  return passwordRules(password, username).every((rule) => rule.met);
 }

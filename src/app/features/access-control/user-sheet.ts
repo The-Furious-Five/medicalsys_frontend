@@ -47,8 +47,8 @@ const CONFIRMATIONS: Record<
     danger: false,
   },
   reset: {
-    heading: 'Reiniciar la contraseña',
-    description: `Se emite una contraseña temporal de un solo uso y se cierran las sesiones abiertas. La persona deberá definir la suya al entrar. ${VERIFY_IDENTITY}`,
+    heading: 'Reiniciar el acceso',
+    description: `Se emite una contraseña temporal de un solo uso, se borra el segundo factor y se cierran las sesiones abiertas. Al entrar, la persona define su contraseña y vuelve a registrar el QR (por ejemplo, si cambió de teléfono). ${VERIFY_IDENTITY}`,
     label: 'Ya verifiqué, reiniciar',
     danger: true,
   },
@@ -128,6 +128,9 @@ export class UserSheet {
 
   protected readonly form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.maxLength(180)]],
+    givenNames: ['', [Validators.required, Validators.maxLength(80)]],
+    firstSurname: ['', [Validators.required, Validators.maxLength(60)]],
+    secondSurname: ['', [Validators.maxLength(60)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(160)]],
     phoneE164: ['', [Validators.pattern(E164)]],
     role: [''],
@@ -148,11 +151,27 @@ export class UserSheet {
         const account = this.account();
         this.form.reset({
           fullName: account?.fullName ?? '',
+          givenNames: '',
+          firstSurname: '',
+          secondSurname: '',
           email: account?.email ?? '',
           phoneE164: account?.phoneE164 ?? '',
           role: '',
           activate: true,
         });
+        // El alta pide nombres y apellidos por separado; la edición, el nombre completo.
+        for (const name of ['givenNames', 'firstSurname', 'secondSurname'] as const) {
+          if (this.creating()) {
+            this.form.controls[name].enable();
+          } else {
+            this.form.controls[name].disable();
+          }
+        }
+        if (this.creating()) {
+          this.form.controls.fullName.disable();
+        } else {
+          this.form.controls.fullName.enable();
+        }
         this.failure.set(null);
         this.confirming.set(null);
       }
@@ -163,7 +182,9 @@ export class UserSheet {
     return this.creating() ? 'Nueva cuenta' : (this.current()?.fullName ?? 'Cuenta');
   }
 
-  protected fieldError(name: 'fullName' | 'email' | 'phoneE164'): string | null {
+  protected fieldError(
+    name: 'fullName' | 'givenNames' | 'firstSurname' | 'secondSurname' | 'email' | 'phoneE164',
+  ): string | null {
     const control = this.form.controls[name];
     if (!control.touched || control.valid) {
       return null;
@@ -193,7 +214,9 @@ export class UserSheet {
       if (this.creating()) {
         const created = await this.access.createAccount({
           email: value.email.trim(),
-          fullName: value.fullName.trim(),
+          givenNames: value.givenNames.trim(),
+          firstSurname: value.firstSurname.trim(),
+          secondSurname: value.secondSurname.trim() === '' ? null : value.secondSurname.trim(),
           phoneE164: phone,
           activateImmediately: value.activate,
           roles: value.role ? [{ role: value.role, validFrom: todayIso(), validUntil: null }] : [],
@@ -204,6 +227,7 @@ export class UserSheet {
           this.issued.emit({
             fullName: created.fullName,
             userCode: created.userCode,
+            username: created.username,
             password: created.temporaryPassword,
             reason: 'alta',
           });
@@ -248,6 +272,7 @@ export class UserSheet {
           this.issued.emit({
             fullName: account.fullName,
             userCode: issued.userCode,
+            username: issued.username,
             password: issued.temporaryPassword,
             reason: 'reinicio',
           });

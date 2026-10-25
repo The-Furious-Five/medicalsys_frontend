@@ -15,6 +15,8 @@
       <div class="row gap-2 wrap">
         <span class="t-sec">User ID</span>
         <span class="chip chip-neutral t-num">{{ item.userCode }}</span>
+        <span class="t-sec">Usuario</span>
+        <span class="chip chip-neutral t-num">{{ item.username }}</span>
         <span class="t-sec">Estado</span>
         <medsys-status-chip [value]="item.status" [dictionary]="statuses" [tones]="statusTones" />
       </div>
@@ -31,19 +33,66 @@
     <form class="stack gap-3" [formGroup]="form" novalidate (ngSubmit)="save()">
       <h3 class="t-section">Datos de la cuenta</h3>
       <fieldset class="stack gap-3" [disabled]="!creating() && (!canUpdate() || lock() !== null)">
-        <div class="field">
-          <label class="field-label" for="user-name">Nombre completo</label>
-          <input
-            id="user-name"
-            class="input"
-            formControlName="fullName"
-            autocomplete="off"
-            [attr.aria-invalid]="fieldError('fullName') ? 'true' : null"
-          />
-          @if (fieldError('fullName'); as message) {
-            <span class="field-error">{{ message }}</span>
-          }
-        </div>
+        @if (creating()) {
+          <div class="field">
+            <label class="field-label" for="user-given">Nombres</label>
+            <input
+              id="user-given"
+              class="input"
+              formControlName="givenNames"
+              autocomplete="off"
+              [attr.aria-invalid]="fieldError('givenNames') ? 'true' : null"
+            />
+            @if (fieldError('givenNames'); as message) {
+              <span class="field-error">{{ message }}</span>
+            }
+          </div>
+          <div class="row gap-3 wrap">
+            <div class="field grow">
+              <label class="field-label" for="user-surname">Primer apellido</label>
+              <input
+                id="user-surname"
+                class="input"
+                formControlName="firstSurname"
+                autocomplete="off"
+                [attr.aria-invalid]="fieldError('firstSurname') ? 'true' : null"
+              />
+              @if (fieldError('firstSurname'); as message) {
+                <span class="field-error">{{ message }}</span>
+              }
+            </div>
+            <div class="field grow">
+              <label class="field-label" for="user-second-surname">
+                Segundo apellido <span class="field-optional">(opcional)</span>
+              </label>
+              <input
+                id="user-second-surname"
+                class="input"
+                formControlName="secondSurname"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <span class="field-hint"
+            >El usuario para iniciar sesión se genera con estos datos (nombre.apellido.inicial del
+            segundo apellido) y no se puede cambiar después.</span
+          >
+        } @else {
+          <div class="field">
+            <label class="field-label" for="user-name">Nombre completo</label>
+            <input
+              id="user-name"
+              class="input"
+              formControlName="fullName"
+              autocomplete="off"
+              [attr.aria-invalid]="fieldError('fullName') ? 'true' : null"
+            />
+            @if (fieldError('fullName'); as message) {
+              <span class="field-error">{{ message }}</span>
+            }
+            <span class="field-hint">Cambiar el nombre no cambia el usuario.</span>
+          </div>
+        }
         <div class="field">
           <label class="field-label" for="user-email">Correo</label>
           <input
@@ -59,7 +108,7 @@
             <span class="field-error">{{ message }}</span>
           }
           <span class="field-hint"
-            >Con este correo inicia sesión. El User ID no cambia aunque cambie el correo.</span
+            >Para avisos y notificaciones; no sirve para iniciar sesión.</span
           >
         </div>
         <div class="field">
@@ -132,7 +181,7 @@
                 class="btn btn-secondary btn-sm"
                 (click)="confirming.set('reset')"
               >
-                <medsys-icon name="refresh" [size]="14" /> Reiniciar contraseña
+                <medsys-icon name="refresh" [size]="14" /> Reiniciar acceso
               </button>
             }
             @if (item.status !== 'INACTIVE' && canChangeStatus() && !own()) {

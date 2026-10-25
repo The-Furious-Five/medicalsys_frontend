@@ -4,8 +4,12 @@ import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../config/api-url';
 import { AuthSession } from './auth-session';
-import { LoginResponse } from './authenticated-user';
+import { LoginResponse, MfaChallenge, MfaEnrollment } from './authenticated-user';
 
+/**
+ * Inicio de sesión en dos pasos (IAM-03, IAM-07): usuario y contraseña devuelven un desafío; la
+ * sesión recién se abre con el código de la aplicación autenticadora.
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -13,26 +17,51 @@ export class AuthService {
   private readonly session = inject(AuthSession);
   private readonly router = inject(Router);
 
-  async login(email: string, password: string): Promise<void> {
+  /** Primer paso. Una contraseña válida no abre sesión: responde qué falta del segundo factor. */
+  login(username: string, password: string): Promise<MfaChallenge> {
+    return firstValueFrom(
+      this.http.post<MfaChallenge>(`${this.baseUrl}/identity/auth/login`, { username, password }),
+    );
+  }
+
+  /** Primer ingreso: QR y secreto para registrar la aplicación autenticadora. */
+  startMfaEnrollment(mfaToken: string): Promise<MfaEnrollment> {
+    return firstValueFrom(
+      this.http.post<MfaEnrollment>(`${this.baseUrl}/identity/auth/mfa/enrollment`, { mfaToken }),
+    );
+  }
+
+  /** Primer ingreso: el primer código confirma el registro y abre la sesión. */
+  async activateMfa(mfaToken: string, code: string): Promise<void> {
     const response = await firstValueFrom(
-      this.http.post<LoginResponse>(`${this.baseUrl}/identity/auth/login`, { email, password }),
+      this.http.post<LoginResponse>(`${this.baseUrl}/identity/auth/mfa/activate`, {
+        mfaToken,
+        code,
+      }),
+    );
+    this.session.start(response);
+  }
+
+  async verifyMfa(mfaToken: string, code: string): Promise<void> {
+    const response = await firstValueFrom(
+      this.http.post<LoginResponse>(`${this.baseUrl}/identity/auth/mfa/verify`, { mfaToken, code }),
     );
     this.session.start(response);
   }
 
   /**
    * Primer ingreso con contraseña temporal o contraseña vencida (IAM-05): el login responde 403
-   * PASSWORD_CHANGE_REQUIRED y no hay sesión, así que la cuenta va por su correo. Keycloak valida
+   * PASSWORD_CHANGE_REQUIRED y no hay sesión, así que la cuenta va por su usuario. Keycloak valida
    * la actual y aplica la política a la nueva.
    */
   async changeExpiredPassword(
-    email: string,
+    username: string,
     currentPassword: string,
     newPassword: string,
   ): Promise<void> {
     await firstValueFrom(
       this.http.post(`${this.baseUrl}/identity/auth/change-password`, {
-        email,
+        username,
         currentPassword,
         newPassword,
       }),

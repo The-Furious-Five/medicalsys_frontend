@@ -9,33 +9,15 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MfaChallenge, MfaEnrollment } from '../../core/auth/authenticated-user';
 import { AuthService } from '../../core/auth/auth.service';
 import { describeFailure } from '../../core/http/api-error';
 import { Icon, IconName } from '../../core/ui/icon';
 import { Notice } from '../../shared/notice';
 import { POLICY_SERVER_RULES, meetsPolicy, passwordRules } from './password-policy';
-
-interface DemoAccount {
-  readonly email: string;
-  readonly role: string;
-}
-
-/** Una por rol (ISO-01): cada una ve solo los módulos que sus permisos alcanzan. */
-const DEMO_ACCOUNTS: readonly DemoAccount[] = [
-  { email: 'osi@medicalsys.demo', role: 'Oficial de Seguridad (OSI)' },
-  { email: 'admin@medicalsys.demo', role: 'Administración del centro' },
-  { email: 'doctor@medicalsys.demo', role: 'Profesional de salud' },
-  { email: 'enfermeria@medicalsys.demo', role: 'Enfermería' },
-  { email: 'laboratorio@medicalsys.demo', role: 'Laboratorio' },
-  { email: 'recepcion@medicalsys.demo', role: 'Recepción' },
-  { email: 'caja@medicalsys.demo', role: 'Facturación' },
-  { email: 'marketing@medicalsys.demo', role: 'Marketing' },
-  { email: 'auditor@medicalsys.demo', role: 'Auditoría interna' },
-];
-// Ninguna contraseña va en el código: este archivo viaja completo al navegador. Las cuentas demo
-// no comparten contraseña; el OSI reinicia la que se va a usar y la persona elige la suya.
 
 interface BrandPoint {
   readonly icon: IconName;
@@ -62,11 +44,25 @@ const BRAND_POINTS: readonly BrandPoint[] = [
   },
 ];
 
-/** Acceso centrado con presentación de marca y formulario adaptable a móvil. */
+/**
+ * - `login`: usuario y contraseña.
+ * - `change`: la contraseña es temporal o venció (IAM-05).
+ * - `enroll`: primer ingreso, registro del QR en la aplicación autenticadora (IAM-07).
+ * - `verify`: código de 6 dígitos de la aplicación.
+ */
+type Step = 'login' | 'change' | 'enroll' | 'verify';
+
+const CODE_LENGTH = 6;
+
+/**
+ * Acceso con usuario, contraseña y segundo factor TOTP obligatorio. No ofrece cuentas de ejemplo ni
+ * contraseñas: la pantalla es la misma que en producción. Quien no tiene acceso lo pide al
+ * administrador de su centro, que le entrega su usuario y una contraseña temporal.
+ */
 @Component({
   selector: 'medsys-login-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Icon, Notice],
+  imports: [FormsModule, NgTemplateOutlet, Icon, Notice],
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',
 })
@@ -76,57 +72,53 @@ export class LoginPage {
   private readonly route = inject(ActivatedRoute);
   private readonly injector = inject(Injector);
 
-  protected readonly demoAccounts = DEMO_ACCOUNTS;
   protected readonly brandPoints = BRAND_POINTS;
-  protected readonly email = signal('');
+  protected readonly codeLength = CODE_LENGTH;
+  protected readonly step = signal<Step>('login');
+  protected readonly username = signal('');
   protected readonly password = signal('');
   protected readonly passwordVisible = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly locked = signal(false);
   protected readonly pending = signal(false);
 
-  /**
-   * Primer ingreso con contraseña temporal o contraseña vencida (IAM-05): el servicio responde
-   * PASSWORD_CHANGE_REQUIRED y, en vez de un error, se pide la nueva aquí mismo.
-   */
-  protected readonly mode = signal<'login' | 'change'>('login');
   protected readonly newPassword = signal('');
   protected readonly confirmation = signal('');
   protected readonly serverRules = POLICY_SERVER_RULES;
-  protected readonly rules = computed(() => passwordRules(this.newPassword(), this.email()));
+  protected readonly rules = computed(() => passwordRules(this.newPassword(), this.username()));
   protected readonly mismatch = computed(
     () => this.confirmation().length > 0 && this.confirmation() !== this.newPassword(),
   );
 
-  private readonly emailField = viewChild<ElementRef<HTMLInputElement>>('emailField');
-  private readonly passwordField = viewChild<ElementRef<HTMLInputElement>>('passwordField');
+  /** Desafío del segundo factor: token opaco de un solo uso, vence a los pocos minutos. */
+  private mfaToken: string | null = null;
+  protected readonly enrollment = signal<MfaEnrollment | null>(null);
+  protected readonly code = signal('');
+  protected readonly secretCopied = signal(false);
+
+  private readonly usernameField = viewChild<ElementRef<HTMLInputElement>>('usernameField');
   private readonly newPasswordField = viewChild<ElementRef<HTMLInputElement>>('newPasswordField');
+  private readonly codeField = viewChild<ElementRef<HTMLInputElement>>('codeField');
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
     this.error.set(null);
-    if (!this.email().trim() || !this.password()) {
+    this.locked.set(false);
+    if (!this.username().trim() || !this.password()) {
       // Se valida aquí: un envío vacío solo devolvería el mensaje técnico de validación del servicio.
-      this.error.set('Ingresa tu correo y tu contraseña.');
+      this.error.set('Ingresa tu usuario y tu contraseña.');
       return;
     }
     this.pending.set(true);
     try {
-      await this.auth.login(this.email().trim(), this.password());
-      // Se recupera la ruta que el usuario intentaba abrir antes del acceso.
-      const destination = this.route.snapshot.queryParamMap.get('destino') ?? '/';
-      await this.router.navigateByUrl(destination);
+      await this.continueWith(await this.auth.login(this.username().trim(), this.password()));
     } catch (failure) {
       const detail = describeFailure(failure);
       this.pending.set(false);
       if (detail.code === 'PASSWORD_CHANGE_REQUIRED') {
-        this.mode.set('change');
         this.newPassword.set('');
         this.confirmation.set('');
-        // El formulario de cambio recién se dibuja en el próximo render: el foco espera a ese momento.
-        afterNextRender(() => this.newPasswordField()?.nativeElement.focus(), {
-          injector: this.injector,
-        });
+        this.goTo('change', () => this.newPasswordField()?.nativeElement.focus());
         return;
       }
       this.locked.set(detail.status === 423);
@@ -137,7 +129,7 @@ export class LoginPage {
   protected async submitChange(event: Event): Promise<void> {
     event.preventDefault();
     this.error.set(null);
-    if (!meetsPolicy(this.newPassword(), this.email())) {
+    if (!meetsPolicy(this.newPassword(), this.username())) {
       this.error.set('La nueva contraseña todavía no cumple todas las reglas de la lista.');
       return;
     }
@@ -148,31 +140,98 @@ export class LoginPage {
     this.pending.set(true);
     try {
       await this.auth.changeExpiredPassword(
-        this.email().trim(),
+        this.username().trim(),
         this.password(),
         this.newPassword(),
       );
-      await this.auth.login(this.email().trim(), this.newPassword());
-      const destination = this.route.snapshot.queryParamMap.get('destino') ?? '/';
-      await this.router.navigateByUrl(destination);
+      // La temporal ya no sirve: el resto del ingreso sigue con la nueva.
+      this.password.set(this.newPassword());
+      await this.continueWith(await this.auth.login(this.username().trim(), this.newPassword()));
     } catch (failure) {
       this.error.set(describeFailure(failure).message);
       this.pending.set(false);
     }
   }
 
-  protected backToLogin(): void {
-    this.mode.set('login');
-    this.password.set('');
-    this.error.set(null);
+  /** Solo dígitos, como máximo seis: así se puede pegar el código con espacios. */
+  protected onCodeInput(value: string): void {
+    this.code.set(value.replace(/\D/g, '').slice(0, CODE_LENGTH));
   }
 
-  /** Completa el correo de la cuenta demo; la contraseña la escribe la persona. */
-  protected useDemoAccount(account: DemoAccount): void {
-    this.email.set(account.email);
+  protected async submitCode(event: Event): Promise<void> {
+    event.preventDefault();
+    this.error.set(null);
+    if (this.code().length !== CODE_LENGTH || this.mfaToken === null) {
+      this.error.set('Escribe los 6 dígitos que muestra tu aplicación autenticadora.');
+      return;
+    }
+    this.pending.set(true);
+    try {
+      if (this.step() === 'enroll') {
+        await this.auth.activateMfa(this.mfaToken, this.code());
+      } else {
+        await this.auth.verifyMfa(this.mfaToken, this.code());
+      }
+      this.mfaToken = null;
+      // Se recupera la ruta que el usuario intentaba abrir antes del acceso.
+      const destination = this.route.snapshot.queryParamMap.get('destino') ?? '/';
+      await this.router.navigateByUrl(destination);
+    } catch (failure) {
+      const detail = describeFailure(failure);
+      this.pending.set(false);
+      this.code.set('');
+      if (detail.code === 'MFA_CHALLENGE_EXPIRED' || detail.status === 423) {
+        this.backToLogin();
+        this.locked.set(detail.status === 423);
+        this.error.set(detail.message);
+        return;
+      }
+      this.error.set(detail.message);
+      this.codeField()?.nativeElement.focus();
+    }
+  }
+
+  protected async copySecret(secret: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(secret.replace(/\s/g, ''));
+      this.secretCopied.set(true);
+    } catch {
+      // Sin permiso de portapapeles queda el texto seleccionable.
+      this.secretCopied.set(false);
+    }
+  }
+
+  protected backToLogin(): void {
+    this.mfaToken = null;
+    this.enrollment.set(null);
+    this.code.set('');
     this.password.set('');
+    this.newPassword.set('');
+    this.confirmation.set('');
     this.error.set(null);
     this.locked.set(false);
-    this.passwordField()?.nativeElement.focus();
+    this.pending.set(false);
+    this.goTo('login', () => this.usernameField()?.nativeElement.focus());
+  }
+
+  /** Contraseña aceptada: falta registrar el QR o escribir el código. */
+  private async continueWith(challenge: MfaChallenge): Promise<void> {
+    this.mfaToken = challenge.mfaToken;
+    this.username.set(challenge.username);
+    this.code.set('');
+    if (challenge.status === 'MFA_ENROLLMENT_REQUIRED') {
+      this.enrollment.set(await this.auth.startMfaEnrollment(challenge.mfaToken));
+      this.secretCopied.set(false);
+      this.goTo('enroll', () => this.codeField()?.nativeElement.focus());
+    } else {
+      this.goTo('verify', () => this.codeField()?.nativeElement.focus());
+    }
+    this.pending.set(false);
+  }
+
+  /** El paso nuevo recién se dibuja en el próximo render: el foco espera a ese momento. */
+  private goTo(step: Step, focus: () => void): void {
+    this.step.set(step);
+    afterNextRender(focus, { injector: this.injector });
   }
 }

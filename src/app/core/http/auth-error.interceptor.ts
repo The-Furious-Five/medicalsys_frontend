@@ -16,9 +16,10 @@ export const authErrorInterceptor: HttpInterceptorFn = (request, next) => {
   return next(request).pipe(
     catchError((failure: unknown) => {
       const isUnauthorized = failure instanceof HttpErrorResponse && failure.status === 401;
-      // El propio login devuelve 401 con credenciales incorrectas: ahí el
-      // formulario muestra el error y no hay ninguna sesión que cerrar.
-      const isLoginAttempt = request.url.includes('/identity/auth/login');
+      // El propio login y el segundo factor devuelven 401 con credenciales o códigos incorrectos:
+      // ahí el formulario muestra el error y no hay ninguna sesión que cerrar.
+      const isLoginAttempt =
+        request.url.includes('/identity/auth/login') || request.url.includes('/identity/auth/mfa/');
 
       if (isUnauthorized && !isLoginAttempt && session.isAuthenticated()) {
         session.clear();

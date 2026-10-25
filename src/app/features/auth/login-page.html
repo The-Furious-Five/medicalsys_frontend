@@ -31,206 +31,323 @@
     </section>
 
     <main class="access-panel" aria-labelledby="login-title">
-      @if (mode() === 'login') {
-        <div class="access-form-heading">
-          <span class="access-eyebrow">Tu espacio de trabajo</span>
-          <h1 id="login-title">Bienvenido de nuevo</h1>
-          <p>Ingresa con la cuenta de tu centro médico para continuar.</p>
-        </div>
-        <form class="access-form" novalidate (submit)="submit($event)">
-          <div class="field">
-            <label class="field-label" for="login-email">Correo electrónico</label>
-            <div class="access-control">
-              <medsys-icon name="user" [size]="18" />
-              <input
-                id="login-email"
-                #emailField
-                class="input"
-                type="email"
-                name="email"
-                autocomplete="username"
-                autocapitalize="none"
-                spellcheck="false"
-                required
-                placeholder="nombre@centro.med"
-                [value]="email()"
-                (input)="email.set($any($event.target).value)"
-              />
-            </div>
+      @switch (step()) {
+        @case ('login') {
+          <div class="access-form-heading">
+            <span class="access-eyebrow">Tu espacio de trabajo</span>
+            <h1 id="login-title">Bienvenido de nuevo</h1>
+            <p>Ingresa con el usuario que te entregó tu centro médico.</p>
           </div>
-          <div class="field">
-            <label class="field-label" for="login-password">Contraseña</label>
-            <div class="access-control access-password">
-              <medsys-icon name="lock" [size]="18" />
-              <input
-                id="login-password"
-                #passwordField
-                class="input"
-                [type]="passwordVisible() ? 'text' : 'password'"
-                name="password"
-                autocomplete="current-password"
-                required
-                placeholder="Tu contraseña"
-                [value]="password()"
-                (input)="password.set($any($event.target).value)"
-              />
-              <button
-                type="button"
-                class="access-password-toggle"
-                aria-controls="login-password"
-                [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-                [attr.aria-pressed]="passwordVisible()"
-                (click)="passwordVisible.set(!passwordVisible())"
-              >
-                {{ passwordVisible() ? 'Ocultar' : 'Mostrar' }}
-              </button>
+          <form class="access-form" novalidate (submit)="submit($event)">
+            <div class="field">
+              <label class="field-label" for="login-username">Usuario</label>
+              <div class="access-control">
+                <medsys-icon name="user" [size]="18" />
+                <input
+                  id="login-username"
+                  #usernameField
+                  class="input"
+                  type="text"
+                  name="username"
+                  autocomplete="username"
+                  autocapitalize="none"
+                  spellcheck="false"
+                  required
+                  placeholder="nombre.apellido"
+                  [value]="username()"
+                  (input)="username.set($any($event.target).value)"
+                />
+              </div>
             </div>
+            <div class="field">
+              <label class="field-label" for="login-password">Contraseña</label>
+              <div class="access-control access-password">
+                <medsys-icon name="lock" [size]="18" />
+                <input
+                  id="login-password"
+                  class="input"
+                  [type]="passwordVisible() ? 'text' : 'password'"
+                  name="password"
+                  autocomplete="current-password"
+                  required
+                  placeholder="Tu contraseña"
+                  [value]="password()"
+                  (input)="password.set($any($event.target).value)"
+                />
+                <button
+                  type="button"
+                  class="access-password-toggle"
+                  aria-controls="login-password"
+                  [attr.aria-label]="
+                    passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                  "
+                  [attr.aria-pressed]="passwordVisible()"
+                  (click)="passwordVisible.set(!passwordVisible())"
+                >
+                  {{ passwordVisible() ? 'Ocultar' : 'Mostrar' }}
+                </button>
+              </div>
+            </div>
+            @if (error(); as message) {
+              <div role="alert">
+                @if (locked()) {
+                  <medsys-notice tone="err" icon="lock" heading="Cuenta bloqueada">
+                    {{ message }} Un administrador verificará tu identidad antes de desbloquearla.
+                  </medsys-notice>
+                } @else {
+                  <medsys-notice tone="err" icon="alert-triangle">{{ message }}</medsys-notice>
+                }
+              </div>
+            }
+            <button
+              type="submit"
+              class="btn btn-block access-submit"
+              [disabled]="pending()"
+              [attr.aria-busy]="pending() ? 'true' : null"
+            >
+              {{ pending() ? 'Verificando…' : 'Continuar' }}
+              <medsys-icon name="log-in" [size]="18" />
+            </button>
+          </form>
+        }
+
+        @case ('change') {
+          <div class="access-form-heading">
+            <span class="access-eyebrow">Antes de continuar</span>
+            <h1 id="login-title">Define tu nueva contraseña</h1>
+            <p>
+              La contraseña con la que ingresaste es temporal o venció. Elige una nueva para
+              <strong>{{ username() }}</strong
+              >; con ella entrarás de ahora en adelante.
+            </p>
           </div>
-          @if (error(); as message) {
-            <div role="alert">
-              @if (locked()) {
-                <medsys-notice tone="err" icon="lock" heading="Cuenta bloqueada">
-                  {{ message }} Un administrador verificará tu identidad antes de desbloquearla.
-                </medsys-notice>
-              } @else {
-                <medsys-notice tone="err" icon="alert-triangle">{{ message }}</medsys-notice>
+          <form class="access-form" novalidate (submit)="submitChange($event)">
+            <div class="field">
+              <label class="field-label" for="change-new">Nueva contraseña</label>
+              <div class="access-control access-password">
+                <medsys-icon name="lock" [size]="18" />
+                <input
+                  id="change-new"
+                  #newPasswordField
+                  class="input"
+                  [type]="passwordVisible() ? 'text' : 'password'"
+                  name="new-password"
+                  autocomplete="new-password"
+                  required
+                  aria-describedby="change-rules"
+                  [value]="newPassword()"
+                  (input)="newPassword.set($any($event.target).value)"
+                />
+                <button
+                  type="button"
+                  class="access-password-toggle"
+                  aria-controls="change-new"
+                  [attr.aria-label]="
+                    passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                  "
+                  [attr.aria-pressed]="passwordVisible()"
+                  (click)="passwordVisible.set(!passwordVisible())"
+                >
+                  {{ passwordVisible() ? 'Ocultar' : 'Mostrar' }}
+                </button>
+              </div>
+            </div>
+            <ul id="change-rules" class="access-rules" aria-label="Reglas de la contraseña">
+              @for (rule of rules(); track rule.id) {
+                <li [class.met]="rule.met">
+                  <medsys-icon [name]="rule.met ? 'check' : 'minus'" [size]="14" />
+                  <span>{{ rule.label }}</span>
+                  <span class="sr-only">{{ rule.met ? '(cumplida)' : '(pendiente)' }}</span>
+                </li>
+              }
+              @for (rule of serverRules; track rule) {
+                <li class="access-rules-note">
+                  <medsys-icon name="shield-check" [size]="14" />
+                  <span>{{ rule }}</span>
+                </li>
+              }
+            </ul>
+            <div class="field">
+              <label class="field-label" for="change-confirm">Repite la nueva contraseña</label>
+              <div class="access-control">
+                <medsys-icon name="lock" [size]="18" />
+                <input
+                  id="change-confirm"
+                  class="input"
+                  [type]="passwordVisible() ? 'text' : 'password'"
+                  name="confirm-password"
+                  autocomplete="new-password"
+                  required
+                  [attr.aria-invalid]="mismatch() ? 'true' : null"
+                  [value]="confirmation()"
+                  (input)="confirmation.set($any($event.target).value)"
+                />
+              </div>
+              @if (mismatch()) {
+                <span class="field-error">No coincide con la nueva contraseña.</span>
               }
             </div>
-          }
-          <button
-            type="submit"
-            class="btn btn-block access-submit"
-            [disabled]="pending()"
-            [attr.aria-busy]="pending() ? 'true' : null"
-          >
-            {{ pending() ? 'Entrando…' : 'Iniciar sesión' }}
-            <medsys-icon name="log-in" [size]="18" />
-          </button>
-        </form>
-      } @else {
-        <div class="access-form-heading">
-          <span class="access-eyebrow">Antes de continuar</span>
-          <h1 id="login-title">Define tu nueva contraseña</h1>
-          <p>
-            La contraseña con la que ingresaste es temporal o venció. Elige una nueva para
-            <strong>{{ email() }}</strong
-            >; con ella entrarás de ahora en adelante.
-          </p>
-        </div>
-        <form class="access-form" novalidate (submit)="submitChange($event)">
-          <div class="field">
-            <label class="field-label" for="change-new">Nueva contraseña</label>
-            <div class="access-control access-password">
-              <medsys-icon name="lock" [size]="18" />
-              <input
-                id="change-new"
-                #newPasswordField
-                class="input"
-                [type]="passwordVisible() ? 'text' : 'password'"
-                name="new-password"
-                autocomplete="new-password"
-                required
-                aria-describedby="change-rules"
-                [value]="newPassword()"
-                (input)="newPassword.set($any($event.target).value)"
-              />
-              <button
-                type="button"
-                class="access-password-toggle"
-                aria-controls="change-new"
-                [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-                [attr.aria-pressed]="passwordVisible()"
-                (click)="passwordVisible.set(!passwordVisible())"
-              >
-                {{ passwordVisible() ? 'Ocultar' : 'Mostrar' }}
-              </button>
-            </div>
-          </div>
-          <ul id="change-rules" class="access-rules" aria-label="Reglas de la contraseña">
-            @for (rule of rules(); track rule.id) {
-              <li [class.met]="rule.met">
-                <medsys-icon [name]="rule.met ? 'check' : 'minus'" [size]="14" />
-                <span>{{ rule.label }}</span>
-                <span class="sr-only">{{ rule.met ? '(cumplida)' : '(pendiente)' }}</span>
-              </li>
+            @if (error(); as message) {
+              <div role="alert">
+                <medsys-notice tone="err" icon="alert-triangle">{{ message }}</medsys-notice>
+              </div>
             }
-            @for (rule of serverRules; track rule) {
-              <li class="access-rules-note">
-                <medsys-icon name="shield-check" [size]="14" />
-                <span>{{ rule }}</span>
-              </li>
-            }
-          </ul>
-          <div class="field">
-            <label class="field-label" for="change-confirm">Repite la nueva contraseña</label>
-            <div class="access-control">
-              <medsys-icon name="lock" [size]="18" />
-              <input
-                id="change-confirm"
-                class="input"
-                [type]="passwordVisible() ? 'text' : 'password'"
-                name="confirm-password"
-                autocomplete="new-password"
-                required
-                [attr.aria-invalid]="mismatch() ? 'true' : null"
-                [value]="confirmation()"
-                (input)="confirmation.set($any($event.target).value)"
-              />
-            </div>
-            @if (mismatch()) {
-              <span class="field-error">No coincide con la nueva contraseña.</span>
-            }
-          </div>
-          @if (error(); as message) {
-            <div role="alert">
-              <medsys-notice tone="err" icon="alert-triangle">{{ message }}</medsys-notice>
-            </div>
-          }
-          <button
-            type="submit"
-            class="btn btn-block access-submit"
-            [disabled]="pending()"
-            [attr.aria-busy]="pending() ? 'true' : null"
-          >
-            {{ pending() ? 'Guardando…' : 'Guardar y entrar' }}
-            <medsys-icon name="log-in" [size]="18" />
-          </button>
-          <button type="button" class="btn btn-ghost btn-block" (click)="backToLogin()">
-            Volver al inicio de sesión
-          </button>
-        </form>
-      }
-      <p class="access-help">¿Necesitas acceso? Contacta al administrador de tu centro médico.</p>
-      <details class="access-demo">
-        <summary>
-          <span>Cuentas de demostración</span>
-          <medsys-icon name="chevron-down" [size]="16" />
-        </summary>
-        <div class="access-demo-content">
-          <p>
-            Elige un perfil para completar el correo, escribe la contraseña de demostración y pulsa
-            «Iniciar sesión».
-          </p>
-          @for (account of demoAccounts; track account.email) {
             <button
-              type="button"
-              class="access-demo-account"
+              type="submit"
+              class="btn btn-block access-submit"
               [disabled]="pending()"
-              (click)="useDemoAccount(account)"
+              [attr.aria-busy]="pending() ? 'true' : null"
             >
-              <span>
-                <strong>{{ account.role }}</strong>
-                <span>{{ account.email }}</span>
-              </span>
-              <medsys-icon name="chevron-right" [size]="16" />
+              {{ pending() ? 'Guardando…' : 'Guardar y continuar' }}
+              <medsys-icon name="log-in" [size]="18" />
             </button>
+            <button type="button" class="btn btn-ghost btn-block" (click)="backToLogin()">
+              Volver al inicio de sesión
+            </button>
+          </form>
+        }
+
+        @case ('enroll') {
+          <div class="access-form-heading">
+            <span class="access-eyebrow">Verificación en dos pasos</span>
+            <h1 id="login-title">Protege tu cuenta</h1>
+            <p>
+              Además de tu contraseña, cada ingreso pedirá un código de tu teléfono. Regístralo una
+              sola vez para <strong>{{ username() }}</strong
+              >.
+            </p>
+          </div>
+          @if (enrollment(); as setup) {
+            <form class="access-form" novalidate (submit)="submitCode($event)">
+              <ol class="access-steps">
+                <li>
+                  Instala <strong>Google Authenticator</strong> (o Microsoft Authenticator) en tu
+                  teléfono.
+                </li>
+                <li>En la aplicación, elige «Escanear un código QR» y apunta a este código.</li>
+                <li>Escribe abajo el código de 6 dígitos que aparece para {{ setup.issuer }}.</li>
+              </ol>
+              <figure class="access-qr">
+                <img
+                  [src]="setup.qrImage"
+                  width="200"
+                  height="200"
+                  [alt]="
+                    'Código QR para registrar la cuenta ' + setup.accountName + ' en tu aplicación'
+                  "
+                />
+              </figure>
+              <details class="access-manual">
+                <summary>
+                  <span>¿No puedes escanearlo? Ingresa la clave a mano</span>
+                  <medsys-icon name="chevron-down" [size]="16" />
+                </summary>
+                <div class="access-manual-content">
+                  <p>
+                    En la aplicación, elige «Ingresar una clave de configuración», escribe
+                    <strong>{{ setup.accountName }}</strong> como nombre y esta clave, basada en el
+                    tiempo:
+                  </p>
+                  <div class="access-secret">
+                    <code aria-label="Clave de configuración">{{ setup.secret }}</code>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      (click)="copySecret(setup.secret)"
+                    >
+                      <medsys-icon [name]="secretCopied() ? 'check' : 'copy'" [size]="14" />
+                      {{ secretCopied() ? 'Copiada' : 'Copiar' }}
+                    </button>
+                  </div>
+                </div>
+              </details>
+              <ng-container *ngTemplateOutlet="codeInput" />
+              <medsys-notice tone="warn" icon="shield-alert">
+                No compartas este QR ni la clave: con ellos otra persona podría generar tus códigos.
+                Si pierdes el teléfono, pide al administrador de tu centro que reinicie tu acceso.
+              </medsys-notice>
+              <ng-container
+                *ngTemplateOutlet="codeActions; context: { label: 'Activar y entrar' }"
+              />
+            </form>
           }
+        }
+
+        @case ('verify') {
+          <div class="access-form-heading">
+            <span class="access-eyebrow">Verificación en dos pasos</span>
+            <h1 id="login-title">Escribe tu código</h1>
+            <p>
+              Abre tu aplicación autenticadora y escribe el código de 6 dígitos de MedicalSys para
+              <strong>{{ username() }}</strong
+              >.
+            </p>
+          </div>
+          <form class="access-form" novalidate (submit)="submitCode($event)">
+            <ng-container *ngTemplateOutlet="codeInput" />
+            <ng-container
+              *ngTemplateOutlet="codeActions; context: { label: 'Verificar y entrar' }"
+            />
+          </form>
+        }
+      }
+
+      <ng-template #codeInput>
+        <div class="field">
+          <label class="field-label" for="mfa-code">Código de verificación</label>
+          <div class="access-control">
+            <medsys-icon name="shield-check" [size]="18" />
+            <input
+              id="mfa-code"
+              #codeField
+              class="input access-code"
+              type="text"
+              name="one-time-code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              pattern="[0-9]*"
+              [attr.maxlength]="codeLength + 2"
+              required
+              placeholder="000000"
+              [value]="code()"
+              (input)="onCodeInput($any($event.target).value)"
+            />
+          </div>
+          <span class="field-hint">El código cambia cada 30 segundos.</span>
         </div>
-      </details>
+        @if (error(); as message) {
+          <div role="alert">
+            <medsys-notice tone="err" icon="alert-triangle">{{ message }}</medsys-notice>
+          </div>
+        }
+      </ng-template>
+
+      <ng-template #codeActions let-label="label">
+        <button
+          type="submit"
+          class="btn btn-block access-submit"
+          [disabled]="pending()"
+          [attr.aria-busy]="pending() ? 'true' : null"
+        >
+          {{ pending() ? 'Verificando…' : label }}
+          <medsys-icon name="log-in" [size]="18" />
+        </button>
+        <button type="button" class="btn btn-ghost btn-block" (click)="backToLogin()">
+          Cancelar y volver
+        </button>
+      </ng-template>
+
+      <p class="access-help">
+        ¿Olvidaste tu contraseña o cambiaste de teléfono? Contacta al administrador de tu centro
+        médico.
+      </p>
     </main>
   </div>
   <footer class="access-footer">
     <span>MSYS · Tecnología al servicio del cuidado</span>
-    <span class="access-environment">Entorno de demostración · datos ficticios</span>
+    <span class="access-security">
+      <medsys-icon name="shield-check" [size]="14" />
+      Conexión cifrada · Verificación en dos pasos
+    </span>
   </footer>
 </div>

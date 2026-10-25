@@ -92,6 +92,7 @@ describe('reglas de gobierno anticipadas', () => {
     const account = (roles: readonly RoleAssignment[]): IdentityAccount => ({
       publicId: 'target',
       userCode: 'MS-26-00001',
+      username: 'x.perez',
       organizationPublicId: 'org',
       email: 'x@medicalsys.bo',
       fullName: 'X',
@@ -132,6 +133,7 @@ describe('accountManagementLock (IAM-06)', () => {
   const account = (roles: readonly RoleAssignment[]): IdentityAccount => ({
     publicId: 'target',
     userCode: 'MS-26-00002',
+    username: 'x.perez',
     organizationPublicId: 'org',
     email: 'x@medicalsys.bo',
     fullName: 'X',

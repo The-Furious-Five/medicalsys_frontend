@@ -7,6 +7,7 @@ import { Notice } from '../../shared/notice';
 export interface IssuedPassword {
   readonly fullName: string;
   readonly userCode: string;
+  readonly username: string;
   readonly password: string;
   readonly reason: 'alta' | 'reinicio';
 }
@@ -30,6 +31,10 @@ export interface IssuedPassword {
       @if (issued(); as item) {
         <div class="stack gap-4">
           <div class="stack gap-2">
+            <span class="field-label" id="username-label">Usuario</span>
+            <code class="temporary" aria-labelledby="username-label">{{ item.username }}</code>
+          </div>
+          <div class="stack gap-2">
             <span class="field-label" id="temporary-label">Contraseña temporal</span>
             <div class="row gap-2">
               <code class="temporary" aria-labelledby="temporary-label">{{ item.password }}</code>
@@ -41,8 +46,9 @@ export interface IssuedPassword {
           </div>
           <medsys-notice tone="warn" icon="shield-alert" heading="Se muestra una sola vez">
             Entrégala por un canal seguro (en persona o por llamada), nunca por chat grupal ni por
-            correo masivo. Sirve para un único ingreso: al entrar, el sistema le pedirá a la persona
-            que defina su propia contraseña.
+            correo masivo. Sirve para un único ingreso: al entrar con su usuario, el sistema le
+            pedirá a la persona que defina su propia contraseña y que registre el segundo factor
+            (QR) en su teléfono.
           </medsys-notice>
           <div class="row gap-2">
             <span class="grow"></span>

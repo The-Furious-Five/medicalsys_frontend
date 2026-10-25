@@ -273,98 +273,100 @@
   text-align: center;
 }
 
-.access-demo {
-  border-top: 1px solid var(--border);
-  padding-top: var(--s-5);
+/* Sello del pie: lo que protege el acceso, no un aviso de entorno de pruebas. */
+.access-security {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
 }
 
-.access-demo summary {
+.access-security medsys-icon {
+  color: var(--brand-solid);
+}
+
+/* IAM-07: registro del segundo factor. */
+.access-steps {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding-left: var(--s-5);
+  color: var(--text-secondary);
+  line-height: 22px;
+}
+
+.access-qr {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+
+.access-qr img {
+  width: 200px;
+  height: 200px;
+  padding: var(--s-2);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  image-rendering: pixelated;
+}
+
+.access-manual {
+  border-top: 1px solid var(--border);
+  padding-top: var(--s-3);
+}
+
+.access-manual summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-2);
-  min-height: 44px;
-  color: var(--text-secondary);
+  min-height: 40px;
+  color: var(--text-link);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   list-style: none;
 }
 
-.access-demo summary::-webkit-details-marker {
+.access-manual summary::-webkit-details-marker {
   display: none;
 }
 
-.access-demo[open] summary medsys-icon {
+.access-manual[open] summary medsys-icon {
   transform: rotate(180deg);
 }
 
-.access-demo-content {
+.access-manual-content {
   display: grid;
-  gap: var(--s-2);
+  gap: var(--s-3);
   padding-top: var(--s-2);
-}
-
-.access-demo-content > p {
-  margin-bottom: var(--s-2);
   color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 20px;
 }
 
-.access-demo-account {
+.access-secret {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--s-2);
-  padding: var(--s-3);
-  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.access-secret code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--r-input);
-  text-align: left;
-}
-
-.access-demo-account > span {
-  display: grid;
-  gap: var(--s-1);
-  min-width: 0;
   overflow-wrap: anywhere;
+  user-select: all;
 }
 
-.access-demo-account strong {
-  color: var(--text-link);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.access-demo-account span span {
-  color: var(--text-secondary);
-  font-size: 11px;
-  line-height: 16px;
-}
-
-.access-demo-account:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--border-focus);
-}
-
-.access-demo-account:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-.access-environment {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-}
-
-.access-environment::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--accent-solid);
+.access-control .input.access-code {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: 0.4em;
 }
 
 @media (max-width: 1000px) {

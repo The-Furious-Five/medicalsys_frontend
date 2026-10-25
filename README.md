@@ -408,25 +408,16 @@ documentos ficticios. No registrar JWT, contraseñas, contenido clínico ni dato
 - [Angular Style Guide](https://angular.dev/style-guide)
 - [Routing](https://angular.dev/guide/routing/define-routes)
 
-## Cuentas de demostración
+## Acceso
 
-| Cuenta                          | Rol             | Qué ve                                                                                    |
-| ------------------------------- | --------------- | ----------------------------------------------------------------------------------------- |
-| `admin@medicalsys.demo`         | `ADMINISTRATOR` | Organización, sucursales, prestaciones, plan y consumo, facturación, marketing, historial |
-| `doctor@medicalsys.demo`        | `PHYSICIAN`     | Historial clínico completo: escribir, firmar, recetar, pedir estudios                     |
-| `recepcion@medicalsys.demo`     | `RECEPTIONIST`  | Pacientes, agenda, expedientes en lectura, órdenes de estudio, facturación, cupones       |
-| `caja@medicalsys.demo`          | `BILLING_CLERK` | Facturación, cupones y fidelización                                                       |
-| `pediatria@medicalsys.demo`     | `PHYSICIAN`     | Lo mismo que `doctor`, con su propia agenda de pediatría                                  |
-| `ginecologia@medicalsys.demo`   | `PHYSICIAN`     | Lo mismo, con la agenda de ginecología                                                    |
-| `cardiologia@medicalsys.demo`   | `PHYSICIAN`     | Lo mismo, con la agenda de cardiología                                                    |
-| `traumatologia@medicalsys.demo` | `PHYSICIAN`     | Profesional de licencia: su ficha se abre, pero no admite citas                           |
-| `nutricion@medicalsys.demo`     | `PHYSICIAN`     | Nutrición                                                                                 |
-| `odontologia@medicalsys.demo`   | `PHYSICIAN`     | Odontología                                                                               |
+La pantalla de acceso es la de producción también en la demostración: no muestra cuentas de ejemplo
+ni contraseñas. Se entra con el **usuario estándar** (`nombre.apellido.inicial del segundo apellido`,
+por ejemplo `ricardo.salazar.p`), la contraseña y el código de 6 dígitos de Google Authenticator
+(IAM-07, `docs/seguridad/IAM-07-usuario-y-segundo-factor.md` del backend).
 
-Contraseña: no hay una común. Cada cuenta nace en el backend con una temporal aleatoria propia que
-nadie ve. Para usar una, el OSI la reinicia («Reiniciar contraseña» en Usuarios) y la persona elige
-la suya en el primer ingreso. El frontend no guarda contraseñas: el botón de cuenta demo completa
-solo el correo.
+Para usar una cuenta, el OSI o el administrador del centro pulsa «Reiniciar acceso» en Usuarios y
+entrega el usuario y la contraseña temporal por un canal seguro. En el primer ingreso la persona
+define su contraseña y escanea el QR. El frontend no guarda contraseñas ni secretos.
 
 El menú lateral muestra solo lo que el rol activo puede usar. Nada aparece
 deshabilitado «para que se vea completo»: enseñar puertas cerradas no ayuda a

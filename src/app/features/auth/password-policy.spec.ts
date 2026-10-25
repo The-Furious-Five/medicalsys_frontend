@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { meetsPolicy, passwordRules } from './password-policy';
 
-const unmet = (password: string, email = 'ana@medicalsys.demo') =>
-  passwordRules(password, email)
+const unmet = (password: string, username = 'ana.perez.r') =>
+  passwordRules(password, username)
     .filter((rule) => !rule.met)
     .map((rule) => rule.id);
 
 describe('passwordRules (IAM-02)', () => {
   it('acepta una frase larga con espacios como separadores', () => {
-    expect(meetsPolicy('Café con leche 7 veces', 'ana@medicalsys.demo')).toBe(true);
+    expect(meetsPolicy('Café con leche 7 veces', 'ana.perez.r')).toBe(true);
   });
 
   it('nombra cada regla que falta', () => {
@@ -22,8 +22,8 @@ describe('passwordRules (IAM-02)', () => {
     expect(unmet(`Larga 9 ${'x'.repeat(60)}`)).toEqual(['length']);
   });
 
-  it('rechaza el propio correo aunque cambien las mayúsculas', () => {
-    expect(unmet('Ana@MedicalSys.demo1', 'ana@medicalsys.demo1')).toEqual(['email']);
+  it('rechaza una contraseña que contiene el usuario, aunque cambien las mayúsculas', () => {
+    expect(unmet('Mi clave Ana.Perez.R 9', 'ana.perez.r')).toEqual(['username']);
   });
 
   it('cuenta las letras con tilde como mayúsculas o minúsculas', () => {
