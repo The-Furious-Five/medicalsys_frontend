@@ -1,4 +1,5 @@
 import { PERMISSION_MODULE, ROLE_SCOPE, label } from '../../core/labels/labels';
+import { grantsRoleAssignment } from './access-rules';
 import { CatalogPermission, Role } from './access-control.models';
 
 /**
@@ -103,14 +104,18 @@ const SYSTEM_ORDER = [
   'PLATFORM_ADMIN',
   'OSI',
   'AUDITOR',
+  'EXTERNAL_AUDITOR',
   'ADMINISTRATOR',
   'PHYSICIAN',
+  'MEDICAL_INTERN',
   'NURSE',
   'LAB_TECHNICIAN',
   'RECEPTIONIST',
   'BILLING_CLERK',
+  'BILLING_SUPERVISOR',
   'MARKETING_MANAGER',
   'PATIENT',
+  'DEVOPS',
 ];
 
 export function orderRoles(roles: readonly Role[]): readonly Role[] {
@@ -187,15 +192,20 @@ export function matrixTable(
 /** Los roles con su alcance, estado y delegación: la otra mitad de la matriz. */
 export function rolesTable(roles: readonly Role[]): Table {
   return [
-    ['Rol', 'Nombre', 'Alcance', 'Estado', 'De sistema', 'Permisos', 'Puede asignar'],
+    ['Rol', 'Nombre', 'Alcance', 'Modelo', 'Estado', 'De sistema', 'Permisos', 'Puede asignar'],
     ...orderRoles(roles).map((role) => [
       role.code,
       role.name,
       label(ROLE_SCOPE, role.scope),
+      role.accessModel,
       role.active ? 'Activo' : 'Inactivo',
       role.system ? 'Sí' : 'No',
       String(role.permissions.length),
-      role.scope === 'PLATFORM' ? 'Cualquier rol' : role.assignableRoles.join(' '),
+      !grantsRoleAssignment(role)
+        ? ''
+        : role.scope === 'PLATFORM'
+          ? 'Cualquier rol'
+          : role.assignableRoles.join(' '),
     ]),
   ];
 }

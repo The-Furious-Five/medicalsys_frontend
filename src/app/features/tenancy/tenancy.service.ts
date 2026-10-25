@@ -29,8 +29,12 @@ export class TenancyService {
 
   /* ------------------------------------------------------------ lecturas -- */
 
-  organizationResource() {
-    return dataResource(httpResource<Organization>(() => `${this.baseUrl}/tenancy/organizacion`));
+  organizationResource(enabled?: Signal<boolean>) {
+    return dataResource(
+      httpResource<Organization>(() =>
+        enabled && !enabled() ? undefined : `${this.baseUrl}/tenancy/organizacion`,
+      ),
+    );
   }
 
   branchesResource(status?: Signal<string | null>) {
@@ -42,9 +46,10 @@ export class TenancyService {
     );
   }
 
-  offeringsResource(active?: Signal<boolean | null>) {
+  offeringsResource(active?: Signal<boolean | null>, enabled?: Signal<boolean>) {
     return dataResource(
       httpResource<Page<ServiceOffering>>(() => {
+        if (enabled && !enabled()) return undefined;
         const isActive = active?.();
         return {
           url: `${this.baseUrl}/tenancy/prestaciones`,
@@ -61,11 +66,14 @@ export class TenancyService {
     return dataResource(httpResource<Subscription>(() => `${this.baseUrl}/tenancy/suscripcion`));
   }
 
-  usageResource() {
+  usageResource(enabled?: Signal<boolean>) {
     return dataResource(
-      httpResource<readonly PlanUsage[]>(() => `${this.baseUrl}/tenancy/consumo`, {
-        defaultValue: [],
-      }),
+      httpResource<readonly PlanUsage[]>(
+        () => (enabled && !enabled() ? undefined : `${this.baseUrl}/tenancy/consumo`),
+        {
+          defaultValue: [],
+        },
+      ),
     );
   }
 

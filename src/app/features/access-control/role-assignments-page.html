@@ -1,109 +1,118 @@
-<medsys-page-header
-  heading="Asignación de roles"
-  description="Qué roles tiene cada cuenta y hasta cuándo. Los cambios rigen desde el próximo inicio de sesión; revocar cierra las sesiones de la cuenta."
-/>
-
-<div class="card">
-  <div class="filters">
-    <div class="search-field">
-      <medsys-icon name="search" [size]="15" />
-      <input
-        class="input"
-        type="text"
-        autofocus
-        aria-label="Buscar cuenta"
-        placeholder="Buscar por nombre o correo"
-        [value]="term()"
-        (input)="onTerm($any($event.target).value)"
-      />
+<div class="access-page">
+  <header class="access-page-heading">
+    <div>
+      <h1>Accesos del personal</h1>
+      <p>Busca una persona para revisar su rol y las funciones que puede utilizar.</p>
     </div>
-    <medsys-select
-      [options]="statusOptions"
-      [value]="status() ?? ''"
-      (valueChange)="onStatus($event)"
-      ariaLabel="Filtrar por estado"
-      placeholder="Todos los estados"
-    />
-    <span class="grow"></span>
-    @if (accounts.hasValue()) {
-      <span class="t-sec t-num">{{ countLabel() }}</span>
-    }
-  </div>
-
-  @if (accounts.isLoading() && !accounts.hasValue()) {
-    <medsys-table-skeleton [rows]="7" [columns]="4" />
-  } @else if (accounts.error()) {
-    <medsys-error-state [failure]="accounts.error()" [compact]="true" (retry)="accounts.reload()" />
-  } @else if ((accounts.value()?.content ?? []).length === 0) {
-    <medsys-empty-state
-      icon="search-x"
-      heading="No hay cuentas que mostrar"
-      description="Prueba con otro nombre o correo, o quita el filtro de estado."
-    />
-  } @else {
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Cuenta</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Roles</th>
-            <th scope="col">Último acceso</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (account of accounts.value()?.content ?? []; track account.publicId) {
-            <tr
-              data-clickable="true"
-              tabindex="0"
-              (click)="selected.set(account)"
-              (keydown)="onRowKey($event, account)"
-            >
-              <td>
-                <div class="pair">
-                  <span class="t-strong">{{ account.fullName }}</span>
-                  <span class="t-micro">{{ account.email }}</span>
-                </div>
-              </td>
-              <td>
-                <medsys-status-chip
-                  [value]="account.status"
-                  [dictionary]="statuses"
-                  [tones]="statusTones"
-                />
-              </td>
-              <td class="td-wrap">
-                <div class="row gap-1 wrap">
-                  @for (item of assignments(account); track item.id) {
-                    @if (item.state === 'ACTIVE') {
-                      <span class="chip chip-neutral">{{ item.name }}</span>
-                    } @else {
-                      <span class="chip chip-muted">
-                        {{ item.name }} · {{ assignmentStates[item.state] }}
-                      </span>
-                    }
-                  } @empty {
-                    <span class="t-sec">Sin roles</span>
+  </header>
+  <nav class="access-section-nav" aria-label="Gestión de accesos">
+    <a routerLink="/roles">Roles y accesos</a
+    ><a routerLink="/asignacion-roles" aria-current="page">Accesos del personal</a>
+  </nav>
+  <section class="access-people">
+    <div class="access-people-toolbar">
+      <div class="access-search">
+        <medsys-icon name="search" [size]="16" /><input
+          type="search"
+          aria-label="Buscar una persona"
+          placeholder="Buscar por nombre o correo"
+          [value]="term()"
+          (input)="onTerm($any($event.target).value)"
+        />
+      </div>
+      <medsys-select
+        [options]="statusOptions"
+        [value]="status() ?? ''"
+        (valueChange)="onStatus($event)"
+        ariaLabel="Estado de la cuenta"
+        placeholder="Todos los estados"
+      /><span class="access-people-count" role="status">{{ countLabel() }}</span>
+    </div>
+    @if (accounts.isLoading() && (accounts.value()?.content?.length ?? 0) === 0) {
+      <div class="access-loading">
+        <medsys-skeleton width="100%" height="58px" /><medsys-skeleton
+          width="100%"
+          height="58px"
+        /><medsys-skeleton width="100%" height="58px" />
+      </div>
+    } @else if (accounts.error()) {
+      <div class="access-empty" role="alert">
+        <medsys-icon name="users" [size]="25" />
+        <h2>No pudimos cargar al personal</h2>
+        <p>Comprueba tu conexión y vuelve a intentarlo.</p>
+        <button type="button" class="btn btn-secondary" (click)="accounts.reload()">
+          Reintentar
+        </button>
+      </div>
+    } @else if ((accounts.value()?.content ?? []).length === 0) {
+      <div class="access-empty">
+        <medsys-icon name="search-x" [size]="28" />
+        <h2>No encontramos personas</h2>
+        <p>Prueba con otro nombre o correo, o muestra todos los estados.</p>
+        <button type="button" class="btn btn-secondary" (click)="onTerm(''); onStatus('')">
+          Limpiar búsqueda
+        </button>
+      </div>
+    } @else {
+      <div class="access-people-columns" aria-hidden="true">
+        <span>Persona</span><span>Roles asignados</span><span>Cuenta</span><span></span>
+      </div>
+      <ul class="access-people-list" [attr.aria-busy]="accounts.isLoading()">
+        @for (account of accounts.value()?.content ?? []; track account.publicId) {
+          <li>
+            <div class="access-person">
+              <span class="access-person-avatar" aria-hidden="true">{{
+                initials(account.fullName)
+              }}</span>
+              <div>
+                <strong>{{ account.fullName }}</strong
+                ><span>{{ account.email }}</span>
+              </div>
+            </div>
+            <div class="access-person-roles">
+              @for (assignment of assignments(account).slice(0, 2); track assignment.id) {
+                <span
+                  ><strong>{{ assignment.name }}</strong>
+                  @if (assignment.state !== 'ACTIVE') {
+                    <small>{{ assignmentStates[assignment.state] }}</small>
                   }
-                </div>
-              </td>
-              <td class="t-sec t-num">{{ account.lastAccessAt | msRelative }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-
-  @if (accounts.value(); as result) {
-    <medsys-pager
-      [page]="result.page"
-      [totalPages]="result.totalPages"
-      (pageChange)="page.set($event)"
-    />
-  }
+                </span>
+              } @empty {
+                <span class="access-person-no-role">Sin rol asignado</span>
+              }
+              @if (assignments(account).length > 2) {
+                <span class="access-person-extra">y {{ assignments(account).length - 2 }} más</span>
+              }
+            </div>
+            <div>
+              <medsys-status-chip
+                [value]="account.status"
+                [dictionary]="statuses"
+                [tones]="statusTones"
+              />
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [attr.aria-label]="'Ver accesos de ' + account.fullName"
+              (click)="selected.set(account)"
+            >
+              {{ canAssign() ? 'Gestionar accesos' : 'Ver accesos'
+              }}<medsys-icon name="chevron-right" [size]="14" />
+            </button>
+          </li>
+        }
+      </ul>
+    }
+    @if (accounts.value(); as result) {
+      <medsys-pager
+        [page]="result.page"
+        [totalPages]="result.totalPages"
+        (pageChange)="page.set($event)"
+      />
+    }
+  </section>
 </div>
-
 <medsys-account-roles-sheet
   [account]="selected()"
   [roles]="roles.value() ?? []"

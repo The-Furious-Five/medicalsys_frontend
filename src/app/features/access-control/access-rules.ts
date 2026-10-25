@@ -30,6 +30,13 @@ function managementAbove(roles: readonly Role[], actorPermissions: readonly stri
   );
 }
 
+/** El alcance de plataforma no concede por sí solo administración de roles. */
+export function grantsRoleAssignment(role: Role): boolean {
+  return role.permissions.some((permission) =>
+    ['identity.role.assign', 'identity.role.assign_initial'].includes(permission.code),
+  );
+}
+
 /**
  * Por qué quien actúa no puede editar este rol, o `null` si puede.
  * Nadie edita un rol que tiene asignado, ni uno con permisos de gestión que no tiene.

@@ -14,22 +14,16 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthSession } from '../../core/auth/auth-session';
 import { can } from '../../core/auth/permissions';
-import { FORMAT_PIPES } from '../../core/format/format.pipe';
-import { describeFailure } from '../../core/http/api-error';
-import { ROLE_SCOPE } from '../../core/labels/labels';
 import { ToastService } from '../../core/toast/toast.service';
 import { Icon } from '../../core/ui/icon';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
-import { ErrorState } from '../../shared/error-state';
-import { Notice } from '../../shared/notice';
-import { PageHeader } from '../../shared/page-header';
 import { Select } from '../../shared/select';
 import { Skeleton } from '../../shared/skeleton';
-import { StatusChip } from '../../shared/status-chip';
 import { Role } from './access-control.models';
 import { AccessControlService } from './access-control.service';
-import { groupByModule, orderRoles } from './access-matrix';
-import { ROLE_STATE, roleEditLock } from './access-rules';
+import { accessFailure, rolePurpose, roleName as displayRoleName } from './access-presentation';
+import { orderRoles } from './access-matrix';
+import { roleEditLock, grantsRoleAssignment } from './access-rules';
 
 type Pending =
   | { readonly kind: 'deactivate' }
@@ -40,12 +34,8 @@ const sameMembers = (a: readonly string[], b: readonly string[]) =>
   a.length === b.length && a.every((item) => b.includes(item));
 
 /**
- * Ficha de un rol: sus datos, su estado, qué permisos reúne, a quién puede
- * asignar y con qué roles es incompatible.
- *
- * Los permisos se muestran por módulo pero no se editan aquí: se editan en la
- * matriz, junto a los de los demás roles, que es el registro que se aprueba y
- * se exporta (RBAC-06). Tener dos lugares para lo mismo invita a que difieran.
+ * Ajustes de un rol: información, estado, roles que puede asignar y
+ * combinaciones incompatibles. Las funciones se editan en «Roles y accesos».
  *
  * Cada parte se guarda por separado y con su propio botón: guardar el nombre no
  * debe llevarse por delante una delegación a medio marcar.
@@ -53,48 +43,10 @@ const sameMembers = (a: readonly string[], b: readonly string[]) =>
 @Component({
   selector: 'medsys-role-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    PageHeader,
-    StatusChip,
-    ErrorState,
-    Skeleton,
-    Notice,
-    ConfirmDialog,
-    Select,
-    ReactiveFormsModule,
-    RouterLink,
-    Icon,
-    ...FORMAT_PIPES,
-  ],
+  host: { class: 'access-feature' },
+  imports: [Skeleton, ConfirmDialog, Select, ReactiveFormsModule, RouterLink, Icon],
   templateUrl: './role-detail-page.html',
-  styles: `
-    .role-module {
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-card);
-      padding: var(--s-2) var(--s-3);
-    }
-    .role-module summary {
-      cursor: pointer;
-      list-style: none;
-    }
-    .role-module summary::-webkit-details-marker {
-      display: none;
-    }
-    .role-module-caret {
-      transition: transform var(--dur-micro) var(--ease-standard);
-    }
-    .role-module[open] .role-module-caret {
-      transform: rotate(90deg);
-    }
-    .role-module[open] summary {
-      margin-bottom: var(--s-2);
-    }
-    .role-module ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-  `,
+  styleUrl: './role-detail-page.scss',
 })
 export class RoleDetailPage {
   private readonly access = inject(AccessControlService);
@@ -103,8 +55,14 @@ export class RoleDetailPage {
   private readonly toasts = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
-  protected readonly scopes = ROLE_SCOPE;
-  protected readonly states = ROLE_STATE;
+  protected readonly grantsRoleAssignment = grantsRoleAssignment;
+  protected readonly purpose = rolePurpose;
+  protected readonly settingsTab = signal('profile');
+  protected readonly friendlyLock = computed(() =>
+    this.current() && this.session.roles().includes(this.current()!.code)
+      ? 'Estás usando este rol. Otra persona autorizada debe realizar sus cambios.'
+      : 'Puedes consultar la información de este rol, pero no modificarla.',
+  );
 
   protected readonly code = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('code'))),
@@ -136,7 +94,9 @@ export class RoleDetailPage {
   protected readonly failure = signal<unknown>(null);
   protected readonly failureMessage = computed(() => {
     const failure = this.failure();
-    return failure === null ? null : describeFailure(failure).message;
+    return failure === null
+      ? null
+      : accessFailure(failure, this.roles.value() ?? [], this.catalog.value() ?? []);
   });
 
   /* --------------------------------------------------------------- datos -- */
@@ -152,20 +112,6 @@ export class RoleDetailPage {
   protected readonly savingData = signal(false);
 
   /* ---------------------------------------------------------- permisos -- */
-
-  protected readonly coverage = computed(() => {
-    const role = this.current();
-    if (role === null) {
-      return [];
-    }
-    const held = new Set(role.permissions.map((permission) => permission.code));
-    return groupByModule(this.catalog.value() ?? []).map((group) => ({
-      module: group.module,
-      label: group.label,
-      total: group.permissions.length,
-      held: group.permissions.filter((permission) => held.has(permission.code)),
-    }));
-  });
 
   /* -------------------------------------------------------- delegación -- */
 
@@ -206,7 +152,7 @@ export class RoleDetailPage {
           !paired.has(role.code) &&
           roleEditLock(role, this.session.roles(), this.session.permissions()) === null,
       )
-      .map((role) => ({ value: role.code, label: `${role.name} · ${role.code}` }));
+      .map((role) => ({ value: role.code, label: role.name }));
   });
 
   protected readonly pairForm = this.fb.nonNullable.group({
@@ -239,10 +185,10 @@ export class RoleDetailPage {
         };
       case 'unpair':
         return {
-          heading: `Quitar la incompatibilidad con ${pending.other}`,
+          heading: `Permitir la combinación con ${this.roleName(pending.other)}`,
           description:
-            'Una misma cuenta podrá volver a tener los dos roles. La segregación de funciones entre ellos deja de controlarse en la plataforma.',
-          action: 'Quitar incompatibilidad',
+            'Una misma persona podrá volver a tener estos dos roles. Revisa que sus responsabilidades puedan combinarse.',
+          action: 'Permitir combinación',
         };
       default:
         return { heading: '', description: '', action: '' };
@@ -257,7 +203,7 @@ export class RoleDetailPage {
   }
 
   protected roleName(code: string): string {
-    return (this.roles.value() ?? []).find((role) => role.code === code)?.name ?? code;
+    return displayRoleName(code, this.roles.value() ?? []);
   }
 
   protected isDelegated(code: string): boolean {
@@ -328,7 +274,9 @@ export class RoleDetailPage {
       await this.access.declareIncompatible(role.code, value.other, value.reason.trim());
       this.pairForm.reset();
       this.pairs.reload();
-      this.toasts.notify(`${role.code} y ${value.other} ya no pueden coincidir en una cuenta.`);
+      this.toasts.notify(
+        `${role.name} y ${this.roleName(value.other)} ya no se pueden asignar a la misma persona.`,
+      );
     });
   }
 
@@ -348,7 +296,7 @@ export class RoleDetailPage {
       } else {
         await this.access.removeIncompatibility(role.code, pending.other);
         this.pairs.reload();
-        this.toasts.notify('Incompatibilidad quitada.');
+        this.toasts.notify('Regla de combinación retirada.');
       }
       this.roles.reload();
     });

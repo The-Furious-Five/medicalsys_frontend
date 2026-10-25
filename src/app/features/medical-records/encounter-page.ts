@@ -129,6 +129,9 @@ export class EncounterPage {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly sections = SECTIONS;
+  protected readonly canViewStudies = computed(() =>
+    can.viewStudyOrders(this.session.permissions()),
+  );
   protected readonly encounterStatuses = ENCOUNTER_STATUS;
   protected readonly encounterTones = encounterTone;
 

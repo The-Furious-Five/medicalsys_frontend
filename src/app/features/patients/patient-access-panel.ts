@@ -77,6 +77,17 @@ const GRANT_TONES: Record<string, Tone> = {
           @if (failure(); as message) {
             <medsys-notice tone="err">{{ message }}</medsys-notice>
           }
+          @if (grants.isLoading()) {
+            <p class="t-sec" aria-live="polite">Cargando solicitudes…</p>
+          } @else if (grants.error()) {
+            <medsys-notice tone="err"
+              >No se pudieron cargar los accesos. Comprueba que tu cuenta esté vinculada a tu ficha
+              de paciente.</medsys-notice
+            >
+            <button type="button" class="btn btn-secondary btn-sm" (click)="grants.reload()">
+              Reintentar
+            </button>
+          }
           @for (grant of grants.value() ?? []; track grant.grantId) {
             <div class="row gap-3 wrap">
               <div class="pair grow">
@@ -116,7 +127,9 @@ const GRANT_TONES: Record<string, Tone> = {
               }
             </div>
           } @empty {
-            <p class="t-sec">Ninguna otra organización pidió acceso.</p>
+            @if (!grants.isLoading() && !grants.error()) {
+              <p class="t-sec">Ninguna otra organización pidió acceso.</p>
+            }
           }
         </div>
       </div>
@@ -124,7 +137,8 @@ const GRANT_TONES: Record<string, Tone> = {
   `,
 })
 export class PatientAccessPanel {
-  readonly patientId = input.required<string>();
+  readonly patientId = input('');
+  readonly own = input(false);
 
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
@@ -135,13 +149,19 @@ export class PatientAccessPanel {
   protected readonly tones = GRANT_TONES;
   protected readonly codes: Record<string, string> = {};
 
-  protected readonly canRequest = computed(() =>
-    can.requestAccessGrant(this.session.permissions()),
+  protected readonly canRequest = computed(
+    () => !this.own() && can.requestAccessGrant(this.session.permissions()),
   );
   protected readonly canConfirm = computed(() =>
-    can.confirmAccessGrant(this.session.permissions()),
+    this.own()
+      ? this.session.permissions().includes('patients.self_access.confirm')
+      : can.confirmAccessGrant(this.session.permissions()),
   );
-  protected readonly canRevoke = computed(() => can.revokeAccessGrant(this.session.permissions()));
+  protected readonly canRevoke = computed(() =>
+    this.own()
+      ? this.session.permissions().includes('patients.self_access.revoke')
+      : can.revokeAccessGrant(this.session.permissions()),
+  );
 
   protected readonly grants = dataResource(
     httpResource<readonly AccessGrant[]>(() => this.path(), { defaultValue: [] }),
@@ -150,7 +170,9 @@ export class PatientAccessPanel {
   protected readonly failure = signal<string | null>(null);
 
   private path(): string {
-    return `${this.baseUrl}/patients/${encodeURIComponent(this.patientId())}/acceso/solicitudes`;
+    return this.own()
+      ? `${this.baseUrl}/patients/me/access-grants`
+      : `${this.baseUrl}/patients/${encodeURIComponent(this.patientId())}/acceso/solicitudes`;
   }
 
   protected request(): Promise<void> {

@@ -163,16 +163,10 @@ const NAV: readonly NavGroup[] = [
         permission: 'viewAudit',
       },
       { link: '/usuarios', label: 'Usuarios', icon: 'users', permission: 'viewUsers' },
-      { link: '/roles', label: 'Roles', icon: 'shield-check', permission: 'viewRoles' },
-      {
-        link: '/matriz-accesos',
-        label: 'Matriz de accesos',
-        icon: 'table',
-        permission: 'viewRoles',
-      },
+      { link: '/roles', label: 'Roles y accesos', icon: 'shield-check', permission: 'viewRoles' },
       {
         link: '/asignacion-roles',
-        label: 'Asignación de roles',
+        label: 'Accesos del personal',
         icon: 'user-check',
         permission: 'viewRoleAssignments',
       },

@@ -1,0 +1,54 @@
+<div class="access-rail-tools">
+  <h2>
+    Roles <span>{{ ordered().length }}</span>
+  </h2>
+  <div class="access-search">
+    <medsys-icon name="search" [size]="16" /><input
+      type="search"
+      aria-label="Buscar un rol"
+      placeholder="Buscar un rol"
+      [value]="roleTerm()"
+      (input)="roleTerm.set($any($event.target).value)"
+    />
+  </div>
+  <div class="access-role-filters" aria-label="Filtrar roles">
+    @for (filter of categories; track filter.value) {
+      <button
+        type="button"
+        [class.is-current]="category() === filter.value"
+        [attr.aria-pressed]="category() === filter.value"
+        (click)="category.set(filter.value)"
+      >
+        {{ filter.label }}
+      </button>
+    }
+  </div>
+</div>
+<div class="access-role-list">
+  @for (role of visibleRoles(); track role.code) {
+    <button
+      type="button"
+      class="access-role-option"
+      [class.is-selected]="selectedCode() === role.code"
+      [attr.aria-pressed]="selectedCode() === role.code"
+      (click)="selectRole(role.code)"
+    >
+      <span class="access-role-name"
+        >{{ role.name }}
+        @if (changedRoles().has(role.code)) {
+          <span class="access-draft-dot" aria-label="Tiene cambios sin guardar"></span>
+        }
+      </span>
+      <span class="access-role-purpose">{{ role.active ? rolePurpose(role) : 'Inactivo' }}</span>
+    </button>
+  } @empty {
+    <p class="access-rail-empty">
+      No encontramos un rol con ese nombre.<button
+        type="button"
+        (click)="roleTerm.set(''); category.set('all')"
+      >
+        Ver todos los roles
+      </button>
+    </p>
+  }
+</div>

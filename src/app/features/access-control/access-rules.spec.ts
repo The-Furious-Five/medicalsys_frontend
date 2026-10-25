@@ -25,6 +25,7 @@ const role = (code: string, extra: Partial<Role> = {}): Role => ({
   name: code,
   description: null,
   scope: 'ORGANIZATION',
+  accessModel: 'MAC',
   system: true,
   active: true,
   permissions: [],

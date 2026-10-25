@@ -107,6 +107,9 @@ export class RecordDetailPage {
   protected readonly canOpenEncounter = computed(() =>
     can.openEncounter(this.session.permissions()),
   );
+  protected readonly canWriteBackgrounds = computed(() =>
+    can.writeBackgrounds(this.session.permissions()),
+  );
   protected readonly canWrite = computed(() => can.writeAllergies(this.session.permissions()));
 
   protected readonly isActive = computed(() => this.record.value()?.status === 'ACTIVE');

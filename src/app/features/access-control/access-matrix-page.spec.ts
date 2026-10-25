@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ApplicationRef, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { CatalogPermission, Role } from './access-control.models';
 import { AccessMatrixPage } from './access-matrix-page';
 
@@ -21,27 +21,23 @@ const SIGN: CatalogPermission = {
   sensitive: true,
   classification: 'CONFIDENTIAL',
 };
-
 const role = (code: string, permissions: readonly CatalogPermission[]): Role => ({
   code,
-  name: code,
+  name: code === 'PHYSICIAN' ? 'Médico' : 'Recepción',
   description: null,
   scope: 'ORGANIZATION',
+  accessModel: 'MAC',
   system: true,
   active: true,
   permissions,
   assignableRoles: [],
 });
-
-/** ms-identidad devuelve los roles ordenados por código. */
 const ROLES = [role('PHYSICIAN', [READ, SIGN]), role('RECEPTIONIST', [READ])];
-
 async function settle(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
   TestBed.inject(ApplicationRef).tick();
 }
-
-function signIn(permissions: readonly string[]): void {
+function signIn(permissions: readonly string[], roles = ['SECURITY_OFFICER']): void {
   sessionStorage.setItem(
     'medicalsys.session',
     JSON.stringify({
@@ -54,19 +50,18 @@ function signIn(permissions: readonly string[]): void {
         organizationPublicId: 'o',
         status: 'ACTIVE',
         language: 'es',
-        roles: ['SECURITY_OFFICER'],
+        roles,
         permissions,
       },
     }),
   );
 }
+const editorGrants = ['identity.role.read', 'identity.role.manage', READ.code, SIGN.code];
 
-describe('AccessMatrixPage', () => {
+describe('espacio de roles y accesos', () => {
   let http: HttpTestingController;
   let fixture: ComponentFixture<AccessMatrixPage>;
-
   beforeAll(() => {
-    // jsdom no implementa <dialog>: a la matriz solo le importa que abrir y cerrar no fallen.
     HTMLDialogElement.prototype.showModal = function () {
       this.setAttribute('open', '');
     };
@@ -74,7 +69,6 @@ describe('AccessMatrixPage', () => {
       this.removeAttribute('open');
     };
   });
-
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
@@ -86,7 +80,10 @@ describe('AccessMatrixPage', () => {
     });
     http = TestBed.inject(HttpTestingController);
   });
-
+  afterEach(() => {
+    sessionStorage.clear();
+    http.verify();
+  });
   async function open(): Promise<HTMLElement> {
     fixture = TestBed.createComponent(AccessMatrixPage);
     fixture.detectChanges();
@@ -96,53 +93,66 @@ describe('AccessMatrixPage', () => {
     await settle();
     return fixture.nativeElement as HTMLElement;
   }
-
-  const cell = (root: HTMLElement, code: string, roleCode: string) =>
-    root.querySelector<HTMLInputElement>(`input[aria-label="${code} para ${roleCode}"]`);
-
-  async function confirmSave(root: HTMLElement): Promise<void> {
-    root.querySelector<HTMLButtonElement>('.matrix-pending .btn-primary')?.click();
-    await settle();
-    root.querySelector<HTMLButtonElement>('medsys-confirm-dialog .btn-primary')?.click();
+  async function choose(root: HTMLElement, name: string) {
+    Array.from(root.querySelectorAll<HTMLButtonElement>('.access-role-option'))
+      .find((button) => button.querySelector('.access-role-name')?.textContent?.trim() === name)
+      ?.click();
     await settle();
   }
-
-  it('guarda solo el rol que cambió, con su conjunto completo de permisos', async () => {
-    signIn(['identity.role.read', 'identity.role.manage', READ.code, SIGN.code]);
+  const toggle = (root: HTMLElement, label: string) =>
+    root.querySelector<HTMLButtonElement>(`button[role="switch"][aria-label="${label}"]`);
+  async function confirmSave(root: HTMLElement) {
+    root.querySelector<HTMLButtonElement>('.access-pending .btn-primary')?.click();
+    await settle();
+    root
+      .querySelector<HTMLButtonElement>(
+        'dialog[aria-label="Revisar los cambios"] .dialog-foot .btn-primary',
+      )
+      ?.click();
+    await settle();
+  }
+  it('presenta nombres y funciones comprensibles sin códigos ni modelos técnicos', async () => {
+    signIn(editorGrants);
     const root = await open();
-
-    cell(root, SIGN.code, 'RECEPTIONIST')?.click();
+    expect(root.textContent).toContain('Médico');
+    expect(root.textContent).toContain('Consultar atenciones');
+    expect(root.textContent).not.toContain('clinical.');
+    expect(root.textContent).not.toContain('PHYSICIAN');
+    expect(root.textContent).not.toContain('MAC');
+    expect(root.querySelector('table.matrix')).toBeNull();
+  });
+  it('guarda solo el rol editado y envía todos sus permisos al servidor', async () => {
+    signIn(editorGrants);
+    const root = await open();
+    await choose(root, 'Recepción');
+    toggle(root, 'Firmar atenciones para Recepción')?.click();
     await settle();
-    expect(root.querySelector('.matrix-pending')?.textContent).toContain('1 cambio');
-
+    expect(root.querySelector('.access-pending')?.textContent).toContain('1 cambio sin guardar');
     await confirmSave(root);
-    const put = http.expectOne('/api/v1/identity/roles/RECEPTIONIST/permissions');
-    expect(put.request.method).toBe('PUT');
-    expect(put.request.body).toEqual({ permissions: [READ.code, SIGN.code] });
-    put.flush(role('RECEPTIONIST', [READ, SIGN]));
+    const request = http.expectOne('/api/v1/identity/roles/RECEPTIONIST/permissions');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ permissions: [READ.code, SIGN.code] });
+    request.flush(role('RECEPTIONIST', [READ, SIGN]));
     await settle();
-
     http.expectOne('/api/v1/identity/roles').flush([ROLES[0], role('RECEPTIONIST', [READ, SIGN])]);
     await settle();
-    http.verify();
-    expect(root.querySelector('.matrix-pending')).toBeNull();
+    expect(root.querySelector('.access-pending')).toBeNull();
   });
-
-  it('si el servicio rechaza un rol, ese conserva lo marcado y los demás quedan guardados', async () => {
-    signIn(['identity.role.read', 'identity.role.manage', READ.code, SIGN.code]);
+  it('conserva los borradores al cambiar de rol y al fallar parte del guardado', async () => {
+    signIn(editorGrants);
     const root = await open();
-
-    cell(root, SIGN.code, 'PHYSICIAN')?.click();
-    cell(root, SIGN.code, 'RECEPTIONIST')?.click();
+    toggle(root, 'Firmar atenciones para Médico')?.click();
     await settle();
+    await choose(root, 'Recepción');
+    toggle(root, 'Firmar atenciones para Recepción')?.click();
+    await settle();
+    expect(root.querySelector('.access-pending')?.textContent).toContain('2 cambios');
     await confirmSave(root);
-
     http.expectOne('/api/v1/identity/roles/PHYSICIAN/permissions').flush(
       {
         title: 'Conflicto',
         status: 409,
-        detail:
-          'La operacion dejaria a la plataforma sin ninguna cuenta activa que pueda administrar roles',
+        detail: 'No puede cambiar el rol PHYSICIAN sin autorización.',
         service: 'ms-identidad',
       },
       { status: 409, statusText: 'Conflict' },
@@ -154,22 +164,63 @@ describe('AccessMatrixPage', () => {
     await settle();
     http.expectOne('/api/v1/identity/roles').flush([ROLES[0], role('RECEPTIONIST', [READ, SIGN])]);
     await settle();
-
-    // El motivo es el del servicio: la regla de continuidad de RBAC-02.
-    expect(root.textContent).toContain('No se guardaron los permisos de PHYSICIAN');
-    expect(root.textContent).toContain('sin ninguna cuenta activa que pueda administrar roles');
-    // El cambio rechazado sigue marcado y pendiente; el aceptado ya es lo guardado.
-    expect(cell(root, SIGN.code, 'PHYSICIAN')?.checked).toBe(false);
-    expect(root.querySelector('.matrix-pending')?.textContent).toContain('1 cambio');
-    expect(cell(root, SIGN.code, 'RECEPTIONIST')?.checked).toBe(true);
+    expect(root.textContent).toContain('No se guardaron los accesos de Médico');
+    expect(root.textContent).not.toContain('PHYSICIAN');
+    await choose(root, 'Médico');
+    expect(toggle(root, 'Firmar atenciones para Médico')?.getAttribute('aria-checked')).toBe(
+      'false',
+    );
+    expect(root.querySelector('.access-pending')?.textContent).toContain('1 cambio');
   });
-
-  it('sin identity.role.manage la matriz se lee pero no se edita', async () => {
+  it('permite consultar sin ofrecer interruptores de edición', async () => {
     signIn(['identity.role.read']);
     const root = await open();
-
-    expect(root.querySelectorAll('table input[type="checkbox"]')).toHaveLength(0);
-    // PHYSICIAN tiene los dos permisos y RECEPTIONIST uno: tres marcas en la tabla.
-    expect(root.querySelectorAll('td.matrix-cell medsys-icon')).toHaveLength(3);
+    expect(root.querySelectorAll('[role="switch"]')).toHaveLength(0);
+    expect(root.querySelectorAll('.access-read-state.is-allowed')).toHaveLength(2);
+  });
+  it('protege la edición del rol propio aunque la cuenta pueda administrar roles', async () => {
+    signIn(editorGrants, ['PHYSICIAN']);
+    const root = await open();
+    expect(root.textContent).toContain('Estás usando este rol');
+    const button = toggle(root, 'Firmar atenciones para Médico');
+    expect(button?.disabled).toBe(true);
+    button?.click();
+    await settle();
+    expect(root.querySelector('.access-pending')).toBeNull();
+  });
+  it('no concede funciones que quien actúa no puede otorgar', async () => {
+    signIn(['identity.role.read', 'identity.role.manage', READ.code]);
+    const root = await open();
+    await choose(root, 'Recepción');
+    expect(toggle(root, 'Firmar atenciones para Recepción')?.disabled).toBe(true);
+  });
+  it('la revisión distingue los accesos que se permiten y los que se retiran', async () => {
+    signIn(editorGrants);
+    const root = await open();
+    toggle(root, 'Firmar atenciones para Médico')?.click();
+    await settle();
+    root.querySelector<HTMLButtonElement>('.access-pending .btn-primary')?.click();
+    await settle();
+    const dialog = root.querySelector('dialog[aria-label="Revisar los cambios"]');
+    expect(dialog?.textContent).toContain('Retirar Firmar atenciones');
+    expect(dialog?.textContent).toContain('Médico');
+    expect(dialog?.textContent).not.toContain('clinical.');
+    http.expectNone((request) => request.method === 'PUT');
+  });
+  it('pide una decisión antes de abandonar un borrador y permite continuar editando', async () => {
+    signIn(editorGrants);
+    const root = await open();
+    toggle(root, 'Firmar atenciones para Médico')?.click();
+    await settle();
+    const leaving = fixture.componentInstance.requestLeave();
+    await settle();
+    root
+      .querySelector<HTMLButtonElement>(
+        'dialog[aria-label="Tienes cambios sin guardar"] .btn-secondary',
+      )
+      ?.click();
+    await settle();
+    expect(await leaving).toBe(false);
+    expect(root.querySelector('.access-pending')).not.toBeNull();
   });
 });

@@ -70,7 +70,9 @@ export class PatientDetailPage {
   private readonly id = computed<string | null>(() => this.patientId() ?? null);
 
   protected readonly patient = this.patients.patientResource(this.id);
-  protected readonly record = this.records.recordByPatientResource(this.id);
+  protected readonly record = this.records.recordByPatientResource(
+    computed(() => (can.viewRecords(this.session.permissions()) ? this.id() : null)),
+  );
 
   private readonly recordId = computed(() => this.record.value()?.id ?? null);
   private readonly encounterPage = signal(0);
@@ -81,9 +83,16 @@ export class PatientDetailPage {
     this.encounterPage,
     this.recordId,
     5,
+    computed(() => can.viewEncounters(this.session.permissions()) && this.recordId() !== null),
   );
-  protected readonly invoices = this.billing.invoicesResource(this.id, signal(0), 5);
+  protected readonly invoices = this.billing.invoicesResource(
+    computed(() => (can.viewInvoices(this.session.permissions()) ? this.id() : null)),
+    signal(0),
+    5,
+    computed(() => can.viewInvoices(this.session.permissions())),
+  );
 
+  protected readonly canViewRecord = computed(() => can.viewRecords(this.session.permissions()));
   protected readonly canOpenRecord = computed(() => can.openRecord(this.session.permissions()));
   protected readonly canOpenEncounter = computed(() =>
     can.openEncounter(this.session.permissions()),

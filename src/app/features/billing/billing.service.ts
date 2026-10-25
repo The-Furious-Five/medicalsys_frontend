@@ -17,12 +17,21 @@ export class BillingService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
 
-  invoicesResource(patientId: Signal<string | null>, page: Signal<number>, size = 20) {
+  invoicesResource(
+    patientId: Signal<string | null>,
+    page: Signal<number>,
+    size = 20,
+    enabled?: Signal<boolean>,
+  ) {
     return dataResource(
-      httpResource<Page<InvoiceSummary>>(() => ({
-        url: `${this.baseUrl}/facturas`,
-        params: { size, page: page(), ...(patientId() ? { patientId: patientId()! } : {}) },
-      })),
+      httpResource<Page<InvoiceSummary>>(() =>
+        enabled && !enabled()
+          ? undefined
+          : {
+              url: `${this.baseUrl}/facturas`,
+              params: { size, page: page(), ...(patientId() ? { patientId: patientId()! } : {}) },
+            },
+      ),
     );
   }
 

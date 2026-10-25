@@ -1,0 +1,127 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.access-panel {
+  padding: 24px 28px 30px;
+}
+.access-panel-heading h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.access-panel-heading p {
+  margin: 3px 0 0;
+  color: var(--access-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.access-read-state {
+  display: inline-flex;
+  color: var(--access-muted);
+}
+.access-read-state.is-allowed {
+  color: var(--brand-text);
+}
+.access-compare-choices {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block: 20px;
+}
+.access-compare-choice {
+  flex: 1;
+  min-width: 145px;
+}
+.access-compare-choice > label {
+  display: block;
+  font-size: 12px;
+  color: var(--access-muted);
+  margin-bottom: 7px;
+}
+.access-compare-choice > div {
+  display: flex;
+  gap: 5px;
+}
+.access-compare-choice medsys-select {
+  width: 100%;
+  min-width: 0;
+}
+.access-difference-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--access-muted);
+  margin-block: 2px 20px;
+  cursor: pointer;
+}
+.access-difference-filter input {
+  accent-color: var(--brand-solid);
+  width: 15px;
+  height: 15px;
+}
+.access-comparison-wrap {
+  overflow-x: auto;
+}
+.access-comparison {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.access-comparison th,
+.access-comparison td {
+  padding: 14px 9px;
+  border-bottom: 1px solid var(--access-line);
+  font-size: 13px;
+  line-height: 1.6;
+  vertical-align: middle;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.access-comparison th:first-child {
+  width: 42%;
+  text-align: left;
+}
+.access-comparison thead th {
+  font-weight: 600;
+  color: var(--text-heading);
+  background: var(--bg-sunken);
+}
+.access-comparison tbody th {
+  font-weight: 400;
+}
+.access-comparison-area th,
+.access-comparison-area td {
+  background: var(--bg-app);
+}
+.access-comparison-area button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-heading);
+  cursor: pointer;
+}
+
+@media (max-width: 740px) {
+  .access-panel {
+    padding: 20px 16px;
+  }
+  .access-comparison th:first-child {
+    width: 40%;
+  }
+  .access-comparison th,
+  .access-comparison td {
+    padding-inline: 6px;
+    font-size: 12px;
+  }
+  .access-compare-choice {
+    min-width: 110px;
+  }
+}
